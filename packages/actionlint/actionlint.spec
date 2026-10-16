@@ -49,7 +49,9 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %if %{with check}
 # Exclude the generator utility whose tests require Git metadata omitted from the release archive.
 # Skip tests that fetch live HTTP resources; Fedora builds run offline.
-%gotest -skip '^(TestDetectErrorBadRequest|TestFetchError|TestFetchRemoteYAML|TestWriteOutdatedActionAsJSONL|TestDetectNewRelease|TestDetectNoRelease/no_new_version\.json|TestCouldNotFetch|TestFetchURL)$' . ./cmd/actionlint ./scripts/generate-availability ./scripts/generate-popular-actions ./scripts/generate-webhook-events
+# Isolate this package because go test's -skip slash matching applies per subtest component.
+%gotest -skip '^(TestDetectErrorBadRequest|TestFetchError|TestFetchRemoteYAML|TestWriteOutdatedActionAsJSONL|TestDetectNewRelease|TestCouldNotFetch|TestFetchURL)$' . ./cmd/actionlint ./scripts/generate-availability ./scripts/generate-webhook-events
+%gotest -skip '^TestDetectNoRelease$/^no_new_version\.json$' ./scripts/generate-popular-actions
 %endif
 
 %files -f %{go_vendor_license_filelist}
@@ -61,3 +63,4 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 * Fri Oct 16 2026 Zeldris <80939130+zeldrisho@users.noreply.github.com> - 1.7.12-1
 - Start at the initial release; earlier COPR builds failed before publishing
 - Skip network-dependent tests in offline Fedora builds
+- Skip the no-new-version test case that needs live release metadata
