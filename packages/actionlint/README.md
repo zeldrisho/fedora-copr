@@ -23,6 +23,4 @@ Review the generated archive, SPDX expression, bundled module provides, and incl
 make -C ../.. validate
 ```
 
-The package's `%check` skips `TestDetectErrorBadRequest` because it requires live HTTP, and omits a generator test needing Git metadata unavailable in the upstream release archive. The remaining tests run offline. COPR binary build logs are the place to check the full build and test result.
-
-See [shared Fedora packaging guidance](../../docs/packaging.md) and the [release process](../../docs/release.md) for repository-wide policy.
+The package's `%check` skips tests that require live HTTP because Fedora builds run offline, and omits a generator test needing Git metadata unavailable in the upstream release archive. The remaining tests run offline. CI builds the binary RPM locally before merge; COPR build logs confirm the configured target chroots after publishing.

@@ -80,6 +80,17 @@ class ValidationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             check_nvr.spec_values("Version: 1\n")
 
+    def test_initial_release_reset_requires_release_one_and_changelog_note(self):
+        previous = "Version: 1.2\nRelease: 2%{?dist}\n"
+        spec = (
+            "Version: 1.2\nRelease: 1%{?dist}\n%changelog\n"
+            f"- {check_nvr.INITIAL_RELEASE_RESET}\n"
+        )
+        self.assertTrue(check_nvr.initial_release_reset(previous, spec))
+        self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace("Release: 1", "Release: 2")))
+        self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace(check_nvr.INITIAL_RELEASE_RESET, "Initial release")))
+        self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace("Version: 1.2", "Version: 1.3")))
+
 
 if __name__ == "__main__":
     unittest.main()

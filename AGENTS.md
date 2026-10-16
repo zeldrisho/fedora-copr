@@ -18,13 +18,13 @@
 - Keep specs plain and Fedora-submittable; no COPR-only logic or rpkg templates.
 - Put COPR-specific behavior only in `.copr/Makefile`.
 - Sources must be available when creating the SRPM; Fedora build chroots have no internet access.
+- If Fedora documentation cannot be fetched, stop and ask the user to provide a local copy under `docs/`; do not substitute unverified or stale content.
 
 ## External References
 
 | Need | File |
 | --- | --- |
 | End-user installation | `README.md` |
-| Development | `docs/development.md` |
+| Development and packaging | `docs/development.md` |
+| Toolchain and commands | `docs/toolchain.md` |
 | COPR setup | `docs/copr.md` |
-| Release process | `docs/release.md` |
-| Fedora packaging policy notes | `docs/packaging.md` |
