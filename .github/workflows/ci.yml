@@ -90,13 +90,15 @@ jobs:
       COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
       COPR_PROJECT: zeldrisho/packages
     steps:
-      - name: Install COPR client and Python
-        run: dnf -y install copr-cli python3
+      - name: Install COPR client, Git and Python
+        run: dnf -y install copr-cli git python3
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Trust workspace for Git checks in the container
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Sync changed package recipes and submit builds
         shell: bash
         run: |
