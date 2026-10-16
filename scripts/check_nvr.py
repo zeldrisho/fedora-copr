@@ -49,8 +49,10 @@ def spec_values(text: str) -> tuple[str, str]:
 def is_authorized_initial_release_reset(current: str, previous: str) -> bool:
     """Allow a verified initial-release reset to Release 1 for the same Version.
 
-    The current spec must retain the exact changelog marker documenting that
-    prior COPR builds were withdrawn and confirmed not downloaded or installed.
+    The current spec must contain the exact changelog marker documenting that
+    prior COPR builds were withdrawn and confirmed not downloaded or installed,
+    and the previous spec must not: the marker authorizes one reset, not every
+    later change that leaves Release at 1.
     """
     try:
         current_version, current_release = spec_values(current)
@@ -61,6 +63,7 @@ def is_authorized_initial_release_reset(current: str, previous: str) -> bool:
         current_version == previous_version
         and current_release in {"1", "1%{?dist}"}
         and INITIAL_RELEASE_RESET_MARKER in current
+        and INITIAL_RELEASE_RESET_MARKER not in previous
     )
 
 

@@ -98,6 +98,13 @@ class ValidationTests(unittest.TestCase):
             authorized.replace("Version: 1.7.12", "Version: 1.7.13"), previous
         ))
 
+    def test_initial_release_reset_is_not_reusable_after_it_lands(self):
+        spec = (
+            "Version: 1.7.12\nRelease: 1%{?dist}\n%changelog\n"
+            f"- {check_nvr.INITIAL_RELEASE_RESET_MARKER}\n"
+        )
+        self.assertFalse(check_nvr.is_authorized_initial_release_reset(spec, spec))
+
     def test_check_accepts_verified_initial_release_reset(self):
         current = (
             "Version: 1.7.12\nRelease: 1%{?dist}\n%changelog\n"
