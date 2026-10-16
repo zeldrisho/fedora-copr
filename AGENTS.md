@@ -24,5 +24,7 @@
 | Need | File |
 | --- | --- |
 | End-user installation | `README.md` |
-| Development and COPR setup | `docs/development.md` |
-| Fedora packaging policy notes | `docs/fedora-packaging.md` |
+| Development | `docs/development.md` |
+| COPR setup | `docs/copr.md` |
+| Release process | `docs/release.md` |
+| Fedora packaging policy notes | `docs/packaging.md` |

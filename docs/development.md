@@ -1,49 +1,57 @@
-# Package development and COPR staging
+# Development
 
-## Repository layout and Fedora policy
+This repository packages upstream software as ordinary Fedora RPM specs and stages builds on COPR. It follows the root layout of `copr-fedora`—project metadata under `.copr/`, package definitions under `packages/`, helper scripts under `scripts/`, and CI under `.github/workflows/`. GitHub Actions validates changes and automatically syncs/submits COPR builds after successful pushes to `main`; see [COPR setup](copr.md) for the one-time credential configuration.
 
-Each RPM is an independent Fedora spec at `packages/<name>/<name>.spec`. The package directory, spec filename, and `Name:` tag must agree. The initial repository may have no package directories.
+## Repository layout
 
-Specs must remain plain Fedora-submittable RPM specs: no COPR-only conditionals or rpkg templates. COPR-specific integration belongs only in `.copr/Makefile`. Follow the [Fedora Packaging Guidelines](https://docs.fedoraproject.org/en-US/packaging-guidelines/) and [Package Maintainers documentation](https://docs.fedoraproject.org/en-US/package-maintainers/) for package requirements and submission procedures.
-
-The `.copr/Makefile` implements the `srpm` target expected by COPR's SCM + `make_srpm` method. COPR invokes it in the package subdirectory and passes `spec` and `outdir`. It uses `spectool -g -C "$(CURDIR)"` so downloaded sources are in the current directory, then calls `rpmbuild -bs` with `_sourcedir` set to that directory and `_srcrpmdir` set to the requested output directory.
-
-Sources are downloaded while preparing the SRPM; the RPM build itself must not need network access. The same Makefile target is used locally and in CI. The validator (`scripts/validate.py`) parses each spec with `rpmspec -P`, checks naming agreement, builds an SRPM, and runs rpmlint against the spec and SRPM. An empty `packages/` passes validation.
-
-For spec-writing policy, source integrity, dependencies, Go packaging, file layout, and validation expectations, see [Fedora packaging notes](fedora-packaging.md). The `actionlint` spec's Go dependency and license workflow is documented there as well.
-
-## Local development
-
-Install the tools on Fedora:
-
-```sh
-sudo dnf install rpm-build rpmdevtools rpmlint make python3 go go-rpm-macros go-vendor-tools go2rpm rubygem-ronn-ng
+```text
+.copr/                  COPR SRPM Makefile and project metadata
+.github/workflows/      Pull-request package validation
+packages/<name>/        Fedora spec and package-specific sources/docs
+scripts/                Package validation helpers
+docs/                   Development, packaging, COPR, release guides
 ```
 
-Run package validation from any directory:
+Each package directory, spec filename, and spec `Name:` must agree. Keep specs Fedora-submittable; COPR-specific behavior belongs in `.copr/Makefile`, not in a spec.
+
+## Install tools
+
+Separate repository-wide development tools from package build dependencies. A package's `BuildRequires:` in its spec is the source of truth for what the RPM build needs.
+
+### Core repository tools
+
+These tools are used to validate specs, create SRPMs, and run the repository helpers:
 
 ```sh
-./scripts/validate.py
+sudo dnf install rpm-build rpmdevtools rpmlint make
 ```
 
-To build one package SRPM manually, run the target from its package subdirectory:
+`rpmdevtools` supplies `spectool`, which the shared COPR Makefile uses to stage declared sources. Git is useful for normal repository work, but the validation command itself does not require it.
+
+### Package-specific tools
+
+Install these on the host only when you need to build or maintain that package locally. COPR installs the package's declared `BuildRequires:` in its build environment.
+
+For **actionlint**, the spec's build requirements are Go RPM macros, Go Vendor Tools, GNU Make, and the `ronn-ng` man-page generator. On Fedora, install them with:
 
 ```sh
-cd packages/<name>
-make -f ../../.copr/Makefile srpm spec=<name>.spec outdir=/tmp/srpms
+sudo dnf install go go-rpm-macros go-vendor-tools make rubygem-ronn-ng
 ```
 
-## One-time COPR project setup
+The upstream archive and generated Go vendor archive are already checked in/downloaded as SRPM sources; Go module downloads are not needed during the RPM build. `go2rpm` is an optional helper for package generation or maintenance, not a declared build requirement. See [actionlint package notes](../packages/actionlint/README.md) for vendor updates.
 
-Configure COPR project **`zeldrisho/packages`** in the COPR web UI:
+## Common tasks
 
-1. Select SCM as the source, using this GitHub repository. Use the repository `.copr/Makefile` for the `make srpm` method.
-2. Configure the package subdirectory as `packages/<name>` and the spec file as `<name>.spec`.
-3. Enable `fedora-44-x86_64`, `fedora-45-x86_64`, and `fedora-rawhide-x86_64`.
-4. Enable **fedora-review**.
-5. Turn off **internet access during builds**. Source acquisition happens when creating the SRPM, not inside the isolated package build.
-6. Enable **follow Fedora branching**.
-7. Turn **AppStream** off.
-8. Configure and verify the GitHub webhook for the repository.
+```sh
+make list
+make validate
+make srpm PACKAGE=actionlint
+```
 
-COPR's [user documentation](https://docs.copr.fedorainfracloud.org/user_documentation.html) describes SCM and `make srpm`. These settings are staging configuration only; they must not introduce COPR behavior into Fedora specs.
+`make validate` parses each spec, creates an SRPM through the same `.copr/Makefile` target used by COPR, and runs rpmlint. `make srpm` creates a source RPM locally. COPR performs binary builds in its configured build environments; inspect their logs and test successful RPMs before relying on a release.
+
+## Further reading
+
+- [Fedora packaging policy](packaging.md)
+- [COPR setup](copr.md)
+- [Release process](release.md)

@@ -1,0 +1,4 @@
+# Source1 is intentionally a repository-local, generated Go vendor archive,
+# included in the SRPM so the Fedora build is offline-capable. rpmlint flags
+# every local-file Source tag as invalid-url; suppress only this exact source.
+addFilter(r"invalid-url Source1: actionlint-[0-9.]+-vendor\.tar\.bz2")

@@ -7,7 +7,7 @@ Version:        1.7.12
 %gometa -L -f
 
 Name:           actionlint
-Release:        %autorelease
+Release:        2%{?dist}
 Summary:        Static checker for GitHub Actions workflow files
 
 License:        Apache-2.0 AND BSD-3-Clause AND MIT
@@ -57,4 +57,5 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %{_mandir}/man1/actionlint.1*
 
 %changelog
-%autochangelog
+* Fri Oct 16 2026 Zeldris <80939130+zeldrisho@users.noreply.github.com> - 1.7.12-2
+- Add Fedora RPM packaging for actionlint

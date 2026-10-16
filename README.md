@@ -1,38 +1,36 @@
 # Fedora packages from COPR
 
-This repository publishes Fedora RPM packages through the [`zeldrisho/packages` COPR repository](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/). Browse the [COPR project page](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/) to see which packages are currently available and supported by your Fedora release.
+This repository contains ordinary Fedora RPM specs and stages package builds in the [`zeldrisho/packages` COPR repository](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/). Browse the project page for packages currently available for your Fedora release.
 
 ## Install
 
-Enable the COPR repository and install a package with DNF:
+Enable the COPR repository and install a package:
 
 ```sh
 sudo dnf copr enable zeldrisho/packages
 sudo dnf install <package-name>
 ```
 
-Replace `<package-name>` with the RPM name shown on the project page. Check the project page for current build availability for your Fedora release.
-
-## Update or remove
-
-Upgrade packages from this COPR along with other system packages:
+For example, to install actionlint when a build is available for your Fedora release:
 
 ```sh
-sudo dnf upgrade
+sudo dnf install actionlint
 ```
 
-Remove a package:
-
-```sh
-sudo dnf remove <package-name>
-```
-
-Disable this COPR repository if you no longer want to receive packages from it:
+Check the COPR project page for current build status and release availability. Upgrade packages with `sudo dnf upgrade`; remove one with `sudo dnf remove <package-name>`. Disable the repository with:
 
 ```sh
 sudo dnf copr disable zeldrisho/packages
 ```
 
+## Repository and contribution guides
+
+- [Development](docs/development.md): tools, validation, and SRPM creation.
+- [Fedora packaging policy](docs/packaging.md): spec, source, dependency, and file conventions.
+- [COPR setup](docs/copr.md): SCM package entry and project settings.
+- [Release process](docs/release.md): updating, building, and verifying packages.
+- [Actionlint package notes](packages/actionlint/README.md): vendored Go sources and upstream docs.
+
 ## License
 
-[MIT](LICENSE).
+Repository documentation and packaging infrastructure are licensed under [MIT](LICENSE). Each packaged application retains its own upstream license.

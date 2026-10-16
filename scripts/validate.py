@@ -12,6 +12,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGES = ROOT / "packages"
 MAKEFILE = ROOT / ".copr" / "Makefile"
+RPMLINTRC = ROOT / "scripts" / "rpmlintrc"
 TOOLS = ("rpmspec", "rpmbuild", "spectool", "rpmlint", "make")
 
 
@@ -82,7 +83,7 @@ def main() -> None:
             srpms = sorted(outdir.glob("*.src.rpm"))
             if not srpms:
                 fail(f"SRPM target produced no source RPM for {name}")
-            run(["rpmlint", str(spec), *(str(srpm) for srpm in srpms)])
+            run(["rpmlint", "--rpmlintrc", str(RPMLINTRC), str(spec), *(str(srpm) for srpm in srpms)])
         validated += 1
 
     print(f"Validated {validated} package(s).")

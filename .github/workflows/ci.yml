@@ -2,6 +2,14 @@ name: CI
 
 on:
   pull_request:
+  push:
+    branches: [main]
+    paths:
+      - '.copr/**'
+      - '.github/workflows/ci.yml'
+      - 'packages/**'
+      - 'scripts/**'
+      - 'Makefile'
 
 permissions:
   contents: read
@@ -12,10 +20,60 @@ jobs:
     container: fedora:latest
     steps:
       - name: Install RPM validation tools
-        run: dnf -y install git make python3 rpm-build rpmdevtools rpmlint
+        run: dnf -y install git go-rpm-macros go-vendor-tools make python3 rpm-build rpmdevtools rpmlint
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Validate packages
-        run: ./scripts/validate.py
+        run: make validate
+
+  publish:
+    if: github.event_name == 'push'
+    needs: validate
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    timeout-minutes: 360
+    concurrency:
+      group: copr-publish
+      cancel-in-progress: false
+    env:
+      COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
+      COPR_PROJECT: zeldrisho/packages
+    steps:
+      - name: Install COPR client
+        run: dnf -y install copr-cli
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Sync package recipe and submit build
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$COPR_CONFIG" || { echo 'COPR_CONFIG secret is required' >&2; exit 1; }
+          umask 077
+          config_path="$(mktemp)"
+          trap 'rm -f "$config_path"' EXIT
+          printf '%s\n' "$COPR_CONFIG" > "$config_path"
+          copr=(copr-cli --config "$config_path")
+
+          package=actionlint
+          common_args=(
+            "$COPR_PROJECT"
+            --name "$package"
+            --clone-url https://github.com/zeldrisho/fedora-copr.git
+            --commit main
+            --subdir "packages/$package"
+            --spec "$package.spec"
+            --type git
+            --method make_srpm
+            --webhook-rebuild off
+          )
+          package_names="$("${copr[@]}" list-package-names "$COPR_PROJECT")"
+          if grep -Fxq "$package" <<<"$package_names"; then
+            "${copr[@]}" edit-package-scm "${common_args[@]}"
+          else
+            "${copr[@]}" add-package-scm "${common_args[@]}"
+          fi
+          "${copr[@]}" build-package "$COPR_PROJECT" --name "$package"
