@@ -90,7 +90,7 @@ class ValidationTests(unittest.TestCase):
         )
         self.assertTrue(check_nvr.initial_release_reset(previous, spec))
         self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace("Release: 1", "Release: 2")))
-        self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace(check_nvr.INITIAL_RELEASE_RESET, "Initial release")))
+        self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace(check_nvr.INITIAL_RELEASE_RESET, "Reset release")))
         self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace("Version: 1.2", "Version: 1.3")))
 
 

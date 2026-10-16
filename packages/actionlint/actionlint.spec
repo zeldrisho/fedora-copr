@@ -7,7 +7,7 @@ Version:        1.7.12
 %gometa -L -f
 
 Name:           actionlint
-Release:        2%{?dist}
+Release:        1%{?dist}
 Summary:        Static checker for GitHub Actions workflow files
 
 License:        Apache-2.0 AND BSD-3-Clause AND MIT
@@ -62,10 +62,5 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %{_mandir}/man1/actionlint.1*
 
 %changelog
-* Fri Oct 16 2026 Zeldris <80939130+zeldrisho@users.noreply.github.com> - 1.7.12-2
-- Drop the deprecated LDFLAGS fallback when setting Go linker flags
-
 * Fri Oct 16 2026 Zeldris <80939130+zeldrisho@users.noreply.github.com> - 1.7.12-1
-- Start at the initial release; earlier COPR builds failed before publishing
-- Skip network-dependent tests in offline Fedora builds
-- Skip the no-new-version test case that needs live release metadata
+- Initial release

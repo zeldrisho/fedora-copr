@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_PATH = re.compile(r"^packages/([^/]+)/")
 IGNORED = re.compile(r"^packages/[^/]+/README\.md$")
-INITIAL_RELEASE_RESET = "Start at the initial release; earlier COPR builds failed before publishing"
+INITIAL_RELEASE_RESET = "Initial release"
 
 
 def git(*args: str, check: bool = True) -> str:
@@ -48,9 +48,10 @@ def spec_values(text: str) -> tuple[str, str]:
 def initial_release_reset(previous: str, current: str) -> bool:
     """Return whether the spec explicitly documents a reset to Release 1.
 
-    This exception is for an initial package release whose prior COPR builds
-    all failed before publishing. Require both the literal initial release and
-    a matching changelog note so ordinary EVR monotonicity remains enforced.
+    This exception is for a reset to the initial package release after prior
+    COPR builds were withdrawn before users downloaded or installed them.
+    Require Release 1 and an initial-release changelog entry so ordinary EVR
+    monotonicity remains enforced.
     """
     try:
         previous_version, _ = spec_values(previous)
@@ -124,7 +125,7 @@ def check(base: str) -> int:
             print(f"error: {name}: cannot compare package EVR: {exc}", file=sys.stderr)
             return 1
         if comparison <= 0 and initial_release_reset(previous, current):
-            print(f"{name}: accepted documented reset to initial Release 1 after unpublished failures")
+            print(f"{name}: accepted documented reset to initial Release 1 after withdrawn COPR builds")
             continue
         if comparison <= 0:
             files = [item for item in changed if item.startswith(f"packages/{name}/")]
