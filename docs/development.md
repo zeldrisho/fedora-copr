@@ -29,10 +29,10 @@ Specs must remain Fedora-submittable. Keep COPR behavior in `.copr/Makefile`, no
 2. Update `Version`, source declarations, patches, build requirements, and package documentation as needed. Regenerate checked-in vendored sources when required and keep them synchronized with the spec.
 3. Use explicit `Version` and `Release` fields with a maintained `%changelog`; this repository's COPR SRPM flow does not process `%autorelease` or `%autochangelog`.
 4. Ensure all sources are available when creating the SRPM. Binary RPM builds must work offline; do not fetch sources or Go modules during build or test phases. Keep `%check` deterministic and offline. Document and narrowly skip tests that require network access or unavailable release metadata.
-5. For build-relevant changes to an existing package, increment `Release` and add a changelog entry. Do not bump for documentation-only changes or COPR configuration alone.
+5. For build-relevant changes to an existing package, increment `Release` and add a changelog entry, except when correcting an unpublished initial release: if every prior COPR build failed before publishing and no package with that EVR was published, keep `Release: 1` and update its existing initial-release changelog entry. Do not bump for documentation-only changes or COPR configuration alone.
 6. Run `make validate`, then build and review a binary RPM as described in the [toolchain guide](toolchain.md). Check its metadata and files, and smoke-test the installed command where practical.
 
-Pull-request CI checks that RPM considers the new Version-Release greater than the merge-base value. The one-time exception is a documented reset to Release 1 when all earlier COPR builds failed before publishing; the checker requires the matching changelog note. Never reuse a version-release that has been published with different package contents.
+Pull-request CI checks that RPM considers the new Version-Release greater than the merge-base value. The checker permits a documented reset to Release 1 when all earlier COPR builds failed before publishing; this also allows correcting that unpublished initial release without a bump. The matching initial-release changelog note must remain in the current spec. Never reuse a version-release that has been published with different package contents.
 
 ## Build and publish
 
