@@ -81,6 +81,7 @@ class ValidationTests(unittest.TestCase):
             check_nvr.spec_values("Version: 1\n")
 
     def test_initial_release_reset_requires_release_one_and_changelog_note(self):
+        """Allow a reset only with the same version, Release 1, and its changelog note."""
         previous = "Version: 1.2\nRelease: 2%{?dist}\n"
         spec = (
             "Version: 1.2\nRelease: 1%{?dist}\n%changelog\n"
