@@ -46,6 +46,16 @@ jobs:
           (cd packages/actionlint && make -f ../../.copr/Makefile srpm \
             spec=actionlint.spec outdir=/tmp/srpms)
           rpmbuild --rebuild /tmp/srpms/actionlint-*.src.rpm
+          find ~/rpmbuild/RPMS -name '*.rpm' -print0 | xargs -0 -r rpmlint
+          rpm_file=$(find ~/rpmbuild/RPMS -name 'actionlint-[0-9]*.rpm' -print -quit)
+          test -n "$rpm_file"
+          rpm -qp --licensefiles "$rpm_file"
+          rpm -qp --provides "$rpm_file" | grep -q '^bundled(golang('
+          rpm -qp --scripts "$rpm_file"
+          dnf -y install "$rpm_file"
+          actionlint --version
+          printf 'name: CI smoke test\non:\n  push:\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hello\n' > /tmp/actionlint-smoke.yml
+          actionlint /tmp/actionlint-smoke.yml
 
   publish:
     if: github.event_name == 'push'

@@ -13,7 +13,8 @@ Summary:        Static checker for GitHub Actions workflow files
 License:        Apache-2.0 AND BSD-3-Clause AND MIT
 URL:            %{gourl}
 Source0:        %{gosource}
-# Checked-in generated source keeps Fedora builds offline.
+# Generated with Go Vendor Tools (go_vendor_archive create actionlint.spec).
+# Checked-in archive keeps Fedora builds offline.
 Source1:        %{archivename}-vendor.tar.bz2
 Source2:        go-vendor-tools.toml
 
