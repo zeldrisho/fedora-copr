@@ -69,12 +69,12 @@ def check(base: str) -> int:
     Compare committed HEAD with its merge base with the Git ref base, ignoring
     each package's top-level README.md. Skip packages whose spec is absent or
     empty at either revision. Print results and return 0 on success, including
-    when no packages need comparison, or 1 for a missing merge base, invalid
-    fields, RPM subprocess failure, or a version-release that did not increase.
+    when no packages need comparison, or 1 for invalid fields, RPM subprocess
+    failure, or a version-release that did not increase.
 
     Git RuntimeError and process startup OSError exceptions propagate.
     """
-    mergebase = git("merge-base", base, "HEAD", check=False).strip()
+    mergebase = git("merge-base", base, "HEAD").strip()
     if not mergebase:
         print(f"error: cannot find a merge base with {base}; fetch more history", file=sys.stderr)
         return 1

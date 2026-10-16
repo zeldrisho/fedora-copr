@@ -27,6 +27,8 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Trust workspace for Git checks in the container
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Run validation unit tests
         run: python3 -m unittest discover -s tests -v
       - name: Check package EVR bumps

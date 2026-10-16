@@ -68,6 +68,12 @@ class ValidationTests(unittest.TestCase):
                         validate.validate_package(package, root / "temporary")
             self.assertIn("exactly one SRPM", str(fail.call_args.args[0]))
 
+    def test_merge_base_errors_are_not_hidden(self):
+        with patch.object(check_nvr, "git", side_effect=RuntimeError("dubious ownership")) as git:
+            with self.assertRaisesRegex(RuntimeError, "dubious ownership"):
+                check_nvr.check("base")
+        git.assert_called_once_with("merge-base", "base", "HEAD")
+
     def test_release_values_require_literal_fields(self):
         self.assertEqual(check_nvr.spec_values("Version: 1.2\nRelease: 3%{?dist}\n"),
                          ("1.2", "3%{?dist}"))
