@@ -35,6 +35,7 @@ tar -xf %{S:1}
 
 %build
 %global gomodulesmode GO111MODULE=on
+export GO_LDFLAGS="${GO_LDFLAGS:-${LDFLAGS:-}} -X %{goipath}.version=%{version}"
 %gobuild -o %{gobuilddir}/bin/actionlint %{goipath}/cmd/actionlint
 %make_build man
 

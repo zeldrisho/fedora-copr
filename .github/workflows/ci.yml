@@ -72,7 +72,7 @@ jobs:
             "$COPR_PROJECT"
             --name "$package"
             --clone-url https://github.com/zeldrisho/fedora-copr.git
-            --commit main
+            --commit "$GITHUB_SHA"
             --subdir "packages/$package"
             --spec "$package.spec"
             --type git
