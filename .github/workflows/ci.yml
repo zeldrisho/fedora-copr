@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - name: Install RPM validation tools
+        run: dnf -y install git make python3 rpm-build rpmdevtools rpmlint
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate packages
+        run: ./scripts/validate.py
