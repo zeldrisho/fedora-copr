@@ -71,7 +71,7 @@ Watch the Bugzilla report for your first package. You should get notifications o
 
 Before proceeding, please sync your account by login on [Fedora Package Sources](https://src.fedoraproject.org/) using your FAS credentials.
 
-If you are becoming a maintainer for a new package, instead of being a co-maintainer, use [fedpkg](https://forge.fedoraproject.org/packaging/fedpkg) to request a new git repository for your package. The sub-command is `fedpkg request-repo` which includes help text for setting up the distgit API token the command requires. When creating your API-key choose at least *Read and write* permissions for *issue*. You will probably want the token to have additional permissions to support other package-maintenance tasks. You must specify the repository name and review bug number. For example:
+If you are becoming a maintainer for a new package, instead of being a co-maintainer, use [fedpkg](https://forge.fedoraproject.org/packaging/fedpkg) to request a new git repository for your package. The sub-command is `fedpkg request-repo`, which requires a Forgejo API token with at least *Read and write* permissions for *issue*. Configure the token with `fedpkg set-forgejo-token`. You will probably want the token to have additional permissions to support other package-maintenance tasks. You must specify the repository name and review bug number. For example:
 
 ```
 fedpkg request-repo python-prometheus_client 1590452

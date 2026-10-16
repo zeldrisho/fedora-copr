@@ -85,6 +85,7 @@ class ValidationTests(unittest.TestCase):
         previous = "Version: 1.2\nRelease: 2%{?dist}\n"
         spec = (
             "Version: 1.2\nRelease: 1%{?dist}\n%changelog\n"
+            "* Wed Jan 01 2025 Packager <packager@example.com> - 1.2-1\n"
             f"- {check_nvr.INITIAL_RELEASE_RESET}\n"
         )
         self.assertTrue(check_nvr.initial_release_reset(previous, spec))

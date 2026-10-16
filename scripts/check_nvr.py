@@ -57,10 +57,13 @@ def initial_release_reset(previous: str, current: str) -> bool:
         current_version, release = spec_values(current)
     except ValueError:
         return False
+    changelog = current.partition("%changelog")[2]
+    entries = re.split(r"(?m)^\*\s+", changelog, maxsplit=2)
     return (
         previous_version == current_version
         and release == "1%{?dist}"
-        and INITIAL_RELEASE_RESET in current
+        and len(entries) > 1
+        and INITIAL_RELEASE_RESET in entries[1]
     )
 
 

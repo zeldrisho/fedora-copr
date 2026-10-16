@@ -49,7 +49,7 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %if %{with check}
 # Exclude the generator utility whose tests require Git metadata omitted from the release archive.
 # Skip tests that fetch live HTTP resources; Fedora builds run offline.
-%gotest -skip '^(TestDetectErrorBadRequest|TestFetchError|TestFetchRemoteYAML|TestWriteOutdatedActionAsJSONL|TestDetectNewRelease|TestDetectNoRelease|TestCouldNotFetch|TestFetchURL)$' . ./cmd/actionlint ./scripts/generate-availability ./scripts/generate-popular-actions ./scripts/generate-webhook-events
+%gotest -skip '^(TestDetectErrorBadRequest|TestFetchError|TestFetchRemoteYAML|TestWriteOutdatedActionAsJSONL|TestDetectNewRelease|TestDetectNoRelease/no_new_version\.json|TestCouldNotFetch|TestFetchURL)$' . ./cmd/actionlint ./scripts/generate-availability ./scripts/generate-popular-actions ./scripts/generate-webhook-events
 %endif
 
 %files -f %{go_vendor_license_filelist}
