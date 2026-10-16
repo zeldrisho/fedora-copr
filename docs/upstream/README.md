@@ -1,6 +1,6 @@
 # Upstream packaging references
 
-These copies preserve upstream guidance for offline reference. Consult the canonical source URLs recorded in each document when checking current policy; Fedora guidelines can change.
+These local copies are Fedora packaging and licensing guidance sourced from `docs.fedoraproject.org`, preserved for offline reference. COPR documentation is not part of this directory; consult its live documentation at `docs.copr.fedorainfracloud.org` when needed. Consult the canonical source URLs recorded in each Fedora document when checking current policy; Fedora guidelines can change.
 
 ## Core packaging references
 

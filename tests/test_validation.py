@@ -17,6 +17,7 @@ def load_script(name: str, filename: str):
 
 validate = load_script("validate", "validate.py")
 check_nvr = load_script("check_nvr", "check_nvr.py")
+changed_packages = load_script("changed_packages", "changed_packages.py")
 
 
 class ValidationTests(unittest.TestCase):
@@ -80,18 +81,18 @@ class ValidationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             check_nvr.spec_values("Version: 1\n")
 
-    def test_initial_release_reset_requires_release_one_and_changelog_note(self):
-        """Allow a reset only with the same version, Release 1, and its changelog note."""
-        previous = "Version: 1.2\nRelease: 2%{?dist}\n"
-        spec = (
-            "Version: 1.2\nRelease: 1%{?dist}\n%changelog\n"
-            "* Wed Jan 01 2025 Packager <packager@example.com> - 1.2-1\n"
-            f"- {check_nvr.INITIAL_RELEASE_RESET}\n"
-        )
-        self.assertTrue(check_nvr.initial_release_reset(previous, spec))
-        self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace("Release: 1", "Release: 2")))
-        self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace(check_nvr.INITIAL_RELEASE_RESET, "Reset release")))
-        self.assertFalse(check_nvr.initial_release_reset(previous, spec.replace("Version: 1.2", "Version: 1.3")))
+    def test_changed_package_selection_ignores_readme_and_includes_shared_changes(self):
+        with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
+            with patch.object(changed_packages, "git", return_value="packages/demo/README.md\n"):
+                self.assertEqual(changed_packages.changed_packages("base"), [])
+            with patch.object(changed_packages, "git", return_value=".copr/Makefile\n"):
+                self.assertEqual(changed_packages.changed_packages("base"), ["demo", "other"])
+            with patch.object(changed_packages, "git", return_value="packages/other/other.spec\n"):
+                self.assertEqual(changed_packages.changed_packages("base"), ["other"])
+
+    def test_initial_push_selects_all_packages(self):
+        with patch.object(changed_packages, "package_names", return_value=["demo"]):
+            self.assertEqual(changed_packages.changed_packages("0" * 40), ["demo"])
 
 
 if __name__ == "__main__":

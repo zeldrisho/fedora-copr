@@ -13,7 +13,7 @@ tests/                  Python tests for repository helpers
 docs/                   Development, toolchain, COPR, and upstream guides
 ```
 
-GitHub Actions validates pull requests and publishes successful pushes to `main`. Pull-request CI creates an SRPM, checks it with rpmlint, and builds the binary RPM locally in Fedora; it does not expose COPR credentials or submit PR builds. After a validated push to `main`, a separate job synchronizes the COPR SCM recipe and submits the build. COPR's configured chroots remain authoritative for published builds.
+GitHub Actions validates pull requests and publishes successful pushes to `main`. CI checks EVR increases, creates and lints SRPMs, and builds binary RPMs locally in Fedora; pull requests do not receive COPR credentials or submit builds. After a validated push to `main`, a separate job synchronizes SCM recipes and submits builds only for packages with changed build inputs. Changes to shared build/CI tooling select every package; package README-only changes select none. COPR's configured chroots remain authoritative for published builds.
 
 Every package lives in `packages/<name>/` and uses `packages/<name>/<name>.spec`; the directory, spec basename, and RPM `Name:` must match. Keep specs Fedora-submittable and COPR-specific behavior in `.copr/Makefile`. Put package-specific sources and maintenance notes alongside the spec. Check [actionlint's package notes](../packages/actionlint/README.md) before changing its checked-in Go vendor archive.
 
