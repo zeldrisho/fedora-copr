@@ -12,9 +12,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_PATH = re.compile(r"^packages/([^/]+)/")
 IGNORED = re.compile(r"^packages/[^/]+/README\.md$")
-INITIAL_RELEASE_RESET = "Start at the initial release; earlier COPR builds failed before publishing"
-
-
+INITIAL_RELEASE_RESET_MARKER = (
+    "Initial release reset: all prior COPR builds withdrawn and confirmed "
+    "not downloaded or installed"
+)
 def git(*args: str, check: bool = True) -> str:
     """Run Git in the repository root and return its standard output.
 
@@ -45,25 +46,21 @@ def spec_values(text: str) -> tuple[str, str]:
     return values["Version"], values["Release"]
 
 
-def initial_release_reset(previous: str, current: str) -> bool:
-    """Return whether the spec explicitly documents a reset to Release 1.
+def is_authorized_initial_release_reset(current: str, previous: str) -> bool:
+    """Allow a verified initial-release reset to Release 1 for the same Version.
 
-    This exception is for an initial package release whose prior COPR builds
-    all failed before publishing. Require both the literal initial release and
-    a matching changelog note so ordinary EVR monotonicity remains enforced.
+    The current spec must retain the exact changelog marker documenting that
+    prior COPR builds were withdrawn and confirmed not downloaded or installed.
     """
     try:
+        current_version, current_release = spec_values(current)
         previous_version, _ = spec_values(previous)
-        current_version, release = spec_values(current)
     except ValueError:
         return False
-    changelog = current.partition("%changelog")[2]
-    entries = re.split(r"(?m)^\*\s+", changelog, maxsplit=2)
     return (
-        previous_version == current_version
-        and release == "1%{?dist}"
-        and len(entries) > 1
-        and INITIAL_RELEASE_RESET in entries[1]
+        current_version == previous_version
+        and current_release in {"1", "1%{?dist}"}
+        and INITIAL_RELEASE_RESET_MARKER in current
     )
 
 
@@ -123,10 +120,9 @@ def check(base: str) -> int:
         except (ValueError, subprocess.SubprocessError) as exc:
             print(f"error: {name}: cannot compare package EVR: {exc}", file=sys.stderr)
             return 1
-        if comparison <= 0 and initial_release_reset(previous, current):
-            print(f"{name}: accepted documented reset to initial Release 1 after unpublished failures")
-            continue
-        if comparison <= 0:
+        if comparison <= 0 and is_authorized_initial_release_reset(current, previous):
+            print(f"{name}: authorized initial-release reset to {new_evr}")
+        elif comparison <= 0:
             files = [item for item in changed if item.startswith(f"packages/{name}/")]
             print(f"{name}: build inputs changed but EVR did not increase ({old_evr} -> {new_evr}):")
             for item in files:

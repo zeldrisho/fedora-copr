@@ -22,7 +22,7 @@ sudo dnf install go go-rpm-macros go-vendor-tools make rubygem-ronn-ng
 
 CI installs RPM build dependencies from the spec before building the binary RPM. `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
 
-The upstream source archive and generated Go vendor archive are included as SRPM sources; Go modules are not fetched during the build. See [actionlint package notes](../packages/actionlint/README.md) when updating the vendored source.
+The upstream source archive and generated Go vendor archive are included as SRPM sources; Go modules are not fetched during the build. See [actionlint package notes](../packages/actionlint/README.md) and the [Go Packaging Guidelines](upstream/golang.md) when updating vendored sources and licensing.
 
 ## Common commands
 
@@ -33,6 +33,28 @@ make srpm PACKAGE=actionlint
 python3 -m unittest discover -s tests -v
 ```
 
-`make validate` runs repository checks, creates an SRPM through the same shared Makefile target used by COPR, and runs rpmlint. `make srpm` writes a local source RPM under `dist/srpm` by default. To build a binary RPM from an SRPM, install its declared build dependencies and run `rpmbuild --rebuild <path-to-src.rpm>`.
+`make validate` runs repository checks, creates an SRPM through the same shared Makefile target used by COPR, and runs rpmlint on the spec and SRPM. It does not build or lint binary RPMs. `make srpm` writes a local source RPM under `dist/srpm` by default.
+
+## Build and inspect binary RPMs
+
+Build in a Fedora environment. Install the spec's declared build dependencies, including dependencies requested dynamically by `%generate_buildrequires` where applicable, then rebuild the SRPM:
+
+```sh
+sudo dnf builddep packages/<name>/<name>.spec
+rpmbuild --rebuild <path-to-src.rpm>
+```
+
+Review the resulting binary RPMs (and any debuginfo/subpackages):
+
+```sh
+rpmlint /path/to/*.rpm
+rpm -qp --info /path/to/package.rpm
+rpm -qp --requires /path/to/package.rpm
+rpm -qp --provides /path/to/package.rpm
+rpm -qp --list /path/to/package.rpm
+rpm -qp --licensefiles /path/to/package.rpm
+```
+
+Confirm the metadata, dependencies, provides, installed paths, and license files match the spec and upstream. Install the RPM in a clean Fedora environment and smoke-test the packaged command where practical. A host rebuild is not an isolated build and does not by itself demonstrate offline behavior; CI/COPR build constraints and logs remain relevant.
 
 For repository structure, CI flow, and package updates, see [package development](development.md).
