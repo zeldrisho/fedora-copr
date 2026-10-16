@@ -7,7 +7,7 @@ Version:        1.7.12
 %gometa -L -f
 
 Name:           actionlint
-Release:        2%{?dist}
+Release:        1%{?dist}
 Summary:        Static checker for GitHub Actions workflow files
 
 License:        Apache-2.0 AND BSD-3-Clause AND MIT
@@ -48,8 +48,8 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %go_vendor_license_check -c %{S:2}
 %if %{with check}
 # Exclude the generator utility whose tests require Git metadata omitted from the release archive.
-# Its live-HTTP test is skipped because Fedora builds run offline.
-%gotest -skip '^TestDetectErrorBadRequest$' . ./cmd/actionlint ./scripts/generate-availability ./scripts/generate-popular-actions ./scripts/generate-webhook-events
+# Skip tests that fetch live HTTP resources; Fedora builds run offline.
+%gotest -skip '^(TestDetectErrorBadRequest|TestFetchError|TestFetchRemoteYAML|TestWriteOutdatedActionAsJSONL|TestDetectNewRelease|TestDetectNoRelease/no_new_version\.json|TestCouldNotFetch|TestFetchURL)$' . ./cmd/actionlint ./scripts/generate-availability ./scripts/generate-popular-actions ./scripts/generate-webhook-events
 %endif
 
 %files -f %{go_vendor_license_filelist}
@@ -58,5 +58,6 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %{_mandir}/man1/actionlint.1*
 
 %changelog
-* Fri Oct 16 2026 Zeldris <80939130+zeldrisho@users.noreply.github.com> - 1.7.12-2
-- Add Fedora RPM packaging for actionlint
+* Fri Oct 16 2026 Zeldris <80939130+zeldrisho@users.noreply.github.com> - 1.7.12-1
+- Start at the initial release; earlier COPR builds failed before publishing
+- Skip network-dependent tests in offline Fedora builds

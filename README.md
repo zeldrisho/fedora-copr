@@ -23,14 +23,6 @@ Check the COPR project page for current build status and release availability. U
 sudo dnf copr disable zeldrisho/packages
 ```
 
-## Repository and contribution guides
-
-- [Development](docs/development.md): tools, validation, and SRPM creation.
-- [Fedora packaging policy](docs/packaging.md): spec, source, dependency, and file conventions.
-- [COPR setup](docs/copr.md): SCM package entry and project settings.
-- [Release process](docs/release.md): updating, building, and verifying packages.
-- [Actionlint package notes](packages/actionlint/README.md): vendored Go sources and upstream docs.
-
 ## License
 
 Repository documentation and packaging infrastructure are licensed under [MIT](LICENSE). Each packaged application retains its own upstream license.

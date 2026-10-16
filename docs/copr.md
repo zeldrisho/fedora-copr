@@ -1,6 +1,6 @@
 # COPR setup and publishing
 
-This repository stages Fedora-submittable RPMs in the existing COPR project [`zeldrisho/packages`](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/). GitHub Actions validates changes and, after a successful push to `main`, uses the COPR API to create or update the SCM package entry and submit a build. COPR uses the shared `.copr/Makefile` to prepare the SRPM.
+This repository stages Fedora-submittable RPMs in the existing COPR project [`zeldrisho/packages`](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/). COPR uses the shared `.copr/Makefile` to prepare the SRPM; the publishing workflow is described below.
 
 ## Package entry
 

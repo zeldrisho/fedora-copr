@@ -1,57 +1,39 @@
-# Development
+# Package development
 
-This repository packages upstream software as ordinary Fedora RPM specs and stages builds on COPR. It follows the root layout of `copr-fedora`—project metadata under `.copr/`, package definitions under `packages/`, helper scripts under `scripts/`, and CI under `.github/workflows/`. GitHub Actions validates changes and automatically syncs/submits COPR builds after successful pushes to `main`; see [COPR setup](copr.md) for the one-time credential configuration.
+This guide describes how to maintain packages in this repository. For Fedora's package-submission process, see the [Fedora new-package process](fedora-new-package-process.md). For local setup and commands, see the [toolchain guide](toolchain.md).
 
 ## Repository layout
 
 ```text
-.copr/                  COPR SRPM Makefile and project metadata
-.github/workflows/      Pull-request package validation
+.copr/                  Shared SRPM preparation and COPR project metadata
+.github/workflows/      Pull-request validation and main-branch publishing
 packages/<name>/        Fedora spec and package-specific sources/docs
-scripts/                Package validation helpers
-docs/                   Development, packaging, COPR, release guides
+scripts/                Repository validation helpers
+tests/                  Python tests for repository helpers
+docs/                   Development, toolchain, COPR, and upstream guides
 ```
 
-Each package directory, spec filename, and spec `Name:` must agree. Keep specs Fedora-submittable; COPR-specific behavior belongs in `.copr/Makefile`, not in a spec.
+GitHub Actions validates pull requests and publishes successful pushes to `main`. Pull-request CI creates an SRPM, checks it with rpmlint, and builds the binary RPM locally in Fedora; it does not expose COPR credentials or submit PR builds. After a validated push to `main`, a separate job synchronizes the COPR SCM recipe and submits the build. COPR's configured chroots remain authoritative for published builds.
 
-## Install tools
+Every package uses `packages/<name>/<name>.spec`, with the directory, spec basename, and RPM `Name:` aligned. Keep specs Fedora-submittable and COPR-specific behavior in `.copr/Makefile`.
 
-Separate repository-wide development tools from package build dependencies. A package's `BuildRequires:` in its spec is the source of truth for what the RPM build needs.
+## Package structure
 
-### Core repository tools
+Each package lives in `packages/<name>/` and has a matching `packages/<name>/<name>.spec`. Keep the spec's `Name:` consistent with both. Put package-specific sources and maintenance notes alongside the spec.
 
-These tools are used to validate specs, create SRPMs, and run the repository helpers:
+Specs must remain Fedora-submittable. Keep COPR behavior in `.copr/Makefile`, not in package specs. Check [actionlint's package notes](../packages/actionlint/README.md) before changing its checked-in Go vendor archive.
 
-```sh
-sudo dnf install rpm-build rpmdevtools rpmlint make
-```
+## Updating a package
 
-`rpmdevtools` supplies `spectool`, which the shared COPR Makefile uses to stage declared sources. Git is useful for normal repository work, but the validation command itself does not require it.
+1. Review the upstream release, source integrity, licensing, dependencies, and Fedora compatibility.
+2. Update `Version`, source declarations, patches, build requirements, and package documentation as needed. Regenerate checked-in vendored sources when required and keep them synchronized with the spec.
+3. Use explicit `Version` and `Release` fields with a maintained `%changelog`; this repository's COPR SRPM flow does not process `%autorelease` or `%autochangelog`.
+4. Ensure all sources are available when creating the SRPM. Binary RPM builds must work offline; do not fetch sources or Go modules during build or test phases. Keep `%check` deterministic and offline. Document and narrowly skip tests that require network access or unavailable release metadata.
+5. For build-relevant changes to an existing package, increment `Release` and add a changelog entry. Do not bump for documentation-only changes or COPR configuration alone.
+6. Run `make validate`, then build and review a binary RPM as described in the [toolchain guide](toolchain.md). Check its metadata and files, and smoke-test the installed command where practical.
 
-### Package-specific tools
+Pull-request CI checks that RPM considers the new Version-Release greater than the merge-base value. The one-time exception is a documented reset to Release 1 when all earlier COPR builds failed before publishing; the checker requires the matching changelog note. Never reuse a version-release that has been published with different package contents.
 
-Install these on the host only when you need to build or maintain that package locally. COPR installs the package's declared `BuildRequires:` in its build environment.
+## Build and publish
 
-For **actionlint**, the spec's build requirements are Go RPM macros, Go Vendor Tools, GNU Make, and the `ronn-ng` man-page generator. On Fedora, install them with:
-
-```sh
-sudo dnf install go go-rpm-macros go-vendor-tools make rubygem-ronn-ng
-```
-
-The upstream archive and generated Go vendor archive are already checked in/downloaded as SRPM sources; Go module downloads are not needed during the RPM build. `go2rpm` is an optional helper for package generation or maintenance, not a declared build requirement. See [actionlint package notes](../packages/actionlint/README.md) for vendor updates.
-
-## Common tasks
-
-```sh
-make list
-make validate
-make srpm PACKAGE=actionlint
-```
-
-`make validate` parses each spec, creates an SRPM through the same `.copr/Makefile` target used by COPR, and runs rpmlint. `make srpm` creates a source RPM locally. COPR performs binary builds in its configured build environments; inspect their logs and test successful RPMs before relying on a release.
-
-## Further reading
-
-- [Fedora packaging policy](packaging.md)
-- [COPR setup](copr.md)
-- [Release process](release.md)
+After merge, inspect the COPR build across its configured chroots; the local CI build does not replace those target builds. See [COPR setup](copr.md) for publishing details.
