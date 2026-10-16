@@ -17,11 +17,19 @@ TOOLS = ("rpmspec", "rpmbuild", "spectool", "rpmlint", "make")
 
 
 def fail(message: str) -> None:
+    """Print an error to standard error and raise SystemExit with status 1."""
     print(f"error: {message}", file=sys.stderr)
     raise SystemExit(1)
 
 
 def run(command: list[str], *, cwd: Path | None = None, capture: bool = False) -> str:
+    """Run a command in cwd, inheriting the working directory when it is None.
+
+    With capture=True, return standard output on success and forward both
+    captured streams to standard error on failure. Otherwise inherit the output
+    streams and return an empty string. A nonzero exit raises SystemExit with
+    the command's status; process startup OSError exceptions propagate.
+    """
     result = subprocess.run(
         command,
         cwd=cwd,
@@ -39,6 +47,17 @@ def run(command: list[str], *, cwd: Path | None = None, capture: bool = False) -
 
 
 def validate_package(package_dir: Path, temporary: Path) -> None:
+    """Check a package's spec, build one SRPM, and lint both in a scratch copy.
+
+    Expect a spec named after package_dir whose queried Name matches the directory
+    name. Create package and srpms subdirectories under temporary; both must not
+    already exist. Leave the copied sources and build artifacts there for the
+    caller to clean up.
+
+    Raise SystemExit(1) for a name mismatch or an SRPM count other than one, or
+    SystemExit with a failed command's status. File and process startup errors
+    propagate.
+    """
     name = package_dir.name
     spec_name = f"{name}.spec"
     temporary.mkdir(parents=True, exist_ok=True)
@@ -67,6 +86,13 @@ def validate_package(package_dir: Path, temporary: Path) -> None:
 
 
 def main() -> None:
+    """Validate every package using temporary directories cleaned up afterward.
+
+    Require all validation tools and the packages directory even when it is
+    empty. Raise SystemExit(1) for missing tools, directories, or expected specs;
+    package validation errors propagate. Print a summary on success, including
+    when no package directories exist.
+    """
     for tool in TOOLS:
         if shutil.which(tool) is None:
             fail(f"required tool is missing: {tool}")

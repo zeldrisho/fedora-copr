@@ -15,6 +15,11 @@ IGNORED = re.compile(r"^packages/[^/]+/README\.md$")
 
 
 def git(*args: str, check: bool = True) -> str:
+    """Run Git in the repository root and return its standard output.
+
+    Raise RuntimeError on a nonzero exit unless check is False, in which case
+    return the output even on failure. Process startup errors propagate.
+    """
     result = subprocess.run(
         ["git", *args], cwd=ROOT, text=True, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, check=False,
@@ -25,6 +30,11 @@ def git(*args: str, check: bool = True) -> str:
 
 
 def spec_values(text: str) -> tuple[str, str]:
+    """Return the first tokens of the spec's Version and Release fields.
+
+    Require exactly one match for each case-sensitive field at a line's start;
+    otherwise raise ValueError. RPM macros are returned without expansion.
+    """
     values: dict[str, str] = {}
     for key in ("Version", "Release"):
         matches = re.findall(rf"^{key}:\s*(\S+)", text, re.MULTILINE)
@@ -35,8 +45,16 @@ def spec_values(text: str) -> tuple[str, str]:
 
 
 def rpmvercmp(left: str, right: str) -> int:
+    """Compare version-release strings using RPM's ordering.
+
+    Return a negative integer, zero, or a positive integer when left is less
+    than, equal to, or greater than right. CalledProcessError propagates if RPM
+    fails, OSError if it cannot start, and ValueError if its output is not an
+    integer.
+    """
     # Escape Lua string contents before asking RPM to compare EVRs.
     def lua_string(value: str) -> str:
+        """Quote a Lua string, escaping backslashes and double quotes."""
         return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
     expression = f"%{{lua: print(rpm.vercmp({lua_string(left)}, {lua_string(right)}))}}"
@@ -46,6 +64,16 @@ def rpmvercmp(left: str, right: str) -> int:
 
 
 def check(base: str) -> int:
+    """Require version-release increases for packages changed since base.
+
+    Compare committed HEAD with its merge base with the Git ref base, ignoring
+    each package's top-level README.md. Skip packages whose spec is absent or
+    empty at either revision. Print results and return 0 on success, including
+    when no packages need comparison, or 1 for a missing merge base, invalid
+    fields, RPM subprocess failure, or a version-release that did not increase.
+
+    Git RuntimeError and process startup OSError exceptions propagate.
+    """
     mergebase = git("merge-base", base, "HEAD", check=False).strip()
     if not mergebase:
         print(f"error: cannot find a merge base with {base}; fetch more history", file=sys.stderr)
@@ -85,6 +113,11 @@ def check(base: str) -> int:
 
 
 def main() -> int:
+    """Parse the base ref from the command line and return the check status.
+
+    Report Git RuntimeError failures and return 1; process startup OSError
+    exceptions propagate. Argument parsing may raise SystemExit.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("base", help="base branch/ref to compare against")
     args = parser.parse_args()
