@@ -9,7 +9,7 @@ GitHub Actions creates or updates the actionlint SCM package entry using these s
 | COPR field | Value |
 |---|---|
 | Clone URL | `https://github.com/zeldrisho/fedora-copr.git` |
-| Committish | `main` |
+| Committish | Validated push commit (`GITHUB_SHA`) |
 | Subdirectory | `packages/actionlint` |
 | Spec file | `actionlint.spec` |
 | Build source | SCM |
@@ -34,7 +34,7 @@ Use the project's existing settings as authoritative; `.copr/project.toml` is do
 
 ## Enable automatic publishing
 
-The `CI` workflow runs validation for pull requests and pushes to `main`. After validation passes on `main`, it idempotently creates or updates the package SCM recipe and submits the COPR build. It disables COPR's native webhook rebuild for that entry so one Git push does not submit duplicate builds.
+The `CI` workflow runs validation for pull requests and qualifying pushes to `main` (its path filter excludes documentation-only changes). After validation passes on a qualifying push, it idempotently creates or updates the package SCM recipe using the exact validated commit (`GITHUB_SHA`) and submits the COPR build. It disables COPR's native webhook rebuild for that entry so one Git push does not submit duplicate builds.
 
 Configure the repository's GitHub Actions secret once:
 
