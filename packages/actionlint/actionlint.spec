@@ -63,4 +63,4 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 
 %changelog
 * Fri Oct 16 2026 Zeldris <80939130+zeldrisho@users.noreply.github.com> - 1.7.12-1
-- Initial release
+- Initial release reset: all prior COPR builds withdrawn and confirmed not downloaded or installed

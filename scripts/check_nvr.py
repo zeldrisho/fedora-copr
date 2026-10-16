@@ -12,6 +12,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_PATH = re.compile(r"^packages/([^/]+)/")
 IGNORED = re.compile(r"^packages/[^/]+/README\.md$")
+INITIAL_RELEASE_RESET_MARKER = (
+    "Initial release reset: all prior COPR builds withdrawn and confirmed "
+    "not downloaded or installed"
+)
 def git(*args: str, check: bool = True) -> str:
     """Run Git in the repository root and return its standard output.
 
@@ -40,6 +44,24 @@ def spec_values(text: str) -> tuple[str, str]:
             raise ValueError(f"expected one literal {key}: field, found {len(matches)}")
         values[key] = matches[0]
     return values["Version"], values["Release"]
+
+
+def is_authorized_initial_release_reset(current: str, previous: str) -> bool:
+    """Allow a verified initial-release reset to Release 1 for the same Version.
+
+    The current spec must retain the exact changelog marker documenting that
+    prior COPR builds were withdrawn and confirmed not downloaded or installed.
+    """
+    try:
+        current_version, current_release = spec_values(current)
+        previous_version, _ = spec_values(previous)
+    except ValueError:
+        return False
+    return (
+        current_version == previous_version
+        and current_release in {"1", "1%{?dist}"}
+        and INITIAL_RELEASE_RESET_MARKER in current
+    )
 
 
 def rpmvercmp(left: str, right: str) -> int:
@@ -98,7 +120,9 @@ def check(base: str) -> int:
         except (ValueError, subprocess.SubprocessError) as exc:
             print(f"error: {name}: cannot compare package EVR: {exc}", file=sys.stderr)
             return 1
-        if comparison <= 0:
+        if comparison <= 0 and is_authorized_initial_release_reset(current, previous):
+            print(f"{name}: authorized initial-release reset to {new_evr}")
+        elif comparison <= 0:
             files = [item for item in changed if item.startswith(f"packages/{name}/")]
             print(f"{name}: build inputs changed but EVR did not increase ({old_evr} -> {new_evr}):")
             for item in files:
