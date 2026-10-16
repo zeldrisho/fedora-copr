@@ -14,7 +14,7 @@
 
 COPR calls `rpmbuild -bs` through `.copr/Makefile`; this is not Fedora dist-git's rpmautospec processing pipeline. In this SCM flow `%autorelease` and `%autochangelog` may be left unexpanded or produce a generic changelog, so specs here use an explicit `Release:` and maintained `%changelog` entries. Verify the SRPM metadata when changing the source preparation flow; do not assume that a successful SRPM command generated an appropriate release history.
 
-Increment `Release` when package bits change without an upstream version change. A changed NEVRA is necessary for clients to receive a rebuild as an update. Keep release numbers monotonic for the same version and avoid reusing a published version-release for different bits.
+Increment `Release` when package bits change without an upstream version change. A changed NEVRA is necessary for clients to receive a rebuild as an update. Keep release numbers monotonic for the same version and avoid reusing a published version-release for different bits. Pull-request CI runs `scripts/check_nvr.py` against the merge-base and rejects build-relevant package changes unless RPM considers the new Version-Release greater. Package README-only changes and package additions/removals do not require a bump; changing sources, patches, specs, or external package manifests does.
 
 ## Build gates
 
