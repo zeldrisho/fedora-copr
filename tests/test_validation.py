@@ -125,6 +125,16 @@ class ValidationTests(unittest.TestCase):
             with patch.object(changed_packages, "git", return_value="packages/other/other.spec\n"):
                 self.assertEqual(changed_packages.changed_packages("base"), ["other"])
 
+    def test_publish_selection_ignores_ci_scripts_and_tests(self):
+        paths = changed_packages.PUBLISH_GLOBAL_PATHS
+        with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
+            for changed in (".github/workflows/ci.yml", "scripts/validate.py", "tests/test_validation.py", "Makefile"):
+                with patch.object(changed_packages, "git", return_value=changed + "\n"):
+                    self.assertEqual(changed_packages.changed_packages("base", paths), [])
+                    self.assertEqual(changed_packages.changed_packages("base"), ["demo", "other"])
+            with patch.object(changed_packages, "git", return_value=".copr/Makefile\n"):
+                self.assertEqual(changed_packages.changed_packages("base", paths), ["demo", "other"])
+
     def test_initial_push_selects_all_packages(self):
         with patch.object(changed_packages, "package_names", return_value=["demo"]):
             self.assertEqual(changed_packages.changed_packages("0" * 40), ["demo"])

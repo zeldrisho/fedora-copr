@@ -17,7 +17,7 @@ GitHub Actions creates or updates one SCM package entry per affected package usi
 
 The shared Makefile stages declared sources with `spectool`, then calls `rpmbuild -bs`. COPR's minimal SRPM environment may not include `spectool`; the Makefile installs `rpmdevtools` with DNF when needed. Source downloads happen during SRPM preparation. The resulting RPM build must work without internet access.
 
-The workflow selects packages from changed package inputs; top-level package README changes alone do not trigger a build. Changes to shared COPR, CI, scripts, tests, or the root Makefile select all packages. `.copr/project.toml` records project metadata for maintainers; COPR SCM does not consume that file, so actual project/chroot settings must be configured in the COPR web UI.
+The workflow selects packages from changed package inputs; top-level package README changes alone do not trigger a build. Changes under `.copr/` select all packages for submission; CI, script, test, or root Makefile changes are validated but do not submit builds. `.copr/project.toml` records project metadata for maintainers; COPR SCM does not consume that file, so actual project/chroot settings must be configured in the COPR web UI.
 
 ## Project settings
 

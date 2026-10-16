@@ -10,6 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 GLOBAL_PATHS = (".copr/", ".github/", "scripts/", "tests/", "Makefile")
+# Only the shared SRPM tooling can change a published package's contents.
+PUBLISH_GLOBAL_PATHS = (".copr/",)
 
 
 def git(*args: str) -> str:
@@ -28,12 +30,12 @@ def package_names() -> list[str]:
                   if path.is_dir() and (path / f"{path.name}.spec").is_file())
 
 
-def changed_packages(base: str | None) -> list[str]:
+def changed_packages(base: str | None, global_paths: tuple[str, ...] = GLOBAL_PATHS) -> list[str]:
     available = package_names()
     if base is None or set(base) == {"0"}:
         return available
     files = git("diff", "--name-only", base, "HEAD").splitlines()
-    if any(path.startswith(GLOBAL_PATHS) for path in files):
+    if any(path.startswith(global_paths) for path in files):
         return available
     changed: set[str] = set()
     for path in files:
@@ -51,9 +53,14 @@ def changed_packages(base: str | None) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("base", nargs="?", help="base commit; omit to select all packages")
+    parser.add_argument(
+        "--publish", action="store_true",
+        help="select packages for COPR submission: only .copr/ changes count as shared",
+    )
     args = parser.parse_args()
     try:
-        print("\n".join(changed_packages(args.base)))
+        paths = PUBLISH_GLOBAL_PATHS if args.publish else GLOBAL_PATHS
+        print("\n".join(changed_packages(args.base, paths)))
     except (RuntimeError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
