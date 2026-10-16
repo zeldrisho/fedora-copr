@@ -1,0 +1,13 @@
+# Informational project settings for the native COPR SCM package entries.
+# The COPR project itself is configured in the COPR web UI; this file is not
+# interpreted by the shared .copr/Makefile.
+[project]
+name = "packages"
+owner = "zeldrisho"
+chroots = ["fedora-44-x86_64", "fedora-45-x86_64", "fedora-rawhide-x86_64"]
+description = "Fedora-submittable RPM specs, staged on COPR."
+homepage = "https://github.com/zeldrisho/fedora-copr"
+
+[repository]
+clone_url = "https://github.com/zeldrisho/fedora-copr.git"
+branch = "main"
