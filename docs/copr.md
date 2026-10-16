@@ -15,7 +15,7 @@ GitHub Actions creates or updates the actionlint SCM package entry using these s
 | Build source | SCM |
 | Build SRPM with | `make_srpm` |
 
-The shared Makefile stages declared sources with `spectool`, then calls `rpmbuild -bs`. Source downloads happen during SRPM preparation. The RPM build must work without internet access.
+The shared Makefile stages declared sources with `spectool`, then calls `rpmbuild -bs`. COPR's minimal SRPM environment may not include `spectool`; the Makefile installs `rpmdevtools` with DNF when needed. Source downloads happen during SRPM preparation. The resulting RPM build must work without internet access.
 
 For another package, substitute `packages/<name>` and `<name>.spec`. `.copr/project.toml` records project metadata for maintainers; COPR SCM does not consume that file, so actual project/chroot settings must be configured in the COPR web UI.
 

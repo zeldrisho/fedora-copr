@@ -1,4 +1,5 @@
 # Upstream source archives downloaded by spectool during local SRPM builds
+/*.tar.gz
 /packages/*/*.tar.gz
 
 # RPM build artifacts and local build results
