@@ -23,25 +23,25 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ
 0123456789-._+
 ```
 
-But do check [Separators](#_separators) for additional restrictions on using the `-._+` characters.
+But do check [Separators](#separators) for additional restrictions on using the `-._+` characters.
 
 ### General Naming
 
 Package names SHOULD be in lower case and use dashes in preference to underscores. You can take some cues from the name of the upstream tarball, the project name from which this software came, and the name which has been used for this package by other distributions/packagers in the past. You can also request guidance from the upstream developers. Do not just blindly follow those examples, however, as package names SHOULD strive to be consistent within Fedora more than consistent between distributions.
 
-Additionally, it is possible that the upstream name does not fall into the [Common Character Set for Package Naming](#_common_character_set_for_package_naming). If this is the case, refer to: [When Upstream Naming is outside of the specified character set](#_when_upstream_naming_is_outside_of_the_specified_character_set).
+Additionally, it is possible that the upstream name does not fall into the [Common Character Set for Package Naming](#common-character-set-for-package-naming). If this is the case, refer to: [When Upstream Naming is outside of the specified character set](#when-upstream-naming-is-outside-of-the-specified-character-set).
 
-Also remember to check whether the type of package you are packaging has specific rules for naming. [Font Packages](#_font_packages) and the various sorts of [Addon Packages](#_addon_packages), for instance.
+Also remember to check whether the type of package you are packaging has specific rules for naming. [Font Packages](#font-packages) and the various sorts of [Addon Packages](#addon-packages), for instance.
 
 ### Separators
 
-When naming packages for Fedora, the maintainer MUST use the dash `-` as the delimiter for name parts. The maintainer MUST NOT use an underscore `_`, a plus `+`, or a period `.` as a delimiter. Version numbers used in compat libraries do not need to omit the dot `.` or change it into a dash `-` (see [Multiple packages with the same base name](#multiple) for more info on this case).
+When naming packages for Fedora, the maintainer MUST use the dash `-` as the delimiter for name parts. The maintainer MUST NOT use an underscore `_`, a plus `+`, or a period `.` as a delimiter. Version numbers used in compat libraries do not need to omit the dot `.` or change it into a dash `-` (see [Multiple packages with the same base name](#multiple-packages-with-the-same-base-name) for more info on this case).
 
 There are a few exceptions to the no underscore `_` rule:
 
-- httpd, pam, and SDL addon packages are excluded, refer to “ [Addon Packages (httpd, pam, and SDL)](#_httpd_pam_and_sdl) ”.
-- packages that are locale specific, and use the locale in the name are excluded, refer to “ [Addon Packages (locales)](#_locales) ”.
-- Compat packages where the base package name ends in a digit, refer to “ [Multiple packages with the same base name](#multiple) ”.
+- httpd, pam, and SDL addon packages are excluded, refer to “ [Addon Packages (httpd, pam, and SDL)](#httpd-pam-and-sdl) ”.
+- packages that are locale specific, and use the locale in the name are excluded, refer to “ [Addon Packages (locales)](#locales) ”.
+- Compat packages where the base package name ends in a digit, refer to “ [Multiple packages with the same base name](#multiple-packages-with-the-same-base-name) ”.
 - packages where the upstream name naturally contains an underscore are excluded from this. Examples of these packages include:
 	```
 	arptables_jf
@@ -99,7 +99,7 @@ Documentation packages (as approved by the Fedora Documentation Project) can be 
 
 In Fedora packaging, the maintainer uses their best judgement when considering how to name the package. While case sensitivity is not a mandatory requirement, case SHOULD only be used where necessary. Keep in mind to respect the wishes of the upstream maintainers. If they refer to their application as "ORBit", you SHOULD use `ORBit` as the package name, and not `orbit`. However, if they do not express any preference of case, you SHOULD default to lowercase naming.
 
-The exception to this is for perl module packaging. The CPAN Group and Type SHOULD be capitalized in the name, as if they were proper nouns. (Refer to “ [Addon Packages (Perl modules)](#_perl_modules) ” for details.)
+The exception to this is for perl module packaging. The CPAN Group and Type SHOULD be capitalized in the name, as if they were proper nouns. (Refer to “ [Addon Packages (Perl modules)](#perl-modules) ” for details.)
 
 ## Renaming/replacing existing packages
 
@@ -209,9 +209,9 @@ ttfonts-zh_CN (adds zh_CN locale fonts in ttfonts family)
 
 ### Lua modules
 
-It is common that multiple versions of Lua are packaged, and each may have corresponding module packages. Of course the base Lua packages of course MUST follow the relevant [naming guidelines](#multiple) resulting in package names such as `lua5.1`.
+It is common that multiple versions of Lua are packaged, and each may have corresponding module packages. Of course the base Lua packages of course MUST follow the relevant [naming guidelines](#multiple-packages-with-the-same-base-name) resulting in package names such as `lua5.1`.
 
-The module packages SHOULD carry the name of the corresponding base Lua package (as mandated by the [relevant guidelines](#multiple)) as a prefix. Some examples:
+The module packages SHOULD carry the name of the corresponding base Lua package (as mandated by the [relevant guidelines](#multiple-packages-with-the-same-base-name)) as a prefix. Some examples:
 
 | module name | base lua version | package name |
 | --- | --- | --- |

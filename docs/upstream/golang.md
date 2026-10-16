@@ -223,7 +223,7 @@ Packages SHOULD enable Go modules mode by including `%global gomodulesmode GO111
 
 ## Macros
 
-The RPM macros provided by `go-vendor-tools` are used to validate and install licenses. See [Go Vendor Tools RPM Macros docs](https://fedora.gitlab.io/sigs/go/go-vendor-tools/man/rpm_macros/) and [Licensing with Go Vendor Tools](#go-vendor-tools-licensing).
+The RPM macros provided by `go-vendor-tools` are used to validate and install licenses. See [Go Vendor Tools RPM Macros docs](https://fedora.gitlab.io/sigs/go/go-vendor-tools/man/rpm_macros/) and [Licensing with Go Vendor Tools](#licensing-with-go-vendor-tools).
 
 `go-rpm-macros` is primarily responsible for the `%gobuild` macro that calls `go build` with Fedora’s build flags.
 
