@@ -15,6 +15,7 @@ PUBLISH_GLOBAL_PATHS = (".copr/",)
 
 
 def git(*args: str) -> str:
+    """Run Git in the repository root, returning stdout or raising RuntimeError."""
     result = subprocess.run(
         ["git", *args], cwd=ROOT, text=True, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, check=False,
@@ -25,12 +26,18 @@ def git(*args: str) -> str:
 
 
 def package_names() -> list[str]:
+    """Return sorted package directory names that have a matching spec file."""
     packages = ROOT / "packages"
     return sorted(path.name for path in packages.iterdir()
                   if path.is_dir() and (path / f"{path.name}.spec").is_file())
 
 
 def changed_packages(base: str | None, global_paths: tuple[str, ...] = GLOBAL_PATHS) -> list[str]:
+    """Select packages changed from base to HEAD, ignoring package README files.
+
+    Select all packages when base is absent or all zeros, or when a changed
+    path starts with one of the supplied shared-input prefixes in global_paths.
+    """
     available = package_names()
     if base is None or set(base) == {"0"}:
         return available
@@ -51,6 +58,7 @@ def changed_packages(base: str | None, global_paths: tuple[str, ...] = GLOBAL_PA
 
 
 def main() -> int:
+    """Print packages selected for validation or publishing and return the status."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("base", nargs="?", help="base commit; omit to select all packages")
     parser.add_argument(

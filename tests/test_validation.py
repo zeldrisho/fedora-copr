@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def load_script(name: str, filename: str):
+    """Load a repository script as a module without running its CLI entry point."""
     spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / filename)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
@@ -22,6 +23,7 @@ changed_packages = load_script("changed_packages", "changed_packages.py")
 
 class ValidationTests(unittest.TestCase):
     def fixture(self, root: Path) -> Path:
+        """Create a demo package with a minimal spec and source file under root."""
         package = root / "demo"
         package.mkdir()
         (package / "demo.spec").write_text("Name: demo\nSource0: source.tar.gz\n", encoding="utf-8")
@@ -29,12 +31,14 @@ class ValidationTests(unittest.TestCase):
         return package
 
     def test_srpm_build_uses_temporary_copy_and_preserves_package(self):
+        """Verify SRPM validation builds in a copy and preserves package inputs."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             package = self.fixture(root)
             original = {p.name: p.read_bytes() for p in package.iterdir()}
 
             def fake_run(command, *, cwd=None, capture=False):
+                """Simulate RPM queries and create a source RPM in the requested output directory."""
                 if command[0] == "rpmspec" and "--qf" in command:
                     return "demo\n"
                 if command[0] == "make":
@@ -50,11 +54,13 @@ class ValidationTests(unittest.TestCase):
             self.assertEqual(original, {p.name: p.read_bytes() for p in package.iterdir()})
 
     def test_rejects_multiple_srpms(self):
+        """Verify validation rejects a build that produces more than one SRPM."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             package = self.fixture(root)
 
             def fake_run(command, *, cwd=None, capture=False):
+                """Simulate RPM queries and create two source RPMs to test rejection."""
                 if command[0] == "rpmspec" and "--qf" in command:
                     return "demo\n"
                 if command[0] == "make":
@@ -70,18 +76,21 @@ class ValidationTests(unittest.TestCase):
             self.assertIn("exactly one SRPM", str(fail.call_args.args[0]))
 
     def test_merge_base_errors_are_not_hidden(self):
+        """Verify Git merge-base failures propagate to the caller."""
         with patch.object(check_nvr, "git", side_effect=RuntimeError("dubious ownership")) as git:
             with self.assertRaisesRegex(RuntimeError, "dubious ownership"):
                 check_nvr.check("base")
         git.assert_called_once_with("merge-base", "base", "HEAD")
 
     def test_release_values_require_literal_fields(self):
+        """Verify literal Version and Release fields are required and parsed."""
         self.assertEqual(check_nvr.spec_values("Version: 1.2\nRelease: 3%{?dist}\n"),
                          ("1.2", "3%{?dist}"))
         with self.assertRaises(ValueError):
             check_nvr.spec_values("Version: 1\n")
 
     def test_initial_release_reset_requires_same_version_release_one_and_marker(self):
+        """Verify a reset requires an unchanged Version, Release 1, and the marker."""
         previous = "Version: 1.7.12\nRelease: 2%{?dist}\n"
         authorized = (
             "Version: 1.7.12\nRelease: 1%{?dist}\n%changelog\n"
@@ -99,12 +108,14 @@ class ValidationTests(unittest.TestCase):
         ))
 
     def check_with(self, current: str, previous: str, evr_comparison: int, files: str = "packages/demo/demo.spec"):
+        """Run the EVR check with mocked Git outputs and an RPM comparison result."""
         outputs = iter(("mergebase", files, current, previous))
         with patch.object(check_nvr, "git", side_effect=lambda *args, **kwargs: next(outputs)):
             with patch.object(check_nvr, "rpmvercmp", return_value=evr_comparison):
                 return check_nvr.check("base")
 
     def test_packager_only_spec_changes_need_no_bump(self):
+        """Verify comments, check commands, and changelog edits need no EVR bump."""
         previous = (
             "Version: 1\nRelease: 1%{?dist}\n%build\nmake\n%check\nmake test\n"
             "%changelog\n* Fri Oct 16 2026 A <a@example.com> - 1-1\n- Old\n"
@@ -116,16 +127,19 @@ class ValidationTests(unittest.TestCase):
         self.assertEqual(self.check_with(current, previous, 0), 0)
 
     def test_user_facing_spec_changes_still_need_a_bump(self):
+        """Verify a build command change requires an EVR increase."""
         previous = "Version: 1\nRelease: 1%{?dist}\n%build\nmake\n"
         current = "Version: 1\nRelease: 1%{?dist}\n%build\nmake -j1\n"
         self.assertEqual(self.check_with(current, previous, 0), 1)
 
     def test_other_package_files_still_need_a_bump(self):
+        """Verify changes to other package inputs require an EVR increase."""
         spec = "Version: 1\nRelease: 1%{?dist}\n%check\nmake test\n"
         files = "packages/demo/demo.spec\npackages/demo/demo-vendor.tar.bz2"
         self.assertEqual(self.check_with(spec, spec, 0, files), 1)
 
     def test_initial_release_reset_is_not_reusable_after_it_lands(self):
+        """Verify an existing reset marker cannot authorize another reset."""
         spec = (
             "Version: 1.7.12\nRelease: 1%{?dist}\n%changelog\n"
             f"- {check_nvr.INITIAL_RELEASE_RESET_MARKER}\n"
@@ -133,6 +147,7 @@ class ValidationTests(unittest.TestCase):
         self.assertFalse(check_nvr.is_authorized_initial_release_reset(spec, spec))
 
     def test_check_accepts_verified_initial_release_reset(self):
+        """Verify the EVR check accepts a newly authorized initial-release reset."""
         current = (
             "Version: 1.7.12\nRelease: 1%{?dist}\n%changelog\n"
             f"- {check_nvr.INITIAL_RELEASE_RESET_MARKER}\n"
@@ -144,6 +159,7 @@ class ValidationTests(unittest.TestCase):
                 self.assertEqual(check_nvr.check("base"), 0)
 
     def test_changed_package_selection_ignores_readme_and_includes_shared_changes(self):
+        """Verify README edits are ignored and shared inputs select all packages."""
         with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
             with patch.object(changed_packages, "git", return_value="packages/demo/README.md\n"):
                 self.assertEqual(changed_packages.changed_packages("base"), [])
@@ -153,6 +169,7 @@ class ValidationTests(unittest.TestCase):
                 self.assertEqual(changed_packages.changed_packages("base"), ["other"])
 
     def test_publish_selection_ignores_ci_scripts_and_tests(self):
+        """Verify only COPR shared inputs select all packages for publishing."""
         paths = changed_packages.PUBLISH_GLOBAL_PATHS
         with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
             for changed in (".github/workflows/ci.yml", "scripts/validate.py", "tests/test_validation.py", "Makefile"):
@@ -163,6 +180,7 @@ class ValidationTests(unittest.TestCase):
                 self.assertEqual(changed_packages.changed_packages("base", paths), ["demo", "other"])
 
     def test_initial_push_selects_all_packages(self):
+        """Verify an all-zero base selects every available package."""
         with patch.object(changed_packages, "package_names", return_value=["demo"]):
             self.assertEqual(changed_packages.changed_packages("0" * 40), ["demo"])
 
