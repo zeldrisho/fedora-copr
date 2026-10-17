@@ -1,0 +1,104 @@
+--- a/yazi-actor/src/lives/tab.rs
++++ b/yazi-actor/src/lives/tab.rs
+@@ -30 +30 @@
+-			Cow::Owned(s) => lua.create_external_string(s),
++			Cow::Owned(s) => lua.create_string(s),
+--- a/yazi-binding/src/process/child.rs
++++ b/yazi-binding/src/process/child.rs
+@@ -111 +111 @@
+-				(Some(b), event) => (lua.create_external_string(b)?, event).into_lua_multi(&lua),
++				(Some(b), event) => (lua.create_string(b)?, event).into_lua_multi(&lua),
+@@ -122 +122 @@
+-				(Some(b), event) => (lua.create_external_string(b)?, event).into_lua_multi(&lua),
++				(Some(b), event) => (lua.create_string(b)?, event).into_lua_multi(&lua),
+--- a/yazi-binding/src/process/output.rs
++++ b/yazi-binding/src/process/output.rs
+@@ -20 +20 @@
+-			lua.create_external_string(mem::take(&mut me.inner.stdout))
++			lua.create_string(mem::take(&mut me.inner.stdout))
+@@ -23 +23 @@
+-			lua.create_external_string(mem::take(&mut me.inner.stderr))
++			lua.create_string(mem::take(&mut me.inner.stderr))
+--- a/yazi-plugin/src/fs/fs.rs
++++ b/yazi-plugin/src/fs/fs.rs
+@@ -242 +242 @@
+-			Some(Cow::Owned(s)) => lua.create_external_string(s).map(Some),
++			Some(Cow::Owned(s)) => lua.create_string(s).map(Some),
+--- a/yazi-plugin/src/ui/utils.rs
++++ b/yazi-plugin/src/ui/utils.rs
+@@ -80 +80 @@
+-			Cow::Owned(new) => lua.create_external_string(new)?,
++			Cow::Owned(new) => lua.create_string(new)?,
+@@ -176 +176 @@
+-		lua.create_external_string(result)
++		lua.create_string(result)
+--- a/yazi-plugin/src/utils/text.rs
++++ b/yazi-plugin/src/utils/text.rs
+@@ -26 +26 @@
+-			lua.create_external_string(s)
++			lua.create_string(s)
+@@ -36 +36 @@
+-				Some(lua.create_external_string(CLIPBOARD.get().await)).transpose()
++				Some(lua.create_string(CLIPBOARD.get().await)).transpose()
+@@ -43 +43 @@
+-			Ok(b) => lua.create_external_string(b)?.into_lua_multi(lua),
++			Ok(b) => lua.create_string(b)?.into_lua_multi(lua),
+@@ -53 +53 @@
+-				Cow::Owned(b) => lua.create_external_string(b),
++				Cow::Owned(b) => lua.create_string(b),
+@@ -63 +63 @@
+-				Cow::Owned(s) => lua.create_external_string(s),
++				Cow::Owned(s) => lua.create_string(s),
+--- a/yazi-runner/src/provider/job.rs
++++ b/yazi-runner/src/provider/job.rs
+@@ -137 +137 @@
+-				t.raw_set("original", lua.create_external_string(original)?)?;
++				t.raw_set("original", lua.create_string(original)?)?;
+@@ -149 +149 @@
+-				t.raw_set("bytes", lua.create_external_string(bytes)?)?;
++				t.raw_set("bytes", lua.create_string(bytes)?)?;
+--- a/yazi-shared/src/data/sendable.rs
++++ b/yazi-shared/src/data/sendable.rs
+@@ -75 +75 @@
+-			Data::String(Cow::Owned(s)) => Value::String(lua.create_external_string(s)?),
++			Data::String(Cow::Owned(s)) => Value::String(lua.create_string(s)?),
+@@ -93 +93 @@
+-			Data::Bytes(b) => Value::String(lua.create_external_string(b)?),
++			Data::Bytes(b) => Value::String(lua.create_string(b)?),
+@@ -217 +217 @@
+-			DataKey::String(Cow::Owned(s)) => lua.create_external_string(s).map(Value::String),
++			DataKey::String(Cow::Owned(s)) => lua.create_string(s).map(Value::String),
+@@ -220 +220 @@
+-			DataKey::Bytes(b) => lua.create_external_string(b).map(Value::String),
++			DataKey::Bytes(b) => lua.create_string(b).map(Value::String),
+--- a/yazi-shared/src/path/lua.rs
++++ b/yazi-shared/src/path/lua.rs
+@@ -84 +84 @@
+-			lua.create_external_string([lhs.encoded_bytes(), &rhs.as_bytes()].concat())
++			lua.create_string([lhs.encoded_bytes(), &rhs.as_bytes()].concat())
+--- a/yazi-shared/src/url/lua.rs
++++ b/yazi-shared/src/url/lua.rs
+@@ -132 +132 @@
+-			lua.create_external_string([lhs.to_strand().encoded_bytes(), &rhs.as_bytes()].concat())
++			lua.create_string([lhs.to_strand().encoded_bytes(), &rhs.as_bytes()].concat())
+--- a/yazi-shim/src/fs/error.rs
++++ b/yazi-shim/src/fs/error.rs
+@@ -114 +114 @@
+-			lua.create_external_string(me.to_string())
++			lua.create_string(me.to_string())
+@@ -120 +120 @@
+-					lua.create_external_string([&l.as_bytes(), r.to_string().as_bytes()].concat())
++					lua.create_string([&l.as_bytes(), r.to_string().as_bytes()].concat())
+@@ -124 +124 @@
+-					lua.create_external_string([l.to_string().as_bytes(), &r.as_bytes()].concat())
++					lua.create_string([l.to_string().as_bytes(), &r.as_bytes()].concat())
+--- a/yazi-term/src/event/lua.rs
++++ b/yazi-term/src/event/lua.rs
+@@ -42 +42 @@
+-				lua.create_external_string(mem::take(data))?.into_lua(lua)
++				lua.create_string(mem::take(data))?.into_lua(lua)
+--- a/yazi-vfs/src/engine/rw_file.rs
++++ b/yazi-vfs/src/engine/rw_file.rs
+@@ -214 +214 @@
+-					lua.create_external_string(buf)?.into_lua_multi(&lua)
++					lua.create_string(buf)?.into_lua_multi(&lua)

@@ -1,0 +1,8 @@
+--- a/yazi-version/build.rs
++++ b/yazi-version/build.rs
+@@ -13 +13,4 @@
+-	if env::var_os("YAZI_NO_GITCL").is_none() {
++	if let Ok(sha) = env::var("VERGEN_GIT_SHA") {
++		println!("cargo:rustc-env=VERGEN_GIT_SHA={sha}");
++		println!("cargo:rerun-if-env-changed=VERGEN_GIT_SHA");
++	} else if env::var_os("YAZI_NO_GITCL").is_none() {

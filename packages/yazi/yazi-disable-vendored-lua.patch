@@ -1,0 +1,55 @@
+--- a/yazi-actor/Cargo.toml
++++ b/yazi-actor/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-binding/Cargo.toml
++++ b/yazi-binding/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-core/Cargo.toml
++++ b/yazi-core/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-dds/Cargo.toml
++++ b/yazi-dds/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-fm/Cargo.toml
++++ b/yazi-fm/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-parser/Cargo.toml
++++ b/yazi-parser/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-plugin/Cargo.toml
++++ b/yazi-plugin/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-runner/Cargo.toml
++++ b/yazi-runner/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-scheduler/Cargo.toml
++++ b/yazi-scheduler/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-shim/Cargo.toml
++++ b/yazi-shim/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []
+--- a/yazi-widgets/Cargo.toml
++++ b/yazi-widgets/Cargo.toml
+@@ -16 +16 @@
+-default      = [ "vendored-lua" ]
++default      = []

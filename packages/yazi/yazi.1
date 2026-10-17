@@ -1,0 +1,55 @@
+.TH YAZI 1 "October 2026" "Yazi 26.9.1" "User Commands"
+.SH NAME
+yazi \- terminal file manager
+.SH SYNOPSIS
+.B yazi
+.RI [ OPTIONS ]
+.RI [ ENTRIES ]...
+.SH DESCRIPTION
+.B yazi
+opens an interactive terminal file manager rooted at the current working directory. Optional
+.I ENTRIES
+select the initial file or directory to open.
+.PP
+For a quick start and configuration information, see
+.UR https://yazi-rs.github.io/docs/quick-start
+Yazi's quick-start guide
+.UE .
+.SH ARGUMENTS
+.TP
+.I ENTRIES
+Optional paths used to set the current working entry.
+.SH OPTIONS
+.TP
+.BI --cwd-file " CWD_FILE"
+Write the final working directory to
+.IR CWD_FILE
+on exit.
+.TP
+.BI --chooser-file " CHOOSER_FILE"
+Write selected files to
+.I CHOOSER_FILE
+when the chooser is opened.
+.TP
+.BI --client-id " CLIENT_ID"
+Use the specified globally unique client ID.
+.TP
+.BI --local-events " LOCAL_EVENTS"
+Report the specified local events to standard output.
+.TP
+.BI --remote-events " REMOTE_EVENTS"
+Report the specified remote events to standard output.
+.TP
+.BR -V , " --version"
+Print version information and exit.
+.TP
+.BR -h , " --help"
+Print help and exit.
+.SH SEE ALSO
+.BR ya (1)
+.br
+.UR https://yazi-rs.github.io/docs
+Yazi documentation
+.UE
+.SH AUTHORS
+Yazi is developed by the Yazi contributors.
