@@ -142,6 +142,21 @@ def build_package(package: str, chroot: str, workdir: Path,
             run(["ya", "--version"])
 
 
+def annotate_failure(package: str, chroot: str, result_dir: Path, status: object) -> None:
+    """Emit a GitHub error annotation with the failure reason and Mock log tail."""
+    lines = [f"{package} on {chroot} failed: {status}"]
+    for name in ("build.log", "root.log"):
+        log = result_dir / name
+        if log.is_file():
+            tail = log.read_text(encoding="utf-8", errors="replace").splitlines()[-40:]
+            lines += [f"--- tail of {name} ---", *tail]
+            if name == "build.log":
+                break
+    message = "\n".join(lines)[-6000:]
+    message = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    print(f"::error title=Mock build failed::{message}", flush=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("chroot", help="Mock chroot configuration, e.g. fedora-44-x86_64")
@@ -175,8 +190,12 @@ def main() -> int:
         workdir.mkdir(parents=True, exist_ok=True)
         workdir.chmod(0o755)
         for package in packages:
-            build_package(package, args.chroot, workdir, builder, builder_uid, mock_gid,
-                          args.srpm_dir)
+            try:
+                build_package(package, args.chroot, workdir, builder, builder_uid,
+                              mock_gid, args.srpm_dir)
+            except SystemExit as exc:
+                annotate_failure(package, args.chroot, workdir / package / "results", exc.code)
+                raise
 
     if args.workdir is not None:
         run_builds(args.workdir)
