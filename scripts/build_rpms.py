@@ -62,7 +62,7 @@ def build_package(package: str, chroot: str, workdir: Path,
     print(f"Building {package} for {chroot}", flush=True)
     package_dir = ROOT / "packages" / package
     result_dir = workdir / package / "results"
-    result_dir.mkdir()
+    result_dir.mkdir(parents=True)
 
     if srpm_dir is None:
         srpm_dir = workdir / package / "srpm"
