@@ -180,6 +180,23 @@ class ValidationTests(unittest.TestCase):
             with patch.object(changed_packages, "git", return_value="packages/other/other.spec\n"):
                 self.assertEqual(changed_packages.changed_packages("base"), ["other"])
 
+    def test_build_selection_only_selects_package_inputs_and_shared_srpm_tooling(self):
+        """Avoid binary package builds for unrelated CI, helper, and docs edits."""
+        paths = changed_packages.BUILD_GLOBAL_PATHS
+        with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
+            for changed in (
+                ".github/workflows/ci.yml", "scripts/validate.py",
+                "scripts/build_rpms.py", "tests/test_validation.py", "Makefile",
+                ".copr/project.toml", "packages/demo/README.md",
+                "packages/demo/docs/audit.md",
+            ):
+                with patch.object(changed_packages, "git", return_value=changed + "\n"):
+                    self.assertEqual(changed_packages.changed_packages("base", paths), [])
+            with patch.object(changed_packages, "git", return_value="packages/other/other.spec\n"):
+                self.assertEqual(changed_packages.changed_packages("base", paths), ["other"])
+            with patch.object(changed_packages, "git", return_value=".copr/Makefile\n"):
+                self.assertEqual(changed_packages.changed_packages("base", paths), ["demo", "other"])
+
     def test_publish_selection_ignores_ci_scripts_and_tests(self):
         """Verify only COPR shared inputs select all packages for publishing."""
         paths = changed_packages.PUBLISH_GLOBAL_PATHS

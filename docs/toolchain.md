@@ -37,7 +37,7 @@ Install package-specific dependencies when building a package locally. For **act
 sudo dnf install go go-rpm-macros go-vendor-tools rubygem-ronn-ng
 ```
 
-CI installs RPM build dependencies from the spec before building the binary RPM. `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
+CI uses Mock rather than installing package build dependencies into the runner container. `mock` and `mock-core-configs` provide isolated Fedora 44, Fedora 45, and Rawhide x86_64 buildroots; RPM build networking is explicitly disabled. SRPM source staging and buildroot dependency resolution still require network access. The workflow also installs `shadow-utils` and `util-linux` for its unprivileged Mock account (`useradd`/`runuser`). `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
 
 The upstream source archive and generated Go vendor archive are included as SRPM sources; Go modules are not fetched during the build. See [actionlint package notes](../packages/actionlint/README.md) and the [Go Packaging Guidelines](packaging-guidelines/golang.md) when updating vendored sources and licensing.
 
@@ -65,12 +65,15 @@ The SRPM is retained in `~/rpmbuild/SRPMS`; binary RPMs and build logs are writt
 
 ## Build and inspect binary RPMs
 
-Build in a Fedora environment. Install the spec's declared build dependencies, including dependencies requested dynamically by `%generate_buildrequires` where applicable, then rebuild the SRPM:
+For a clean build matching CI, install Mock and its Fedora chroot configurations, then rebuild the SRPM in a target chroot. Mock resolves static and dynamic build requirements inside its buildroot:
 
 ```sh
-sudo dnf builddep packages/<name>/<name>.spec
-rpmbuild --rebuild <path-to-src.rpm>
+sudo dnf install mock mock-core-configs
+sudo usermod -a -G mock "$USER"  # log out/in so the new group takes effect
+mock -r fedora-44-x86_64 --rebuild <path-to-src.rpm> --resultdir "$PWD/results"
 ```
+
+Use `fedora-45-x86_64` or `fedora-rawhide-x86_64` to check the other CI targets. Mock buildroot package installation needs network access; RPM build networking is disabled in CI so `%build` and `%check` cannot fetch undeclared sources. To build only packages changed against a Git base revision, use `python3 scripts/build_rpms.py fedora-44-x86_64 --base-ref <commit>` from the repository root; omit `--base-ref` to build all packages.
 
 Review the resulting binary RPMs (and any debuginfo/subpackages):
 

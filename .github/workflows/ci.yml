@@ -2,6 +2,13 @@ name: CI
 
 on:
   pull_request:
+    paths:
+      - '.copr/**'
+      - '.github/workflows/ci.yml'
+      - 'packages/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'Makefile'
   push:
     branches: [main]
     paths:
@@ -17,11 +24,11 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
-    container: fedora:latest
+    runs-on: ubuntu-24.04
+    container: fedora:44
     steps:
       - name: Install RPM validation tools
-        run: dnf -y install dnf-plugins-core git go-rpm-macros go-vendor-tools make python3 rpm-build rpmdevtools rpmlint
+        run: dnf -y install git go-rpm-macros go-vendor-tools make python3 rpm-build rpmdevtools rpmlint
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -42,55 +49,39 @@ jobs:
           fi
       - name: Validate packages
         run: make validate
-      - name: Build and inspect binary RPMs
-        shell: bash
+
+  build:
+    name: Build changed packages (${{ matrix.chroot }})
+    needs: validate
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        chroot: [fedora-44-x86_64, fedora-45-x86_64, fedora-rawhide-x86_64]
+    container:
+      image: fedora:44
+      options: --cap-add=SYS_ADMIN
+    timeout-minutes: 360
+    steps:
+      - name: Install Mock and RPM build tools
+        run: dnf -y install git go-rpm-macros go-vendor-tools make mock mock-core-configs python3 rpm-build rpmdevtools rpmlint shadow-utils util-linux
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Trust workspace for Git checks in the container
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Build changed packages in Mock
         env:
           BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          set -euo pipefail
-          if [[ "$BASE_REF" =~ ^0+$ ]]; then
-            packages=$(python3 scripts/changed_packages.py)
-          else
-            packages=$(python3 scripts/changed_packages.py "$BASE_REF")
-          fi
-          for package in $packages; do
-            spec="packages/$package/$package.spec"
-            dnf builddep -y "$spec"
-            mkdir -p /tmp/srpms
-            (cd "packages/$package" && make -f ../../.copr/Makefile srpm \
-              spec="$package.spec" outdir=/tmp/srpms)
-            rpmbuild --rebuild /tmp/srpms/"$package"-*.src.rpm
-            mapfile -t rpms < <(find ~/rpmbuild/RPMS -type f -name '*.rpm' | sort)
-            test "${#rpms[@]}" -gt 0
-            rpmlint "${rpms[@]}"
-            if [[ "$package" == actionlint ]]; then
-              rpm_file=$(find ~/rpmbuild/RPMS -name 'actionlint-[0-9]*.rpm' -print -quit)
-              test -n "$rpm_file"
-              rpm -qp --licensefiles "$rpm_file"
-              rpm -qp --provides "$rpm_file" | grep -q '^bundled(golang('
-              rpm -qp --scripts "$rpm_file"
-              dnf -y install "$rpm_file"
-              actionlint --version
-              printf 'name: CI smoke test\non:\n  push:\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hello\n' > /tmp/actionlint-smoke.yml
-              actionlint /tmp/actionlint-smoke.yml
-            elif [[ "$package" == yazi ]]; then
-              rpm_file=$(find ~/rpmbuild/RPMS -name 'yazi-[0-9]*.rpm' -print -quit)
-              test -n "$rpm_file"
-              rpm -qp --licensefiles "$rpm_file"
-              rpm -qp --requires "$rpm_file" | grep -q '^liblua-5.4.so'
-              rpm -qp --requires "$rpm_file" | grep -q '^libonig.so.5'
-              dnf -y install "$rpm_file"
-              yazi --version
-              ya --version
-            fi
-            rm -rf ~/rpmbuild/RPMS/* ~/rpmbuild/BUILD/* ~/rpmbuild/BUILDROOT/* ~/rpmbuild/SOURCES/* ~/rpmbuild/SPECS/*
-          done
+        run: python3 scripts/build_rpms.py '${{ matrix.chroot }}' --base-ref "$BASE_REF"
 
   publish:
     if: github.event_name == 'push'
-    needs: validate
+    needs: [validate, build]
     runs-on: ubuntu-latest
-    container: fedora:latest
+    container: fedora:44
     timeout-minutes: 360
     concurrency:
       group: copr-publish

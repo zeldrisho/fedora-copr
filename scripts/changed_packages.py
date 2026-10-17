@@ -10,8 +10,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 GLOBAL_PATHS = (".copr/", ".github/", "scripts/", "tests/", "Makefile")
-# Only the shared SRPM tooling can change a published package's contents.
+# Shared SRPM preparation changes can alter every package's built contents.
 PUBLISH_GLOBAL_PATHS = (".copr/",)
+BUILD_GLOBAL_PATHS = (".copr/Makefile",)
 
 
 def git(*args: str) -> str:
@@ -61,13 +62,23 @@ def main() -> int:
     """Print packages selected for validation or publishing and return the status."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("base", nargs="?", help="base commit; omit to select all packages")
-    parser.add_argument(
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument(
         "--publish", action="store_true",
         help="select packages for COPR submission: only .copr/ changes count as shared",
     )
+    selection.add_argument(
+        "--build", action="store_true",
+        help="select RPM builds: package inputs and shared SRPM tooling only",
+    )
     args = parser.parse_args()
     try:
-        paths = PUBLISH_GLOBAL_PATHS if args.publish else GLOBAL_PATHS
+        if args.publish:
+            paths = PUBLISH_GLOBAL_PATHS
+        elif args.build:
+            paths = BUILD_GLOBAL_PATHS
+        else:
+            paths = GLOBAL_PATHS
         print("\n".join(changed_packages(args.base, paths)))
     except (RuntimeError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
