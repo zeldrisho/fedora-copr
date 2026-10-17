@@ -28,7 +28,9 @@ jobs:
     container: fedora:44
     steps:
       - name: Install RPM validation tools
-        run: dnf -y install git go-rpm-macros go-vendor-tools make python3 rpm-build rpmdevtools rpmlint
+        uses: ./.github/actions/install-rpm-tools
+        with:
+          packages: git go-rpm-macros go-vendor-tools make python3 rpm-build rpmdevtools rpmlint
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -72,7 +74,9 @@ jobs:
     timeout-minutes: 360
     steps:
       - name: Install Mock and RPM build tools
-        run: dnf -y install git go-rpm-macros go-vendor-tools make mock mock-core-configs python3 rpm-build rpmdevtools rpmlint shadow-utils util-linux
+        uses: ./.github/actions/install-rpm-tools
+        with:
+          packages: git go-rpm-macros go-vendor-tools make mock mock-core-configs python3 rpm-build rpmdevtools rpmlint shadow-utils util-linux
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
