@@ -87,7 +87,6 @@ jobs:
       group: copr-publish
       cancel-in-progress: false
     env:
-      COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
       COPR_PROJECT: zeldrisho/packages
     steps:
       - name: Install COPR client, Git and Python
@@ -103,7 +102,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          packages=$(python3 scripts/changed_packages.py "$GITHUB_EVENT_BEFORE")
+          packages=$(python3 scripts/changed_packages.py --publish "$GITHUB_EVENT_BEFORE")
           if [[ -z "$packages" ]]; then
             echo 'No package build inputs changed; nothing to publish.'
             exit 0
@@ -138,4 +137,5 @@ jobs:
             printf '%s\n' "### $package COPR submission" "$build_output" >> "$GITHUB_STEP_SUMMARY"
           done <<< "$packages"
         env:
+          COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}

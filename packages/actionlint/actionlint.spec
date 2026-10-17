@@ -48,7 +48,7 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %check
 %go_vendor_license_check -c %{S:2}
 %if %{with check}
-# Exclude the generator utility whose tests require Git metadata omitted from the release archive.
+# Exclude scripts/check-checks: it maintains upstream docs/checks.md and needs shellcheck and pyflakes.
 # Skip tests that fetch live HTTP resources; Fedora builds run offline.
 # Isolate generator invocations because go test's -skip slash matching applies per subtest component.
 %gotest -skip '^(TestDetectErrorBadRequest|TestFetchError|TestFetchRemoteYAML|TestWriteOutdatedActionAsJSONL|TestDetectNewRelease|TestCouldNotFetch|TestFetchURL)$' . ./cmd/actionlint ./scripts/generate-availability ./scripts/generate-webhook-events
@@ -62,5 +62,5 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %{_mandir}/man1/actionlint.1*
 
 %changelog
-* Fri Oct 16 2026 Zeldris <80939130+zeldrisho@users.noreply.github.com> - 1.7.12-1
-- Initial release reset: all prior COPR builds withdrawn and confirmed not downloaded or installed
+* Fri Oct 16 2026 Zeldris <zeldrisho@proton.me> - 1.7.12-1
+- Initial package
