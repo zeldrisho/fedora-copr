@@ -67,6 +67,32 @@ def is_authorized_initial_release_reset(current: str, previous: str) -> bool:
     )
 
 
+SECTION = re.compile(
+    r"^%(description|package|prep|conf|generate_buildrequires|build|install|check|files|"
+    r"changelog|pre|post|preun|postun|pretrans|posttrans|preuntrans|postuntrans|"
+    r"verifyscript|trigger\w*|filetrigger\w*|transfiletrigger\w*|sepolicy)\b"
+)
+PACKAGER_ONLY_SECTIONS = {"check", "changelog"}
+
+
+def user_facing_spec(text: str) -> str:
+    """Return the spec text that can change what users get.
+
+    Drop full-line comments, blank lines, and the %check and %changelog
+    sections, since edits confined to those do not alter the installed package.
+    """
+    kept: list[str] = []
+    skipping = False
+    for line in text.splitlines():
+        match = SECTION.match(line)
+        if match:
+            skipping = match.group(1) in PACKAGER_ONLY_SECTIONS
+        if skipping or not line.strip() or line.lstrip().startswith("#"):
+            continue
+        kept.append(line.rstrip())
+    return "\n".join(kept)
+
+
 def rpmvercmp(left: str, right: str) -> int:
     """Compare version-release strings using RPM's ordering.
 
@@ -91,7 +117,8 @@ def check(base: str) -> int:
 
     Compare committed HEAD with its merge base with the Git ref base, ignoring
     each package's top-level README.md. Skip packages whose spec is absent or
-    empty at either revision. Print results and return 0 on success, including
+    empty at either revision, and spec-only changes confined to comments,
+    %check, and %changelog. Print results and return 0 on success, including
     when no packages need comparison, or 1 for invalid fields, RPM subprocess
     failure, or a version-release that did not increase.
 
@@ -116,6 +143,10 @@ def check(base: str) -> int:
         if not previous:
             print(f"{name}: new package")
             continue
+        files = [item for item in changed if item.startswith(f"packages/{name}/")]
+        if files == [path] and user_facing_spec(current) == user_facing_spec(previous):
+            print(f"{name}: packager-only spec change; no bump required")
+            continue
         try:
             old_evr = "-".join(spec_values(previous))
             new_evr = "-".join(spec_values(current))
@@ -126,7 +157,6 @@ def check(base: str) -> int:
         if comparison <= 0 and is_authorized_initial_release_reset(current, previous):
             print(f"{name}: authorized initial-release reset to {new_evr}")
         elif comparison <= 0:
-            files = [item for item in changed if item.startswith(f"packages/{name}/")]
             print(f"{name}: build inputs changed but EVR did not increase ({old_evr} -> {new_evr}):")
             for item in files:
                 print(f"    {item}")

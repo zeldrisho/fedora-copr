@@ -18,7 +18,7 @@
 - Keep each Fedora spec at `packages/<name>/<name>.spec`; match directory, spec basename, and `Name:`.
 - Keep specs plain and Fedora-submittable; no COPR-only logic or rpkg templates.
 - Put COPR-specific behavior only in `.copr/Makefile`.
-- Bump `Release` and add a changelog entry only for build-relevant package changes; do not include packager-only changes that do not affect binary package contents. See `docs/upstream/packaging-guidelines.md` (Changelogs).
+- Bump `Release` and add a changelog entry only for changes users would notice (version, installed files, metadata, dependencies, build flags, sources); skip both for edits confined to comments, `%check`, `%changelog`, or docs. See `docs/upstream/packaging-guidelines.md` (Changelogs).
 - Never reuse or lower a published Version-Release. A Release reset is allowed only after all prior COPR builds are withdrawn and confirmed not downloaded or installed.
 - Sources must be available when creating the SRPM; Fedora build chroots have no internet access.
 - Use `docs/upstream/` for local copies of Fedora packaging and licensing documentation sourced from `docs.fedoraproject.org`; record each canonical URL in the file.

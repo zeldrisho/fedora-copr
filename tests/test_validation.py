@@ -98,6 +98,33 @@ class ValidationTests(unittest.TestCase):
             authorized.replace("Version: 1.7.12", "Version: 1.7.13"), previous
         ))
 
+    def check_with(self, current: str, previous: str, evr_comparison: int, files: str = "packages/demo/demo.spec"):
+        outputs = iter(("mergebase", files, current, previous))
+        with patch.object(check_nvr, "git", side_effect=lambda *args, **kwargs: next(outputs)):
+            with patch.object(check_nvr, "rpmvercmp", return_value=evr_comparison):
+                return check_nvr.check("base")
+
+    def test_packager_only_spec_changes_need_no_bump(self):
+        previous = (
+            "Version: 1\nRelease: 1%{?dist}\n%build\nmake\n%check\nmake test\n"
+            "%changelog\n* Fri Oct 16 2026 A <a@example.com> - 1-1\n- Old\n"
+        )
+        current = (
+            "Version: 1\nRelease: 1%{?dist}\n# note\n%build\nmake\n%check\nmake check\n"
+            "%changelog\n* Fri Oct 16 2026 B <b@example.com> - 1-1\n- Initial package\n"
+        )
+        self.assertEqual(self.check_with(current, previous, 0), 0)
+
+    def test_user_facing_spec_changes_still_need_a_bump(self):
+        previous = "Version: 1\nRelease: 1%{?dist}\n%build\nmake\n"
+        current = "Version: 1\nRelease: 1%{?dist}\n%build\nmake -j1\n"
+        self.assertEqual(self.check_with(current, previous, 0), 1)
+
+    def test_other_package_files_still_need_a_bump(self):
+        spec = "Version: 1\nRelease: 1%{?dist}\n%check\nmake test\n"
+        files = "packages/demo/demo.spec\npackages/demo/demo-vendor.tar.bz2"
+        self.assertEqual(self.check_with(spec, spec, 0, files), 1)
+
     def test_initial_release_reset_is_not_reusable_after_it_lands(self):
         spec = (
             "Version: 1.7.12\nRelease: 1%{?dist}\n%changelog\n"
