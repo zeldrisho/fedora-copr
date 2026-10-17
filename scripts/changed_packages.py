@@ -33,7 +33,7 @@ def package_names() -> list[str]:
 
 
 def changed_packages(base: str | None, global_paths: tuple[str, ...] = GLOBAL_PATHS) -> list[str]:
-    """Select packages changed from base to HEAD, ignoring package README files.
+    """Select packages changed from base to HEAD, ignoring README and docs files.
 
     Select all packages when base is absent or all zeros, or when a changed
     path starts with one of the supplied shared-input prefixes in global_paths.
@@ -49,8 +49,8 @@ def changed_packages(base: str | None, global_paths: tuple[str, ...] = GLOBAL_PA
         parts = Path(path).parts
         if len(parts) >= 3 and parts[0] == "packages":
             name = parts[1]
-            # Package notes do not alter the RPM. Other package-local files do.
-            if len(parts) == 3 and parts[2] == "README.md":
+            # Package documentation does not alter the RPM. Other local files do.
+            if (len(parts) == 3 and parts[2] == "README.md") or parts[2] == "docs":
                 continue
             if name in available:
                 changed.add(name)

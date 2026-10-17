@@ -138,6 +138,14 @@ class ValidationTests(unittest.TestCase):
         files = "packages/demo/demo.spec\npackages/demo/demo-vendor.tar.bz2"
         self.assertEqual(self.check_with(spec, spec, 0, files), 1)
 
+    def test_package_docs_do_not_require_bump_but_build_inputs_still_do(self):
+        """Ignore package docs while preserving checks for real package inputs."""
+        spec = "Version: 1\nRelease: 1%{?dist}\n%build\nmake\n"
+        docs = "packages/demo/docs/audit.md\npackages/demo/docs/review.md"
+        self.assertEqual(self.check_with(spec, spec, 0, docs), 0)
+        mixed = docs + "\npackages/demo/demo-vendor.tar.bz2"
+        self.assertEqual(self.check_with(spec, spec, 0, mixed), 1)
+
     def test_initial_release_reset_is_not_reusable_after_it_lands(self):
         """Verify an existing reset marker cannot authorize another reset."""
         spec = (
@@ -163,6 +171,10 @@ class ValidationTests(unittest.TestCase):
         with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
             with patch.object(changed_packages, "git", return_value="packages/demo/README.md\n"):
                 self.assertEqual(changed_packages.changed_packages("base"), [])
+            with patch.object(changed_packages, "git", return_value="packages/demo/docs/audit.md\n"):
+                self.assertEqual(changed_packages.changed_packages("base"), [])
+            with patch.object(changed_packages, "git", return_value="packages/demo/docs/audit.md\npackages/demo/demo.spec\n"):
+                self.assertEqual(changed_packages.changed_packages("base"), ["demo"])
             with patch.object(changed_packages, "git", return_value=".copr/Makefile\n"):
                 self.assertEqual(changed_packages.changed_packages("base"), ["demo", "other"])
             with patch.object(changed_packages, "git", return_value="packages/other/other.spec\n"):
