@@ -20,6 +20,14 @@ Install package-specific dependencies when building a package locally. For Rust 
 sudo dnf install cargo cargo-rpm-macros lua-devel oniguruma-devel
 ```
 
+For **Herdr**, install the Zig compiler required by the release (0.9.5 requires Zig 0.16.0):
+
+```sh
+sudo dnf install zig
+```
+
+Herdr's Cargo crate sources and Zig package sources are provided by package-local archives; `%build` and `%check` must not download dependencies. See [Herdr package notes](../packages/herdr/README.md) for source-bundle refresh guidance.
+
 Yazi uses Fedora's Lua 5.4 and Oniguruma libraries rather than building those C libraries from bundled sources. For specs using `%cargo_generate_buildrequires`, static `dnf builddep <spec>` is not enough: first generate the dynamic requirements, then ask DNF to resolve them:
 
 ```sh

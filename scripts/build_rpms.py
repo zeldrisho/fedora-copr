@@ -107,6 +107,23 @@ def build_package(package: str, chroot: str, workdir: Path,
                 encoding="utf-8",
             )
             run(["actionlint", str(smoke_file)])
+    elif package == "herdr":
+        rpm = next((path for path in rpms if path.name.startswith("herdr-")), None)
+        if rpm is None:
+            raise SystemExit("Mock did not produce the Herdr RPM")
+        run(["rpm", "-qp", "--licensefiles", str(rpm)])
+        result = subprocess.run(["rpm", "-qp", "--list", str(rpm)],
+                                text=True, stdout=subprocess.PIPE, check=True)
+        for path in ("/usr/bin/herdr", "/usr/share/bash-completion/completions/herdr",
+                     "/usr/share/zsh/site-functions/_herdr",
+                     "/usr/share/fish/vendor_completions.d/herdr.fish"):
+            if path not in result.stdout.splitlines():
+                raise SystemExit(f"Herdr RPM is missing {path}")
+        if chroot == "fedora-44-x86_64":
+            run(["dnf", "-y", "install", str(rpm)])
+            run(["herdr", "--version"])
+            for shell in ("bash", "zsh", "fish"):
+                run(["herdr", "completion", shell])
     elif package == "yazi":
         rpm = next((path for path in rpms if path.name.startswith("yazi-")), None)
         if rpm is None:

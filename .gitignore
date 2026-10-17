@@ -6,6 +6,9 @@
 !/packages/yazi/yazi-*-vendor.tar.gz
 !/packages/yazi/yazi-*-syntax-sources.tar.gz
 
+# Herdr source and dependency archives are committed for offline builds
+!/packages/herdr/herdr-*.tar.gz
+
 # RPM build artifacts and local build results
 *.rpm
 dist/
