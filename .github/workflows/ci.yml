@@ -64,8 +64,7 @@ jobs:
           status=0
           for chroot in fedora-44-x86_64 fedora-45-x86_64 fedora-rawhide-x86_64; do
             echo "::group::Build $chroot"
-            python3 scripts/build_rpms.py "$chroot" --base-ref "$BASE_REF" \\
-              --srpm-dir "$RUNNER_TEMP/srpms" --workdir "$RUNNER_TEMP/mock-results/$chroot"
+            python3 scripts/build_rpms.py "$chroot" --base-ref "$BASE_REF" --srpm-dir "$RUNNER_TEMP/srpms" --workdir "$RUNNER_TEMP/mock-results/$chroot"
             result=$?
             echo "::endgroup::"
             if (( result != 0 )); then status=1; fi
