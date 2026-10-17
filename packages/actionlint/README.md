@@ -27,4 +27,4 @@ make -C ../.. validate
 
 Repository validation covers the spec and SRPM, not binary RPM linting or runtime behavior. Follow the [binary RPM review steps](../../docs/toolchain.md#build-and-inspect-binary-rpms) as well.
 
-The package's `%check` skips tests that require live HTTP because Fedora builds run offline, and omits a generator test needing Git metadata unavailable in the upstream release archive. The remaining tests run offline. CI builds the binary RPM locally before merge; COPR build logs confirm the configured target chroots after publishing.
+The package's `%check` skips tests that require live HTTP because Fedora builds run offline, and omits `scripts/check-checks`, which maintains upstream's `docs/checks.md` and needs `shellcheck` and `pyflakes`. The remaining tests run offline. CI builds the binary RPM locally before merge; COPR build logs confirm the configured target chroots after publishing.
