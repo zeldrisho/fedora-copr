@@ -5,6 +5,7 @@ on:
     paths:
       - '.copr/**'
       - '.github/workflows/ci.yml'
+      - '.github/actions/**'
       - 'packages/**'
       - 'scripts/**'
       - 'tests/**'
@@ -14,6 +15,7 @@ on:
     paths:
       - '.copr/**'
       - '.github/workflows/ci.yml'
+      - '.github/actions/**'
       - 'packages/**'
       - 'scripts/**'
       - 'tests/**'
@@ -27,15 +29,17 @@ jobs:
     runs-on: ubuntu-24.04
     container: fedora:44
     steps:
-      - name: Install RPM validation tools
-        uses: ./.github/actions/install-rpm-tools
-        with:
-          packages: git go-rpm-macros go-vendor-tools make python3 rpm-build rpmdevtools rpmlint
+      - name: Install Git for checkout
+        run: dnf -y install git
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Install RPM validation tools
+        uses: ./.github/actions/install-rpm-tools
+        with:
+          packages: go-rpm-macros go-vendor-tools make python3 rpm-build rpmdevtools rpmlint
       - name: Trust workspace for Git checks in the container
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Run validation unit tests
@@ -73,15 +77,17 @@ jobs:
       options: --privileged
     timeout-minutes: 360
     steps:
-      - name: Install Mock and RPM build tools
-        uses: ./.github/actions/install-rpm-tools
-        with:
-          packages: git go-rpm-macros go-vendor-tools make mock mock-core-configs python3 rpm-build rpmdevtools rpmlint shadow-utils util-linux
+      - name: Install Git for checkout
+        run: dnf -y install git
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Install Mock and RPM build tools
+        uses: ./.github/actions/install-rpm-tools
+        with:
+          packages: go-rpm-macros go-vendor-tools make mock mock-core-configs python3 rpm-build rpmdevtools rpmlint shadow-utils util-linux
       - name: Trust workspace for Git checks in the container
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Download validated SRPMs
