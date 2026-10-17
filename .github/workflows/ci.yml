@@ -24,8 +24,8 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-24.04
-    container: fedora:44
+    runs-on: ubuntu-latest
+    container: fedora:latest
     steps:
       - name: Install Git for checkout
         run: dnf -y install git
@@ -62,13 +62,13 @@ jobs:
   build:
     name: Build changed packages (${{ matrix.chroot }})
     needs: validate
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         chroot: [fedora-44-x86_64, fedora-45-x86_64, fedora-rawhide-x86_64]
     container:
-      image: fedora:44
+      image: fedora:latest
       options: --privileged
     timeout-minutes: 360
     steps:
@@ -107,7 +107,7 @@ jobs:
     if: github.event_name == 'push'
     needs: [validate, build]
     runs-on: ubuntu-latest
-    container: fedora:44
+    container: fedora:latest
     timeout-minutes: 360
     concurrency:
       group: copr-publish
