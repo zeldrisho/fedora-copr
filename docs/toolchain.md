@@ -37,7 +37,7 @@ Install package-specific dependencies when building a package locally. For **act
 sudo dnf install go go-rpm-macros go-vendor-tools rubygem-ronn-ng
 ```
 
-CI uses Mock rather than installing package build dependencies into the runner container. It validates and retains SRPMs once, then reuses them across the Fedora 44, Fedora 45, and Rawhide x86_64 build jobs. `mock` and `mock-core-configs` provide isolated buildroots; RPM build networking is explicitly disabled. The CI build container runs privileged on a disposable GitHub-hosted runner because Mock requires nested container and mount operations. SRPM source staging and buildroot dependency resolution still require network access. The workflow also installs `shadow-utils` and `util-linux` for its unprivileged Mock account (`useradd`/`runuser`). `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
+CI uses Mock rather than installing package build dependencies into the runner container. It validates and retains SRPMs once, then reuses them across sequential Fedora 44, Fedora 45, and Rawhide x86_64 Mock builds in the same job. `mock` and `mock-core-configs` provide isolated buildroots; RPM build networking is explicitly disabled. The CI build container runs privileged on a disposable GitHub-hosted runner because Mock requires nested container and mount operations. SRPM source staging and buildroot dependency resolution still require network access. The workflow also installs `shadow-utils` and `util-linux` for its unprivileged Mock account (`useradd`/`runuser`). `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
 
 The upstream source archive and generated Go vendor archive are included as SRPM sources; Go modules are not fetched during the build. See [actionlint package notes](../packages/actionlint/README.md) and the [Go Packaging Guidelines](packaging-guidelines/golang.md) when updating vendored sources and licensing.
 
@@ -52,11 +52,15 @@ python3 -m unittest discover -s tests -v
 
 `make validate` runs repository checks, creates an SRPM through the same shared Makefile target used by COPR, and runs rpmlint on the spec and SRPM. It does not build or lint binary RPMs. Validation copies each package into a temporary directory and removes the SRPM and scratch build files when it exits; use `make srpm` when you want to keep an SRPM. By default, `make srpm` writes it under `dist/srpm` in the repository.
 
-To keep build artifacts in the standard RPM workspace, write the SRPM to `~/rpmbuild/SRPMS` and rebuild it with `~/rpmbuild` as the top directory:
+For a quick **host build** (not an isolated or CI-equivalent check), keep artifacts in the standard RPM workspace by writing the SRPM to `~/rpmbuild/SRPMS` and rebuilding it with `~/rpmbuild` as the top directory:
 
 ```sh
 make srpm PACKAGE=yazi OUTDIR="$HOME/rpmbuild/SRPMS"
-sudo dnf builddep packages/yazi/yazi.spec
+mkdir -p /tmp/buildreqs
+rpmbuild -br packages/yazi/yazi.spec \
+  --define '_sourcedir packages/yazi' \
+  --define '_srcrpmdir /tmp/buildreqs'
+sudo dnf builddep /tmp/buildreqs/yazi-*.buildreqs.nosrc.rpm
 rpmbuild --rebuild "$HOME"/rpmbuild/SRPMS/yazi-*.src.rpm \
   --define "_topdir $HOME/rpmbuild"
 ```
@@ -65,7 +69,7 @@ The SRPM is retained in `~/rpmbuild/SRPMS`; binary RPMs and build logs are writt
 
 ## Build and inspect binary RPMs
 
-For a clean build matching CI, install Mock and its Fedora chroot configurations, then rebuild the SRPM in a target chroot. Mock resolves static and dynamic build requirements inside its buildroot:
+For an optional local isolated build matching CI, install Mock and its Fedora chroot configurations, then rebuild the SRPM in a target chroot. This is useful for targeted debugging; CI remains the authoritative pre-merge matrix and COPR remains authoritative for its configured publishing chroots. Mock resolves static and dynamic build requirements inside its buildroot:
 
 ```sh
 sudo dnf install mock mock-core-configs
@@ -73,7 +77,7 @@ sudo usermod -a -G mock "$USER"  # log out/in so the new group takes effect
 mock -r fedora-44-x86_64 --rebuild <path-to-src.rpm> --resultdir "$PWD/results"
 ```
 
-Use `fedora-45-x86_64` or `fedora-rawhide-x86_64` to check the other CI targets. Mock buildroot package installation needs network access; RPM build networking is disabled in CI so `%build` and `%check` cannot fetch undeclared sources. To build only packages changed against a Git base revision, use `python3 scripts/build_rpms.py fedora-44-x86_64 --base-ref <commit>` from the repository root; omit `--base-ref` to build all packages.
+Use `fedora-45-x86_64` or `fedora-rawhide-x86_64` to check the other CI targets. Mock buildroot package installation needs network access; RPM build networking is disabled in CI so `%build` and `%check` cannot fetch undeclared sources. To build only packages changed against a Git base revision, use `python3 scripts/build_rpms.py fedora-44-x86_64 --base-ref <commit>` from the repository root; omit `--base-ref` to build all packages. This helper also works without `--srpm-dir` by creating SRPMs locally; CI supplies validated SRPMs through that option to avoid rebuilding them for each target chroot.
 
 Review the resulting binary RPMs (and any debuginfo/subpackages):
 

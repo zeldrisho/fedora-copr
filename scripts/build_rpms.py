@@ -129,6 +129,8 @@ def main() -> int:
     parser.add_argument("--base-ref", help="base commit used to select changed package inputs")
     parser.add_argument("--srpm-dir", type=Path,
                         help="use previously validated SRPMs from this directory")
+    parser.add_argument("--workdir", type=Path,
+                        help="retain Mock result files under this directory")
     args = parser.parse_args()
 
     config = Path("/etc/mock") / f"{args.chroot}.cfg"
@@ -150,12 +152,18 @@ def main() -> int:
     with site_defaults.open("a", encoding="utf-8") as config_file:
         config_file.write("\nconfig_opts['rpmbuild_networking'] = False\n")
 
-    with tempfile.TemporaryDirectory(prefix=f"fedora-copr-{args.chroot}-") as temporary:
-        workdir = Path(temporary)
+    def run_builds(workdir: Path) -> None:
+        workdir.mkdir(parents=True, exist_ok=True)
         workdir.chmod(0o755)
         for package in packages:
             build_package(package, args.chroot, workdir, builder, builder_uid, mock_gid,
                           args.srpm_dir)
+
+    if args.workdir is not None:
+        run_builds(args.workdir)
+    else:
+        with tempfile.TemporaryDirectory(prefix=f"fedora-copr-{args.chroot}-") as temporary:
+            run_builds(Path(temporary))
     return 0
 
 
