@@ -31,3 +31,5 @@ Pull-request CI checks that RPM considers the new Version-Release greater than t
 ## Build and publish
 
 After merge, inspect the COPR build across its configured chroots; the local CI build does not replace those target builds. See [COPR setup](copr.md) for publishing details.
+
+For submission to the official Fedora repositories, follow the [Fedora submission checklist](fedora-submission.md) and complete the [actionlint review draft](actionlint-review.md). COPR publication alone does not submit a Fedora package review.

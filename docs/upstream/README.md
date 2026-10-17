@@ -1,6 +1,6 @@
-# Upstream packaging references
+# Upstream Fedora references
 
-These local copies are Fedora packaging and licensing guidance sourced from `docs.fedoraproject.org`, preserved for offline reference. COPR documentation is not part of this directory; consult its live documentation at `docs.copr.fedorainfracloud.org` when needed. Consult the canonical source URLs recorded in each Fedora document when checking current policy; Fedora guidelines can change.
+This index links local copies of Fedora packaging, licensing, and package-maintainer guidance sourced from `docs.fedoraproject.org`, preserved for offline reference. COPR documentation is not included here; consult its live documentation at `docs.copr.fedorainfracloud.org` when needed. Consult the canonical source URLs recorded in each Fedora document when checking current policy; Fedora guidelines can change.
 
 ## Core packaging references
 
@@ -13,6 +13,11 @@ These local copies are Fedora packaging and licensing guidance sourced from `doc
 
 - [Naming Guidelines](naming.md) — package naming when adding a package.
 - [Package Review Guidelines](review-guidelines.md) — useful as a self-review checklist.
+
+## Package-maintainer references
+
+- [Joining the Package Maintainers](joining.md) — account setup, sponsorship, and contributor onboarding.
+- [Package Review Process](review-progress.md) — submitting a review, obtaining sponsorship, and importing an approved package into Fedora.
 
 ## Provenance and terms
 
