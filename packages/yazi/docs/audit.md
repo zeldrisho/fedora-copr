@@ -22,15 +22,15 @@
 ## Checksums
 
 - Upstream source archive: `66857f1b670469daf258edd0bb2ea51d9ad3e2cab4eea9684028c80059fd6862`.
-- Vendor archive: `04b5aa88615031e49575c92521d82b620b1ae58d88c03d781dac6d2b3ea2babe`.
-- Filtered syntax database: `0a002d918349f3df22ba8f6c0dd57d54f6af00d0307fb4efd6022232ee13e042`.
+- Vendor archive: `3f99e7264b74c88f2aa65f13ab200daae01177b5980079818fb0b7ae2bb2a420`.
+- Filtered syntax database: `cd60adbdd33c19965f62c71c5a50a03a7b41aebf53ae3d921555ee76d9a8731b`.
 - Syntax-source archive: `46a129da4744334d9242e117af4d51e83acd69920dc199a40a39d7700cb7e6d2`.
 - SSH syntax archive: `d13c5c410d976cf0c6fe52e2d0317a966bcf0899603b66e3e92b1bd5c7b24100`.
 - SSH license text: `5bcea00646cd676b4276fd75aaf3a4d42e438333714454f13d12469b8b949088`.
 
 ## Verification status
 
-- The syntect 5.3.0 filter helper successfully processed the pinned prebuilt database and validated the resulting runtime format.
+- Before publication of 26.9.1-1, corrected the filter's stale compiled context IDs. The original `yazi-prebuilt` 0.1.0 crate was fetched from crates.io and verified against the recorded crate checksum and VCS commit. All context IDs are now remapped, including lazy name tables, prototypes, includes, Push/Set operations, and `with_prototype`. Seven references to excluded languages fall back to Plain Text without restoring their data. All 200 retained definitions pass context-bound checks and TOML (the actionlint configuration), Cargo-lock-style, INI, text, and embedded HTML parser fixtures. The prior database fails validation with `HTML: invalid context 115 in syntax 133`. Three remapping unit tests pass. Repository validation (including SRPM creation and rpmlint) passed with the corrected archive; a binary RPM rebuild and interactive preview smoke test remain outstanding. The historical binary RPM results below predate this correction. Release remains 1 because the maintainer confirms 26.9.1-1 has not been published.
 - A local offline Fedora 44-feature release build completed with the system Lua 5.4 patches. Both `yazi --version` and `ya --version` reported `26.9.1` and the pinned upstream commit; Bash, Fish, and Zsh completions were generated.
 - The self-contained SRPM build completed as `yazi-26.9.1-1.fc44.src.rpm`. The final local Fedora 44 `rpmbuild --rebuild` completed with the refreshed `License:` expression and included `%check`; the upstream test harness found zero tests. The produced RPM contains both executables, generated completions, and license files. Extracting the final RPM and running both executables reported version 26.9.1 and the pinned upstream commit. Its automatic runtime requirements include `file`, Lua 5.4, and Oniguruma; its optional recommendations match the spec.
 - `scripts/validate.py` passes for the pre-manpage package state. Added concise `yazi(1)` and `ya(1)` pages as `Source5` and `Source6`, installed them under `%{_mandir}/man1`, and verified their roff syntax with `groff`. The installed local RPM predates these manual-page additions; a future package rebuild is needed for the binary RPM to include them and clear the two missing-man-page rpmlint warnings. No rebuild was run after this small change, per the maintainer's instruction.

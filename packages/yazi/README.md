@@ -22,7 +22,7 @@ python3 packages/yazi/scripts/update-vendor-syntaxes.py \
   packages/yazi/yazi-<version>-vendor.tar.gz
 ```
 
-Review both archives and update their checksums in the audit. The filter helper validates that syntect 5.3.0 can load the resulting database. The SSH syntax source is pinned to commit `e1012e9f13c6073f559b14206df2ede35720e884`; its GPL-3.0 license text is from upstream commit `a47c765aa14d58236b5e5964bb687b5352450547`. `%prep` removes prebuilt object and library files from vendored crates before building; do not omit that cleanup.
+Review both archives and update their checksums in the audit. Always filter the original upstream database, not the previously filtered vendor copy. The helper remaps all compiled context references as well as syntax lookup indices; embedded references to excluded languages fall back to Plain Text. It checks every context reference for valid syntax/context bounds and parses TOML, Cargo-lock-style, INI, plain-text, and embedded HTML fixtures with every retained grammar. To validate an existing uncompressed database without filtering it, run the helper with `--validate /path/to/syntaxes`. Run its unit tests with `RUSTONIG_SYSTEM_LIBONIG=1 RUSTONIG_DYNAMIC_LIBONIG=1 cargo test --locked --manifest-path packages/yazi/scripts/filter-syntax-database/Cargo.toml`. The SSH syntax source is pinned to commit `e1012e9f13c6073f559b14206df2ede35720e884`; its GPL-3.0 license text is from upstream commit `a47c765aa14d58236b5e5964bb687b5352450547`. `%prep` removes prebuilt object and library files from vendored crates before building; do not omit that cleanup.
 
 ## Build compatibility
 
