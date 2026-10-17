@@ -7,17 +7,17 @@ The repository uses Fedora RPM tooling for spec validation, SRPM creation, and b
 Install the tools used by repository validation and local SRPM builds:
 
 ```sh
-sudo dnf install rpm-build rpmdevtools rpmlint make python3
+sudo dnf install rpm-build rpmdevtools rpmlint make
 ```
 
 `rpmdevtools` provides `spectool` for staging declared sources. If `spectool` is missing in COPR's minimal SRPM environment, the shared `.copr/Makefile` installs `rpmdevtools` with DNF.
 
 ## Package build dependencies
 
-Install package-specific dependencies when building a package locally. For **actionlint**, these include Go, Fedora Go RPM macros, Go Vendor Tools, GNU Make, and `ronn-ng`:
+Install package-specific dependencies when building a package locally. For **actionlint**, these include Go, Fedora Go RPM macros, Go Vendor Tools, and `ronn-ng`:
 
 ```sh
-sudo dnf install go go-rpm-macros go-vendor-tools make rubygem-ronn-ng
+sudo dnf install go go-rpm-macros go-vendor-tools rubygem-ronn-ng
 ```
 
 CI installs RPM build dependencies from the spec before building the binary RPM. `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
