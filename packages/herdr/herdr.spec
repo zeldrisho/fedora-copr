@@ -28,6 +28,8 @@ BuildRequires:  rust >= 1.96.1
 BuildRequires:  zig = 0.16.0
 BuildRequires:  gcc
 BuildRequires:  cmake
+# The unit tests create and inspect Git repositories and worktrees.
+BuildRequires:  git-core
 
 ExclusiveArch:  x86_64 aarch64
 
@@ -62,7 +64,9 @@ install -Dpm 0644 herdr.fish %{buildroot}%{fish_completions_dir}/herdr.fish
 %check
 export HERDR_BUILD_CHANNEL=stable
 export ZIG_GLOBAL_CACHE_DIR="$PWD/zig-global-cache"
-%cargo_test
+# The integration tests start live Herdr servers, which do not come up inside the
+# Mock build environment (the server socket never appears), so run the unit tests.
+%cargo_test -- --bins
 ./target/rpm/herdr --version | grep -F '%{version}'
 ./target/rpm/herdr completion bash >/dev/null
 
