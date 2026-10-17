@@ -10,13 +10,14 @@
 | Task | Command |
 | --- | --- |
 | Validate all packages | `scripts/validate.py` |
-| Build a package SRPM | `(cd packages/<name> && make -f ../../.copr/Makefile srpm spec=<name>.spec outdir=/tmp/srpms)` |
+| Build and retain a package SRPM | `(cd packages/<name> && make -f ../../.copr/Makefile srpm spec=<name>.spec outdir="$HOME/rpmbuild/SRPMS")` |
 | Find a local upstream reference | `rg -l -F '<source-url>' docs/` |
 
 ## Key Conventions
 
 - Keep each Fedora spec at `packages/<name>/<name>.spec`; match directory, spec basename, and `Name:`.
 - Before package changes, consult the relevant repository guidance and package-local spec, README, or maintenance notes for the area being changed; do not reread unrelated documentation for mechanical or unrelated edits. For changes to shared build, validation, or publishing behavior, consult the relevant `.copr/`, CI, and development guidance.
+- When installing new development or packaging dependencies, update `docs/toolchain.md` with the corresponding local setup instructions so maintainers can reproduce the environment.
 - Before creating a spec for a new package, review the relevant local Fedora guidance to determine whether the software is eligible for Fedora and whether its sources and licensing are acceptable. Start with `docs/packaging-guidelines/what-can-be-packaged.md`, then consult applicable packaging and licensing references; resolve eligibility concerns before treating the package as submittable.
 - Keep specs plain and Fedora-submittable; no COPR-only logic or rpkg templates.
 - Put COPR-specific behavior only in `.copr/Makefile`.

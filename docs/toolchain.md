@@ -14,6 +14,23 @@ sudo dnf install rpm-build rpmdevtools rpmlint make
 
 ## Package build dependencies
 
+Install package-specific dependencies when building a package locally. For Rust applications such as Yazi, install Cargo and Fedora's Rust RPM macros before resolving the spec's generated crate requirements:
+
+```sh
+sudo dnf install cargo cargo-rpm-macros lua-devel oniguruma-devel
+```
+
+Yazi uses Fedora's Lua 5.4 and Oniguruma libraries rather than building those C libraries from bundled sources. For specs using `%cargo_generate_buildrequires`, static `dnf builddep <spec>` is not enough: first generate the dynamic requirements, then ask DNF to resolve them:
+
+```sh
+rpmbuild -br packages/<name>/<name>.spec \
+  --define '_sourcedir /path/to/packages/<name>' \
+  --define '_srcrpmdir /tmp/buildreqs'
+sudo dnf builddep /tmp/buildreqs/<name>-*.buildreqs.nosrc.rpm
+```
+
+`cargo-rpm-macros` provides `%cargo_prep`, `%cargo_generate_buildrequires`, `%cargo_build`, `%cargo_test`, and the Cargo license-report macros. Build with Fedora macros and an offline dependency configuration; do not let Cargo download crates during `%build` or `%check`. If generated crate requirements are unavailable in Fedora, resolve that dependency gap before proceeding; do not silently switch to an unreviewed vendor bundle. For Yazi-specific source and license update notes, see [Yazi package notes](../packages/yazi/README.md).
+
 Install package-specific dependencies when building a package locally. For **actionlint**, these include Go, Fedora Go RPM macros, Go Vendor Tools, and `ronn-ng`:
 
 ```sh
@@ -33,7 +50,18 @@ make srpm PACKAGE=actionlint
 python3 -m unittest discover -s tests -v
 ```
 
-`make validate` runs repository checks, creates an SRPM through the same shared Makefile target used by COPR, and runs rpmlint on the spec and SRPM. It does not build or lint binary RPMs. `make srpm` writes a local source RPM under `dist/srpm` by default.
+`make validate` runs repository checks, creates an SRPM through the same shared Makefile target used by COPR, and runs rpmlint on the spec and SRPM. It does not build or lint binary RPMs. Validation copies each package into a temporary directory and removes the SRPM and scratch build files when it exits; use `make srpm` when you want to keep an SRPM. By default, `make srpm` writes it under `dist/srpm` in the repository.
+
+To keep build artifacts in the standard RPM workspace, write the SRPM to `~/rpmbuild/SRPMS` and rebuild it with `~/rpmbuild` as the top directory:
+
+```sh
+make srpm PACKAGE=yazi OUTDIR="$HOME/rpmbuild/SRPMS"
+sudo dnf builddep packages/yazi/yazi.spec
+rpmbuild --rebuild "$HOME"/rpmbuild/SRPMS/yazi-*.src.rpm \
+  --define "_topdir $HOME/rpmbuild"
+```
+
+The SRPM is retained in `~/rpmbuild/SRPMS`; binary RPMs and build logs are written under `~/rpmbuild/RPMS/` and `~/rpmbuild/BUILD/`. The `make srpm` step may download declared source archives into the package directory; those sources are retained there as well. If you only want to keep the SRPM, use `make srpm` without rebuilding it.
 
 ## Build and inspect binary RPMs
 

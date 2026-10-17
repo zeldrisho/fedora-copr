@@ -73,6 +73,15 @@ jobs:
               actionlint --version
               printf 'name: CI smoke test\non:\n  push:\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hello\n' > /tmp/actionlint-smoke.yml
               actionlint /tmp/actionlint-smoke.yml
+            elif [[ "$package" == yazi ]]; then
+              rpm_file=$(find ~/rpmbuild/RPMS -name 'yazi-[0-9]*.rpm' -print -quit)
+              test -n "$rpm_file"
+              rpm -qp --licensefiles "$rpm_file"
+              rpm -qp --requires "$rpm_file" | grep -q '^liblua-5.4.so'
+              rpm -qp --requires "$rpm_file" | grep -q '^libonig.so.5'
+              dnf -y install "$rpm_file"
+              yazi --version
+              ya --version
             fi
             rm -rf ~/rpmbuild/RPMS/* ~/rpmbuild/BUILD/* ~/rpmbuild/BUILDROOT/* ~/rpmbuild/SOURCES/* ~/rpmbuild/SPECS/*
           done

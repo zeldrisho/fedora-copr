@@ -7,5 +7,6 @@ Local copies of Fedora packaging guidance, retained for offline reference. Consu
 - [Licensing Guidelines](licensing-guidelines.md) — `%license` files and RPM `License:` field.
 - [Naming Guidelines](naming.md) — package naming.
 - [Package Review Guidelines](review-guidelines.md) — package self-review checklist.
+- [Rust Packaging Guidelines](rust.md) — Rust application and crate packaging, dependency handling, and licensing.
 - [Source URL Guidelines](source-url.md) — source provenance and declarations.
 - [What Can Be Packaged](what-can-be-packaged.md) — Fedora packaging eligibility overview.

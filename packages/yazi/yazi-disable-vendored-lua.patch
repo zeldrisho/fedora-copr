@@ -1,0 +1,24 @@
+diff --git a/yazi-dds/Cargo.toml b/yazi-dds/Cargo.toml
+--- a/yazi-dds/Cargo.toml
++++ b/yazi-dds/Cargo.toml
+@@ -12 +12 @@
+-default      = [ "vendored-lua" ]
++default      = []
+diff --git a/yazi-fm/Cargo.toml b/yazi-fm/Cargo.toml
+--- a/yazi-fm/Cargo.toml
++++ b/yazi-fm/Cargo.toml
+@@ -12 +12 @@
+-default      = [ "vendored-lua" ]
++default      = []
+diff --git a/yazi-plugin/Cargo.toml b/yazi-plugin/Cargo.toml
+--- a/yazi-plugin/Cargo.toml
++++ b/yazi-plugin/Cargo.toml
+@@ -12 +12 @@
+-default      = [ "vendored-lua" ]
++default      = []
+diff --git a/yazi-proxy/Cargo.toml b/yazi-proxy/Cargo.toml
+--- a/yazi-proxy/Cargo.toml
++++ b/yazi-proxy/Cargo.toml
+@@ -12 +12 @@
+-default      = [ "vendored-lua" ]
++default      = []

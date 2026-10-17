@@ -2,6 +2,10 @@
 /*.tar.gz
 /packages/*/*.tar.gz
 
+# Yazi's curated bundles are committed for offline builds and license provenance
+!/packages/yazi/yazi-*-vendor.tar.gz
+!/packages/yazi/yazi-*-syntax-sources.tar.gz
+
 # RPM build artifacts and local build results
 *.rpm
 dist/

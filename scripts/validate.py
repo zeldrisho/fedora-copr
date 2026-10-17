@@ -82,7 +82,10 @@ def validate_package(package_dir: Path, temporary: Path) -> None:
     srpms = sorted(outdir.glob("*.src.rpm"))
     if len(srpms) != 1:
         fail(f"expected exactly one SRPM for {name}, found {len(srpms)}")
-    run(["rpmlint", "--rpmlintrc", str(RPMLINTRC), str(spec), str(srpms[0])])
+    rpmlintrc = package_dir / "rpmlintrc"
+    if not rpmlintrc.is_file():
+        rpmlintrc = RPMLINTRC
+    run(["rpmlint", "--rpmlintrc", str(rpmlintrc), str(spec), str(srpms[0])])
 
 
 def main() -> None:

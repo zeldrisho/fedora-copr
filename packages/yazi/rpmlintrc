@@ -1,0 +1,3 @@
+# The vendor archive is a local, checked-in Source1 required for offline builds.
+addFilter(r"invalid-url Source1: yazi-[0-9.]+-vendor\.tar\.gz")
+addFilter(r"invalid-url Source4: yazi-[0-9.]+-syntax-sources\.tar\.gz")
