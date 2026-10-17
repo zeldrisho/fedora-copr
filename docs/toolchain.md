@@ -37,7 +37,7 @@ Install package-specific dependencies when building a package locally. For **act
 sudo dnf install go go-rpm-macros go-vendor-tools rubygem-ronn-ng
 ```
 
-CI uses Mock rather than installing package build dependencies into the runner container. `mock` and `mock-core-configs` provide isolated Fedora 44, Fedora 45, and Rawhide x86_64 buildroots; RPM build networking is explicitly disabled. SRPM source staging and buildroot dependency resolution still require network access. The workflow also installs `shadow-utils` and `util-linux` for its unprivileged Mock account (`useradd`/`runuser`). `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
+CI uses Mock rather than installing package build dependencies into the runner container. It validates and retains SRPMs once, then reuses them across the Fedora 44, Fedora 45, and Rawhide x86_64 build jobs. `mock` and `mock-core-configs` provide isolated buildroots; RPM build networking is explicitly disabled. The CI build container runs privileged on a disposable GitHub-hosted runner because Mock requires nested container and mount operations. SRPM source staging and buildroot dependency resolution still require network access. The workflow also installs `shadow-utils` and `util-linux` for its unprivileged Mock account (`useradd`/`runuser`). `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
 
 The upstream source archive and generated Go vendor archive are included as SRPM sources; Go modules are not fetched during the build. See [actionlint package notes](../packages/actionlint/README.md) and the [Go Packaging Guidelines](packaging-guidelines/golang.md) when updating vendored sources and licensing.
 

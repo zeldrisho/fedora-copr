@@ -53,6 +53,24 @@ class ValidationTests(unittest.TestCase):
                     validate.validate_package(package, root / "temporary")
             self.assertEqual(original, {p.name: p.read_bytes() for p in package.iterdir()})
 
+    def test_validation_can_retain_srpm_in_package_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = self.fixture(root)
+            output = root / "srpms" / "demo"
+
+            def fake_run(command, *, cwd=None, capture=False):
+                if command[0] == "rpmspec" and "--qf" in command:
+                    return "demo\n"
+                if command[0] == "make":
+                    target = Path(command[-1].split("=", 1)[1])
+                    (target / "demo-1-1.src.rpm").touch()
+                return ""
+
+            with patch.object(validate, "run", side_effect=fake_run):
+                validate.validate_package(package, output, output)
+            self.assertTrue((output / "demo-1-1.src.rpm").is_file())
+
     def test_rejects_multiple_srpms(self):
         """Verify validation rejects a build that produces more than one SRPM."""
         with tempfile.TemporaryDirectory() as directory:

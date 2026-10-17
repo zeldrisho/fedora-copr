@@ -56,17 +56,21 @@ def builder_identity(mock_gid: int) -> tuple[str, int]:
 
 
 def build_package(package: str, chroot: str, workdir: Path,
-                  builder: str, builder_uid: int, mock_gid: int) -> None:
+                  builder: str, builder_uid: int, mock_gid: int,
+                  srpm_dir: Path | None = None) -> None:
     """Prepare an SRPM, build it in Mock, and inspect resulting binary RPMs."""
     print(f"Building {package} for {chroot}", flush=True)
     package_dir = ROOT / "packages" / package
-    srpm_dir = workdir / package / "srpm"
     result_dir = workdir / package / "results"
-    srpm_dir.mkdir(parents=True)
     result_dir.mkdir()
 
-    run(["make", "-f", "../../.copr/Makefile", "srpm",
-         f"spec={package}.spec", f"outdir={srpm_dir}"], cwd=package_dir)
+    if srpm_dir is None:
+        srpm_dir = workdir / package / "srpm"
+        srpm_dir.mkdir(parents=True)
+        run(["make", "-f", "../../.copr/Makefile", "srpm",
+             f"spec={package}.spec", f"outdir={srpm_dir}"], cwd=package_dir)
+    else:
+        srpm_dir = srpm_dir / package
     srpms = sorted(srpm_dir.glob("*.src.rpm"))
     if len(srpms) != 1:
         raise SystemExit(f"expected one SRPM for {package}, found {len(srpms)}")
@@ -123,6 +127,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("chroot", help="Mock chroot configuration, e.g. fedora-44-x86_64")
     parser.add_argument("--base-ref", help="base commit used to select changed package inputs")
+    parser.add_argument("--srpm-dir", type=Path,
+                        help="use previously validated SRPMs from this directory")
     args = parser.parse_args()
 
     config = Path("/etc/mock") / f"{args.chroot}.cfg"
@@ -148,7 +154,8 @@ def main() -> int:
         workdir = Path(temporary)
         workdir.chmod(0o755)
         for package in packages:
-            build_package(package, args.chroot, workdir, builder, builder_uid, mock_gid)
+            build_package(package, args.chroot, workdir, builder, builder_uid, mock_gid,
+                          args.srpm_dir)
     return 0
 
 
