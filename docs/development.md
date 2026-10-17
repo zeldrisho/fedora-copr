@@ -1,6 +1,6 @@
 # Package development
 
-This guide describes how to maintain packages in this repository. For local setup and commands, see the [toolchain guide](toolchain.md). Consult the [upstream packaging references](upstream/README.md) for Fedora guidance relevant to the package being changed.
+This guide describes how to maintain packages in this repository. For local setup and commands, see the [toolchain guide](toolchain.md). Consult the [Fedora packaging references](packaging-guidelines/README.md) and [package-maintainer references](package-maintainers/README.md) for Fedora guidance relevant to the package being changed.
 
 ## Repository layout
 
@@ -10,7 +10,7 @@ This guide describes how to maintain packages in this repository. For local setu
 packages/<name>/        Fedora spec and package-specific sources/docs
 scripts/                Repository validation helpers
 tests/                  Python tests for repository helpers
-docs/                   Development, toolchain, COPR, and upstream guides
+docs/                   Shared development, packaging, and Fedora guidance
 ```
 
 GitHub Actions validates pull requests and publishes successful pushes to `main`. CI checks EVR increases, creates and lints SRPMs, and builds binary RPMs locally in Fedora; pull requests do not receive COPR credentials or submit builds. After a validated push to `main`, a separate job synchronizes SCM recipes and submits builds only for packages with changed build inputs. For validation, changes to shared build/CI tooling select every package. For COPR submission, only changes under `.copr/` do, because nothing else alters a package's contents; package README-only changes select none. COPR's configured chroots remain authoritative for published builds.
@@ -19,7 +19,7 @@ Every package lives in `packages/<name>/` and uses `packages/<name>/<name>.spec`
 
 ## Updating a package
 
-1. Review the upstream release, source integrity (including upstream signatures when available), Fedora-allowed licensing, dependencies, and Fedora compatibility. See the [upstream packaging references](upstream/README.md).
+1. Review the upstream release, source integrity (including upstream signatures when available), Fedora-allowed licensing, dependencies, and Fedora compatibility. See the [Fedora packaging references](packaging-guidelines/README.md).
 2. Update `Version`, source declarations, patches, build requirements, and package documentation as needed. Regenerate checked-in vendored sources when required and keep them synchronized with the spec.
 3. Use explicit `Version` and `Release` fields with a maintained `%changelog`; this repository's COPR SRPM flow does not process `%autorelease` or `%autochangelog`. rpmautospec cannot work in this monorepo: it opens the git repository at the spec's own directory without searching parents, so for `packages/<name>/` it finds no history and would always produce Release 1 and a generic changelog entry. Sign changelog entries as `Zeldris <zeldrisho@proton.me>`. Fedora recommends `%autochangelog` (manual changelogs are allowed), so switch to `%autorelease` and `%autochangelog` when the package moves to Fedora dist-git, where the first commit message becomes the initial changelog entry.
 4. Ensure all sources are available when creating the SRPM. Binary RPM builds must work offline; do not fetch sources or Go modules during build or test phases. Keep `%check` deterministic and offline. Document and narrowly skip tests that require network access or unavailable release metadata.
@@ -32,4 +32,4 @@ Pull-request CI checks that RPM considers the new Version-Release greater than t
 
 After merge, inspect the COPR build across its configured chroots; the local CI build does not replace those target builds. See [COPR setup](copr.md) for publishing details.
 
-For submission to the official Fedora repositories, follow the [Fedora submission checklist](fedora-submission.md) and complete the [actionlint review draft](actionlint-review.md). COPR publication alone does not submit a Fedora package review.
+For submission to the official Fedora repositories, follow the [submission guide](submission.md) and use the [review template](templates/review.md). Keep package-specific review records under `packages/<name>/docs/`. COPR publication alone does not submit a Fedora package review.

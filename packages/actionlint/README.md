@@ -1,6 +1,6 @@
 # actionlint RPM package
 
-This directory packages upstream [actionlint](https://github.com/rhysd/actionlint), a linter for GitHub Actions workflow files. The RPM installs the `actionlint` command and its man page.
+This directory packages upstream [actionlint](https://github.com/rhysd/actionlint), a linter for GitHub Actions workflow files. The RPM installs the `actionlint` command and its man page. Package-specific Fedora submission notes and source/installation audit are in [`docs/review.md`](docs/review.md) and [`docs/audit.md`](docs/audit.md); these records apply to the versions/builds they identify.
 
 For usage, configuration, and the full list of lint checks, see the [upstream documentation](https://github.com/rhysd/actionlint/tree/v1.7.12/docs). The upstream [README](https://github.com/rhysd/actionlint/blob/v1.7.12/README.md) includes examples and a quick start.
 

@@ -1,6 +1,6 @@
-# actionlint Fedora review draft
+# actionlint Fedora review record
 
-**Submitted:** [Bug 2554537](https://bugzilla.redhat.com/show_bug.cgi?id=2554537), created 2026-10-17 by `zeldrisho@proton.me`; status NEW in the contributor-provided confirmation. The initial description includes the spec/SRPM URLs, package description, Fedora username, and sponsorship request. The contributor-provided update at 04:32 UTC confirms Blocks contains `FE-NEEDSPONSOR` (tracker bug 177841). The fuller draft below is supporting material for follow-up comments, not the exact submitted description. The [source and installation audit](actionlint-audit.md) records the completed packager checks and their limits.
+**Submitted:** [Bug 2554537](https://bugzilla.redhat.com/show_bug.cgi?id=2554537), created 2026-10-17 by `zeldrisho@proton.me`; status NEW in the contributor-provided confirmation. The initial description includes the spec/SRPM URLs, package description, Fedora username, and sponsorship request. The contributor-provided update at 04:32 UTC confirms Blocks contains `FE-NEEDSPONSOR` (tracker bug 177841). The fuller draft below is supporting material for follow-up comments, not the exact submitted description. The [source and installation audit](audit.md) records the completed packager checks and their limits.
 
 ## Bugzilla fields
 
@@ -119,7 +119,7 @@ These results describe the local preparation of **1.7.12-1.fc44, x86_64** on 202
 | Installed-package smoke test | Passed in a private minimal root; `--nodeps --noscripts`, host libraries read-only; not full dependency-resolving installation |
 | Clean Mock build | Verified separately in COPR Rawhide build 11162667; local Mock is not installed |
 | Separate offline/network-isolation audit | Pending; successful builds alone do not prove network isolation |
-| Packager licensing and vendor regeneration audit | Completed within the [documented scope](actionlint-audit.md); independent reviewer evaluation still required |
+| Packager licensing and vendor regeneration audit | Completed within the [documented scope](audit.md); independent reviewer evaluation still required |
 | Duplicate package/review search | Contributor confirmed no existing actionlint package or review |
 | Sponsorship | Contributor requested FE-NEEDSPONSOR; group membership was not independently verified |
 
