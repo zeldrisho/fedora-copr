@@ -11,6 +11,7 @@
 | --- | --- |
 | Validate all packages | `scripts/validate.py` |
 | Build and retain a package SRPM | `(cd packages/<name> && make -f ../../.copr/Makefile srpm spec=<name>.spec outdir="$HOME/rpmbuild/SRPMS")` |
+| Find files and directories | `fd '<pattern>' [path]` |
 | Find a local upstream reference | `rg -l -F '<source-url>' docs/` |
 
 ## Key Conventions

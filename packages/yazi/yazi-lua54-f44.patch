@@ -1,0 +1,6 @@
+diff --git a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -61 +61 @@
+-mlua                  = { version = "0.12.1", features = [ "anyhow", "async", "error-send", "lua55", "macros", "serde" ] }
++mlua                  = { version = "0.12.1", features = [ "anyhow", "async", "error-send", "lua54", "macros", "serde" ] }

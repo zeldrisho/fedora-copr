@@ -39,6 +39,29 @@ def safe_extract(archive_path: Path, destination: Path) -> None:
                 raise SystemExit(f"unsupported vendor archive member type: {member.name}")
 
 
+def remove_prebuilt_objects(root: Path) -> None:
+    extensions = {".a", ".lib", ".o", ".so", ".dll", ".exe"}
+    manifests: dict[Path, set[str]] = {}
+    for path in root.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in extensions:
+            continue
+        manifest = next(
+            (parent / ".cargo-checksum.json" for parent in path.parents if (parent / ".cargo-checksum.json").is_file()),
+            None,
+        )
+        if manifest is None:
+            raise SystemExit(f"vendored object has no Cargo checksum manifest: {path}")
+        manifests.setdefault(manifest, set()).add(path.relative_to(manifest.parent).as_posix())
+        path.unlink()
+
+    for manifest, removed in manifests.items():
+        checksum = json.loads(manifest.read_text())
+        files = checksum.get("files", {})
+        for name in removed:
+            files.pop(name, None)
+        manifest.write_text(json.dumps(checksum, separators=(",", ":")) + "\n")
+
+
 def write_archive(root: Path, output: Path) -> None:
     with output.open("wb") as raw:
         with gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=0, compresslevel=9) as compressed:
@@ -78,6 +101,7 @@ def main() -> None:
         checksum_path = root / CHECKSUM_MEMBER
         if not syntax_path.is_file() or not checksum_path.is_file():
             raise SystemExit("vendor archive is missing yazi-prebuilt syntax data or checksum metadata")
+        remove_prebuilt_objects(root / "vendor")
         shutil.copyfile(args.generated_syntaxes, syntax_path)
         checksum = json.loads(checksum_path.read_text())
         checksum["files"]["built/syntaxes"] = hashlib.sha256(syntax_path.read_bytes()).hexdigest()
