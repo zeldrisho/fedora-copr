@@ -131,7 +131,9 @@ def build_package(package: str, chroot: str, workdir: Path,
         run(["rpm", "-qp", "--licensefiles", str(rpm)])
         result = subprocess.run(["rpm", "-qp", "--requires", str(rpm)],
                                 text=True, stdout=subprocess.PIPE, check=True)
-        for requirement in ("liblua-5.4.so", "libonig.so.5"):
+        # Fedora 44 builds against Lua 5.4; Fedora 45 and Rawhide use Lua 5.5.
+        lua_soname = "liblua-5.4.so" if chroot == "fedora-44-x86_64" else "liblua-5.5.so"
+        for requirement in (lua_soname, "libonig.so.5"):
             if requirement not in result.stdout:
                 raise SystemExit(f"yazi RPM is missing requirement {requirement}")
         if chroot == "fedora-44-x86_64":
