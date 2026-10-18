@@ -1,27 +1,25 @@
 # Fedora packages from COPR
 
-This repository contains ordinary Fedora RPM specs and stages package builds in the [`zeldrisho/packages` COPR repository](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/). Browse the project page for packages currently available for your Fedora release.
+This repository maintains Fedora RPM packaging for software published through the [`zeldrisho/packages` COPR repository](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/). These are community builds, not official Fedora packages. Check the COPR page for packages and availability for your Fedora release.
 
 ## Install
 
-Enable the COPR repository and install a package:
+Enable the COPR repository and install a package (for example, `actionlint`):
 
 ```sh
 sudo dnf copr enable zeldrisho/packages
-sudo dnf install <package-name>
-```
-
-For example, to install actionlint when a build is available for your Fedora release:
-
-```sh
 sudo dnf install actionlint
 ```
 
-Check the COPR project page for current build status and release availability. Upgrade packages with `sudo dnf upgrade`; remove one with `sudo dnf remove <package-name>`. Disable the repository with:
+Upgrade packages with `sudo dnf upgrade`, remove one with `sudo dnf remove <package-name>`, or disable the repository with:
 
 ```sh
 sudo dnf copr disable zeldrisho/packages
 ```
+
+## Development
+
+See the [package development guide](docs/development.md) and [COPR publishing guide](docs/copr.md) for maintainer information.
 
 ## License
 
