@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def load_script(name: str, filename: str):
     """Load a repository script as a module without running its CLI entry point."""
-    spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / filename)
+    script_path = ROOT / filename if filename.startswith(".github/") else ROOT / "scripts" / filename
+    spec = importlib.util.spec_from_file_location(name, script_path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
@@ -18,7 +19,8 @@ def load_script(name: str, filename: str):
 
 validate = load_script("validate", "validate.py")
 check_nvr = load_script("check_nvr", "check_nvr.py")
-changed_packages = load_script("changed_packages", "changed_packages.py")
+changed_packages = load_script("changed_packages", ".github/scripts/changed_packages.py")
+check_upstream = load_script("check_upstream", ".github/scripts/check_upstream.py")
 
 
 class ValidationTests(unittest.TestCase):
@@ -52,6 +54,24 @@ class ValidationTests(unittest.TestCase):
                 with patch.object(validate, "fail", side_effect=AssertionError):
                     validate.validate_package(package, root / "temporary")
             self.assertEqual(original, {p.name: p.read_bytes() for p in package.iterdir()})
+
+    def test_validation_can_retain_srpm_in_package_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = self.fixture(root)
+            output = root / "srpms" / "demo"
+
+            def fake_run(command, *, cwd=None, capture=False):
+                if command[0] == "rpmspec" and "--qf" in command:
+                    return "demo\n"
+                if command[0] == "make":
+                    target = Path(command[-1].split("=", 1)[1])
+                    (target / "demo-1-1.src.rpm").touch()
+                return ""
+
+            with patch.object(validate, "run", side_effect=fake_run):
+                validate.validate_package(package, output, output)
+            self.assertTrue((output / "demo-1-1.src.rpm").is_file())
 
     def test_rejects_multiple_srpms(self):
         """Verify validation rejects a build that produces more than one SRPM."""
@@ -138,6 +158,14 @@ class ValidationTests(unittest.TestCase):
         files = "packages/demo/demo.spec\npackages/demo/demo-vendor.tar.bz2"
         self.assertEqual(self.check_with(spec, spec, 0, files), 1)
 
+    def test_package_docs_do_not_require_bump_but_build_inputs_still_do(self):
+        """Ignore package docs while preserving checks for real package inputs."""
+        spec = "Version: 1\nRelease: 1%{?dist}\n%build\nmake\n"
+        docs = "packages/demo/docs/audit.md\npackages/demo/docs/review.md"
+        self.assertEqual(self.check_with(spec, spec, 0, docs), 0)
+        mixed = docs + "\npackages/demo/demo-vendor.tar.bz2"
+        self.assertEqual(self.check_with(spec, spec, 0, mixed), 1)
+
     def test_initial_release_reset_is_not_reusable_after_it_lands(self):
         """Verify an existing reset marker cannot authorize another reset."""
         spec = (
@@ -163,6 +191,10 @@ class ValidationTests(unittest.TestCase):
         with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
             with patch.object(changed_packages, "git", return_value="packages/demo/README.md\n"):
                 self.assertEqual(changed_packages.changed_packages("base"), [])
+            with patch.object(changed_packages, "git", return_value="packages/demo/docs/audit.md\n"):
+                self.assertEqual(changed_packages.changed_packages("base"), [])
+            with patch.object(changed_packages, "git", return_value="packages/demo/docs/audit.md\npackages/demo/demo.spec\n"):
+                self.assertEqual(changed_packages.changed_packages("base"), ["demo"])
             with patch.object(changed_packages, "git", return_value=".copr/Makefile\n"):
                 self.assertEqual(changed_packages.changed_packages("base"), ["demo", "other"])
             with patch.object(changed_packages, "git", return_value="packages/other/other.spec\n"):
@@ -178,6 +210,12 @@ class ValidationTests(unittest.TestCase):
                     self.assertEqual(changed_packages.changed_packages("base"), ["demo", "other"])
             with patch.object(changed_packages, "git", return_value=".copr/Makefile\n"):
                 self.assertEqual(changed_packages.changed_packages("base", paths), ["demo", "other"])
+
+    def test_upstream_version_comparison_handles_numeric_components(self):
+        self.assertGreater(check_upstream.version_key("v1.10.0"), check_upstream.version_key("1.9.9"))
+        self.assertEqual(check_upstream.version_key("v2.0.0"), check_upstream.version_key("2.0.0"))
+        with self.assertRaises(ValueError):
+            check_upstream.version_key("v")
 
     def test_initial_push_selects_all_packages(self):
         """Verify an all-zero base selects every available package."""

@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_PATH = re.compile(r"^packages/([^/]+)/")
-IGNORED = re.compile(r"^packages/[^/]+/README\.md$")
+IGNORED = re.compile(r"^packages/[^/]+/(?:README\.md|docs/)")
 INITIAL_RELEASE_RESET_MARKER = (
     "Initial release reset: all prior COPR builds withdrawn and confirmed "
     "not downloaded or installed"
@@ -116,9 +116,9 @@ def check(base: str) -> int:
     """Require version-release increases for packages changed since base.
 
     Compare committed HEAD with its merge base with the Git ref base, ignoring
-    each package's top-level README.md. Skip packages whose spec is absent or
-    empty at either revision, and spec-only changes confined to comments,
-    %check, and %changelog. Print results and return 0 on success, including
+    each package's top-level README.md and files under its docs/ directory. Skip
+    packages whose spec is absent or empty at either revision, and spec-only
+    changes confined to comments, %check, and %changelog. Print results and return 0 on success, including
     when no packages need comparison, or 1 for invalid fields, RPM subprocess
     failure, or a version-release that did not increase.
 
