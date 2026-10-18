@@ -184,6 +184,10 @@ class ValidationTests(unittest.TestCase):
                    "# packager-only: BuildRequires used only by %check tests\n"
                    "BuildRequires: procps-ng\n%build\ncargo build\n")
         self.assertEqual(self.check_with(current, previous, 0), 0)
+        previous_unmarked = previous.replace(
+            "BuildRequires: cargo\n", "BuildRequires: cargo\nBuildRequires: procps-ng\n"
+        )
+        self.assertEqual(self.check_with(current, previous_unmarked, 0), 0)
 
         changed_build_dependency = current.replace(
             "BuildRequires: cargo\n", "BuildRequires: cargo\nBuildRequires: cmake\n"
