@@ -23,3 +23,5 @@ Both archives are source inputs, not prebuilt program code. The Zig cache was po
 The RPM smoke checks version output and Bash completion generation. Herdr is an interactive workspace manager, so test server startup, workspace creation, detach/reattach, and terminal panes manually after installation. Agent integrations and plugins are optional; the RPM does not install agent software or fetch integrations at build time.
 
 Upstream 0.9.5 pins Rust 1.96.1 and requires Zig 0.16.0. Keep these explicit until the package is confirmed against the configured Fedora chroots. `ExclusiveArch` reflects upstream's current Linux Zig target mapping; add other architectures only after a successful build and smoke test.
+
+The `%check` phase runs unit tests serially because Herdr tests modify process-wide signal dispositions. It sets a higher Cargo codegen-unit count only for test builds to avoid excessive compile time in Fedora 44; the release binary retains Fedora's normal build flags. `procps-ng` is a build dependency because a Linux unit test invokes `ps`.

@@ -30,6 +30,7 @@ BuildRequires:  gcc
 BuildRequires:  cmake
 # The unit tests create and inspect Git repositories and worktrees.
 BuildRequires:  git-core
+BuildRequires:  procps-ng
 
 ExclusiveArch:  x86_64 aarch64
 
@@ -66,7 +67,11 @@ export HERDR_BUILD_CHANNEL=stable
 export ZIG_GLOBAL_CACHE_DIR="$PWD/zig-global-cache"
 # The integration tests start live Herdr servers, which do not come up inside the
 # Mock build environment (the server socket never appears), so run the unit tests.
-%cargo_test -- --bins
+# Keep tests serial because Herdr tests modify process-wide signal dispositions.
+# Use more codegen units for test binaries to avoid pathological Fedora 44 compile
+# times; these settings are confined to %check and do not affect the shipped binary.
+export CARGO_PROFILE_RPM_CODEGEN_UNITS=16
+%cargo_test -- --bins --test-threads=1
 ./target/rpm/herdr --version | grep -F '%{version}'
 ./target/rpm/herdr completion bash >/dev/null
 

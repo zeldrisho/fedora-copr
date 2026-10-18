@@ -127,8 +127,9 @@ jobs:
             else
               "${copr[@]}" add-package-scm "${common_args[@]}"
             fi
-            build_output="$("${copr[@]}" build-package "$COPR_PROJECT" --name "$package")"
+            build_output="$("${copr[@]}" build-package "$COPR_PROJECT" --name "$package" --nowait)"
             printf '%s\n' "### $package COPR submission" "$build_output" >> "$GITHUB_STEP_SUMMARY"
+            printf '%s\n' "$build_output"
           done <<< "$packages"
         env:
           COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
