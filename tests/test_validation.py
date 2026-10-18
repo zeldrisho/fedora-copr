@@ -193,7 +193,8 @@ class ValidationTests(unittest.TestCase):
     def test_remote_source_cache_detection_requires_matching_source_url(self):
         """Only classify a matching remote Source archive as a removable cache."""
         spec = ("Name: herdr\nVersion: 0.9.5\nRelease: 1%{?dist}\n"
-                "Source0: https://example.test/v%{version}.tar.gz#/%{name}-%{version}.tar.gz\n")
+                "URL: https://example.test/project\n"
+                "Source0: %{url}/v%{version}.tar.gz#/%{name}-%{version}.tar.gz\n")
         self.assertTrue(check_nvr.is_remote_source_cache(
             "packages/herdr/herdr-0.9.5.tar.gz", spec))
         self.assertFalse(check_nvr.is_remote_source_cache(

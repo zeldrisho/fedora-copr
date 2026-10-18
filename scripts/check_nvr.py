@@ -114,8 +114,12 @@ def is_remote_source_cache(path: str, spec: str) -> bool:
     if not name_match:
         return False
     filename = path.rsplit("/", 1)[-1]
+    url_match = re.search(r"^URL:\s*(\S+)", spec, re.MULTILINE)
+    package_url = url_match.group(1) if url_match else ""
     sources = [
-        source.replace("%{name}", name_match.group(1)).replace("%{version}", version)
+        source.replace("%{name}", name_match.group(1))
+        .replace("%{version}", version)
+        .replace("%{url}", package_url)
         for source in re.findall(r"^Source\d*:\s*(\S+)", spec, re.MULTILINE)
     ]
     local_sources = {
