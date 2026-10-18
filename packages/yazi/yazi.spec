@@ -142,5 +142,5 @@ export RUSTONIG_DYNAMIC_LIBONIG=1
 %{_mandir}/man1/ya.1*
 
 %changelog
-* Sat Oct 17 2026 Zeldris <zeldrisho@proton.me> - 26.9.1-1
-- Initial package with offline dependencies, syntax sources, completions, manuals, and optional integrations
+* Sat Oct 17 2026 Zeldris Ho <zeldrisho@proton.me> - 26.9.1-1
+- Initial package
