@@ -269,6 +269,16 @@ class ValidationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             check_upstream.version_key("v")
 
+    def test_explicit_package_selection_is_sorted_and_validated(self):
+        """Validate explicit manual COPR package selections."""
+        available = ["actionlint", "herdr", "yazi"]
+        self.assertEqual(changed_packages.selected_packages("yazi, herdr,herdr", available),
+                         ["herdr", "yazi"])
+        with self.assertRaisesRegex(ValueError, "unknown package.*missing"):
+            changed_packages.selected_packages("herdr,missing", available)
+        with self.assertRaisesRegex(ValueError, "at least one package"):
+            changed_packages.selected_packages(" , ", available)
+
     def test_initial_push_selects_all_packages(self):
         """Verify an all-zero base selects every available package."""
         with patch.object(changed_packages, "package_names", return_value=["demo"]):

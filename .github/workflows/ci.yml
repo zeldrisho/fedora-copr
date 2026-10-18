@@ -2,6 +2,11 @@ name: CI
 
 on:
   workflow_dispatch:
+    inputs:
+      packages:
+        description: Comma-separated package names to validate and submit (for example, herdr,yazi); leave empty for the upstream check
+        required: false
+        type: string
   schedule:
     - cron: '17 8 * * 1'
   pull_request:
@@ -33,7 +38,7 @@ concurrency:
 
 jobs:
   validate:
-    if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
+    if: github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.packages != '')
     runs-on: ubuntu-latest
     container: fedora:latest
     steps:
@@ -52,7 +57,7 @@ jobs:
         run: python3 -m unittest discover -s tests -v
       - name: Check package EVR bumps
         env:
-          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event_name == 'workflow_dispatch' && github.sha || github.event.before }}
         run: |
           if [[ "$BASE_REF" =~ ^0+$ ]]; then
             echo 'Skipping EVR comparison for the initial push.'
@@ -70,7 +75,7 @@ jobs:
         run: python3 scripts/validate.py
       - name: Test Yazi syntax database filter
         env:
-          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event_name == 'workflow_dispatch' && github.sha || github.event.before }}
         run: |
           if [[ ! "$BASE_REF" =~ ^0+$ ]]; then
             changed=$(git diff --name-only "$BASE_REF" HEAD)
@@ -83,7 +88,7 @@ jobs:
           cargo test --locked --manifest-path packages/yazi/scripts/filter-syntax-database/Cargo.toml
 
   publish:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.packages != '')
     needs: validate
     runs-on: ubuntu-latest
     container: fedora:latest
@@ -107,7 +112,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          packages=$(python3 .github/scripts/changed_packages.py --publish "$GITHUB_EVENT_BEFORE")
+          if [[ -n "$PUBLISH_PACKAGES" ]]; then
+            packages=$(python3 .github/scripts/changed_packages.py --packages "$PUBLISH_PACKAGES")
+          else
+            packages=$(python3 .github/scripts/changed_packages.py --publish "$GITHUB_EVENT_BEFORE")
+          fi
           if [[ -z "$packages" ]]; then
             echo 'No package build inputs changed; nothing to publish.'
             exit 0
@@ -134,9 +143,10 @@ jobs:
         env:
           COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          PUBLISH_PACKAGES: ${{ inputs.packages }}
 
   upstream-check:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.packages == '')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
