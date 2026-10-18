@@ -30,6 +30,7 @@ BuildRequires:  gcc
 BuildRequires:  cmake
 # The unit tests create and inspect Git repositories and worktrees.
 BuildRequires:  git-core
+# packager-only: BuildRequires
 BuildRequires:  procps-ng
 
 ExclusiveArch:  x86_64 aarch64

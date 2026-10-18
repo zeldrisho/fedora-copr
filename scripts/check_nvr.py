@@ -83,14 +83,39 @@ def user_facing_spec(text: str) -> str:
     """
     kept: list[str] = []
     skipping = False
-    for line in text.splitlines():
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
         match = SECTION.match(line)
         if match:
             skipping = match.group(1) in PACKAGER_ONLY_SECTIONS
         if skipping or not line.strip() or line.lstrip().startswith("#"):
             continue
+        if index and lines[index - 1].strip() == "# packager-only: BuildRequires" and re.match(r"^BuildRequires:", line):
+            continue
         kept.append(line.rstrip())
     return "\n".join(kept)
+
+
+def is_remote_source_cache(path: str, spec: str) -> bool:
+    """Return whether a package file duplicates a remotely fetched Source URL.
+
+    This permits removing a checked-in cache of an upstream archive when the
+    spec still declares that exact archive as a remote source for SRPM creation.
+    Modified or newly added source archives remain build-input changes.
+    """
+    name_match = re.search(r"^Name:\s*(\S+)", spec, re.MULTILINE)
+    try:
+        version, _ = spec_values(spec)
+    except ValueError:
+        return False
+    if not name_match:
+        return False
+    expected = re.escape(path.rsplit("/", 1)[-1])
+    for source in re.findall(r"^Source\d*:\s*(\S+)", spec, re.MULTILINE):
+        expanded = source.replace("%{name}", name_match.group(1)).replace("%{version}", version)
+        if "#" in expanded and re.search(expected + r"(?:$|[?#])", expanded):
+            return True
+    return False
 
 
 def rpmvercmp(left: str, right: str) -> int:
@@ -131,6 +156,9 @@ def check(base: str) -> int:
 
     changed = [line for line in git("diff", "--name-only", mergebase, "HEAD", "--", "packages/").splitlines()
                if not IGNORED.match(line)]
+    deleted_paths: set[str] = set()
+    if any(item.endswith(".tar.gz") for item in changed):
+        deleted_paths = set(git("diff", "--diff-filter=D", "--name-only", mergebase, "HEAD", "--", "packages/").splitlines())
     packages = sorted({match.group(1) for path in changed if (match := PACKAGE_PATH.match(path))})
     status = 0
     for name in packages:
@@ -144,6 +172,12 @@ def check(base: str) -> int:
             print(f"{name}: new package")
             continue
         files = [item for item in changed if item.startswith(f"packages/{name}/")]
+        files = [item for item in files if not (
+            item in deleted_paths and is_remote_source_cache(item, previous)
+        )]
+        if not files:
+            print(f"{name}: removed cached remote source; no bump required")
+            continue
         if files == [path] and user_facing_spec(current) == user_facing_spec(previous):
             print(f"{name}: packager-only spec change; no bump required")
             continue

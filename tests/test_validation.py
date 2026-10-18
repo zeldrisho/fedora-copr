@@ -177,6 +177,21 @@ class ValidationTests(unittest.TestCase):
         )
         self.assertEqual(self.check_with(current, previous, 0), 0)
 
+    def test_packager_only_build_requirement_does_not_change_user_facing_spec(self):
+        """Ignore explicitly marked test-only BuildRequires while checking EVR."""
+        previous = "Version: 1\nRelease: 1%{?dist}\nBuildRequires: cargo\n"
+        current = previous + "# packager-only: BuildRequires\nBuildRequires: procps-ng\n"
+        self.assertEqual(check_nvr.user_facing_spec(current), check_nvr.user_facing_spec(previous))
+
+    def test_remote_source_cache_detection_requires_matching_source_url(self):
+        """Only classify a matching remote Source archive as a removable cache."""
+        spec = ("Name: herdr\nVersion: 0.9.5\nRelease: 1%{?dist}\n"
+                "Source0: https://example.test/v%{version}.tar.gz#/%{name}-%{version}.tar.gz\n")
+        self.assertTrue(check_nvr.is_remote_source_cache(
+            "packages/herdr/herdr-0.9.5.tar.gz", spec))
+        self.assertFalse(check_nvr.is_remote_source_cache(
+            "packages/herdr/herdr-0.9.5-vendor.tar.gz", spec))
+
     def test_user_facing_spec_changes_still_need_a_bump(self):
         """Verify a build command change requires an EVR increase."""
         previous = "Version: 1\nRelease: 1%{?dist}\n%build\nmake\n"
