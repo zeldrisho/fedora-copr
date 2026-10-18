@@ -65,10 +65,10 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %{_mandir}/man1/actionlint.1*
 
 %changelog
-* Fri Oct 16 2026 Zeldris <zeldrisho@proton.me> - 1.7.12-2
+* Fri Oct 16 2026 Zeldris Ho <zeldrisho@proton.me> - 1.7.12-2
 - Install upstream documentation and changelog
 - Generate only the roff man page
 - Recommend ShellCheck and pyflakes for embedded script analysis
 
-* Fri Oct 16 2026 Zeldris <zeldrisho@proton.me> - 1.7.12-1
+* Fri Oct 16 2026 Zeldris Ho <zeldrisho@proton.me> - 1.7.12-1
 - Initial package

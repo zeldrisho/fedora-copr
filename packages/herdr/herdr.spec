@@ -82,5 +82,5 @@ export ZIG_GLOBAL_CACHE_DIR="$PWD/zig-global-cache"
 %{fish_completions_dir}/herdr.fish
 
 %changelog
-* Sat Oct 17 2026 Zeldris <zeldrisho@proton.me> - 0.9.5-1
+* Sat Oct 17 2026 Zeldris Ho <zeldrisho@proton.me> - 0.9.5-1
 - Initial package
