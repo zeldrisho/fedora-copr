@@ -25,6 +25,7 @@
 - Bump `Release` and add a changelog entry only for changes users would notice (version, installed files, metadata, dependencies, build flags, sources); skip both for edits confined to comments, `%check`, `%changelog`, or docs. See `docs/packaging-guidelines/packaging-guidelines.md` (Changelogs).
 - Never reuse or lower a published Version-Release. A Release reset is allowed only after all prior COPR builds are withdrawn and confirmed not downloaded or installed.
 - Sources must be available when creating the SRPM; Fedora build chroots have no internet access.
+- When adding, replacing, or editing a package source covered by `packages/<name>/docs/checksums.sha256`, update that manifest and verify it with `sha256sum --check packages/<name>/docs/checksums.sha256` before committing.
 - Store local Fedora packaging/licensing references under `docs/packaging-guidelines/` and package-maintainer references under `docs/package-maintainers/`; use lowercase, hyphenated filenames and retain each canonical URL in the file.
 - Maintain the relevant directory `README.md` index when adding or moving a reference. Before fetching a Fedora document, search `docs/` by canonical URL, verify the matching file's source URL, and read it regardless of filename. Fetch only if no matching copy exists or refresh is explicitly needed.
 - Consult COPR documentation at `docs.copr.fedorainfracloud.org` directly; do not treat it as a Fedora reference copy.
