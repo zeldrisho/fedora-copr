@@ -34,7 +34,9 @@ Use the project's existing settings as authoritative; `.copr/project.toml` is do
 
 ## Enable automatic publishing
 
-The `CI` workflow runs validation for pull requests and qualifying pushes to `main` (its path filter excludes documentation-only changes). It checks EVR increases on pull requests and pushes, validates and builds packages, then for changed package inputs idempotently creates or updates each SCM recipe using the exact validated commit (`GITHUB_SHA`) and submits its COPR build. It disables COPR's native webhook rebuild for each entry so one Git push does not submit duplicate builds. A documented changelog note alone is not sufficient to authorize an EVR reset; verify all prior builds were withdrawn and not downloaded or installed, then follow repository maintainer policy before such a reset.
+The `CI` workflow runs for relevant pull requests and qualifying pushes to `main`; documentation-only changes do not trigger it. It checks EVR increases, runs repository tests, verifies source-checksum manifests for all packages, and validates/lints package SRPMs. It does not build binary RPMs. On a successful push to `main`, changed package inputs idempotently create or update each SCM recipe using the exact commit (`GITHUB_SHA`) and submit its COPR build. It disables COPR's native webhook rebuild for each entry so one Git push does not submit duplicate builds. COPR's configured chroots perform the binary builds; monitor COPR results after submission. A documented changelog note alone is not sufficient to authorize an EVR reset; verify all prior builds were withdrawn and not downloaded or installed, then follow repository maintainer policy before such a reset.
+
+A weekly/manual workflow checks the latest stable GitHub release for actionlint, Herdr, and Yazi. It opens a review issue when the release tag is newer than the packaged version, using a Conventional Commit-style title such as `feat(yazi): update to 26.10.0`; it does not update specs or submit builds. Check the upstream repository and Fedora packaging constraints before acting on an issue.
 
 Configure the repository's GitHub Actions secret once:
 

@@ -7,7 +7,7 @@ Version:        1.7.12
 %gometa -L -f
 
 Name:           actionlint
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Static checker for GitHub Actions workflow files
 
 License:        Apache-2.0 AND BSD-3-Clause AND MIT
@@ -19,8 +19,11 @@ Source1:        %{archivename}-vendor.tar.bz2
 Source2:        go-vendor-tools.toml
 
 BuildRequires:  go-vendor-tools
-BuildRequires:  make
 BuildRequires:  rubygem-ronn-ng
+
+# Optional integrations used by actionlint for embedded shell and Python checks.
+Recommends:     ShellCheck
+Recommends:     python3-pyflakes
 
 %description
 Actionlint is a static checker for GitHub Actions workflow files. It checks
@@ -38,7 +41,7 @@ tar -xf %{S:1}
 %global gomodulesmode GO111MODULE=on
 export GO_LDFLAGS="${GO_LDFLAGS:-} -X %{goipath}.version=%{version}"
 %gobuild -o %{gobuilddir}/bin/actionlint %{goipath}/cmd/actionlint
-%make_build man
+ronn --roff man/actionlint.1.ronn
 
 %install
 %go_vendor_license_install -c %{S:2}
@@ -57,10 +60,15 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %endif
 
 %files -f %{go_vendor_license_filelist}
-%doc README.md
+%doc README.md CHANGELOG.md docs
 %{_bindir}/actionlint
 %{_mandir}/man1/actionlint.1*
 
 %changelog
-* Fri Oct 16 2026 Zeldris <zeldrisho@proton.me> - 1.7.12-1
+* Fri Oct 16 2026 Zeldris Ho <zeldrisho@proton.me> - 1.7.12-2
+- Install upstream documentation and changelog
+- Generate only the roff man page
+- Recommend ShellCheck and pyflakes for embedded script analysis
+
+* Fri Oct 16 2026 Zeldris Ho <zeldrisho@proton.me> - 1.7.12-1
 - Initial package

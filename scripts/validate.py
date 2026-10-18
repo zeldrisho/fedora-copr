@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import argparse
 import shutil
 import subprocess
 import sys
@@ -46,7 +47,7 @@ def run(command: list[str], *, cwd: Path | None = None, capture: bool = False) -
     return result.stdout if capture else ""
 
 
-def validate_package(package_dir: Path, temporary: Path) -> None:
+def validate_package(package_dir: Path, temporary: Path, srpm_output: Path | None = None) -> None:
     """Check a package's spec, build one SRPM, and lint both in a scratch copy.
 
     Expect a spec named after package_dir whose queried Name matches the directory
@@ -73,8 +74,8 @@ def validate_package(package_dir: Path, temporary: Path) -> None:
         fail(f"package directory/spec name is {name!r} but Name: is {actual!r}")
 
     run(["rpmspec", "-P", str(spec)], capture=True)
-    outdir = temporary / "srpms"
-    outdir.mkdir()
+    outdir = srpm_output if srpm_output is not None else temporary / "srpms"
+    outdir.mkdir(parents=True, exist_ok=True)
     run(
         ["make", "-f", str(MAKEFILE), "srpm", f"spec={spec_name}", f"outdir={outdir}"],
         cwd=work_dir,
@@ -82,7 +83,10 @@ def validate_package(package_dir: Path, temporary: Path) -> None:
     srpms = sorted(outdir.glob("*.src.rpm"))
     if len(srpms) != 1:
         fail(f"expected exactly one SRPM for {name}, found {len(srpms)}")
-    run(["rpmlint", "--rpmlintrc", str(RPMLINTRC), str(spec), str(srpms[0])])
+    rpmlintrc = package_dir / "rpmlintrc"
+    if not rpmlintrc.is_file():
+        rpmlintrc = RPMLINTRC
+    run(["rpmlint", "--rpmlintrc", str(rpmlintrc), str(spec), str(srpms[0])])
 
 
 def main() -> None:
@@ -93,6 +97,11 @@ def main() -> None:
     package validation errors propagate. Print a summary on success, including
     when no package directories exist.
     """
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--srpm-dir", type=Path,
+                        help="retain validated SRPMs under this directory")
+    args = parser.parse_args()
+
     for tool in TOOLS:
         if shutil.which(tool) is None:
             fail(f"required tool is missing: {tool}")
@@ -107,8 +116,10 @@ def main() -> None:
     for package_dir in package_dirs:
         if not (package_dir / f"{package_dir.name}.spec").is_file():
             fail(f"expected spec not found: packages/{package_dir.name}/{package_dir.name}.spec")
+        srpm_dir = (args.srpm_dir.resolve() / package_dir.name
+                    if args.srpm_dir is not None else None)
         with tempfile.TemporaryDirectory(prefix=f"fedora-copr-{package_dir.name}-") as temporary:
-            validate_package(package_dir, Path(temporary))
+            validate_package(package_dir, Path(temporary), srpm_dir)
 
     print(f"Validated {len(package_dirs)} package(s).")
 
