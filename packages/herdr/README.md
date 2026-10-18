@@ -24,4 +24,4 @@ The RPM smoke checks version output and Bash completion generation. Herdr is an 
 
 Upstream 0.9.5 pins Rust 1.96.1 and requires Zig 0.16.0. Keep these explicit until the package is confirmed against the configured Fedora chroots. `ExclusiveArch` reflects upstream's current Linux Zig target mapping; add other architectures only after a successful build and smoke test.
 
-The `%check` phase runs unit tests serially because Herdr tests modify process-wide signal dispositions. Test builds disable RPM-profile LTO and use more codegen units to reduce the cost of compiling test harnesses; the release binary retains Fedora's normal build flags. `procps-ng` is a build dependency because a Linux unit test invokes `ps`.
+The `%check` phase runs unit tests serially because Herdr tests modify process-wide signal dispositions. Test builds disable RPM-profile LTO and set Fedora's Rust codegen-unit flag to 16 to reduce test-harness compilation time; the release binary retains Fedora's normal build flags. `procps-ng` is a build dependency because a Linux unit test invokes `ps`.

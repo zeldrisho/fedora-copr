@@ -7,7 +7,7 @@ The repository uses Fedora RPM tooling for spec validation, SRPM creation, and b
 Install the tools used by repository validation and local SRPM builds:
 
 ```sh
-sudo dnf install rpm-build rpmdevtools rpmlint make
+sudo dnf install rpm-build rpmdevtools rpmlint make copr-cli
 ```
 
 `rpmdevtools` provides `spectool` for staging declared sources. If `spectool` is missing in COPR's minimal SRPM environment, the shared `.copr/Makefile` installs `rpmdevtools` with DNF.
