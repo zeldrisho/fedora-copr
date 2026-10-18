@@ -80,10 +80,21 @@ def user_facing_spec(text: str) -> str:
 
     Drop full-line comments, blank lines, and the %check and %changelog
     sections, since edits confined to those do not alter the installed package.
+    Also drop BuildRequires lines immediately preceded by a
+    ``# packager-only: BuildRequires`` comment; use this only for requirements
+    used exclusively by packager tests or checks.
     """
     kept: list[str] = []
     skipping = False
+    skip_packager_only_buildrequires = False
     for line in text.splitlines():
+        if re.match(r"^\s*#\s*packager-only:\s*BuildRequires\b", line):
+            skip_packager_only_buildrequires = True
+            continue
+        if skip_packager_only_buildrequires:
+            skip_packager_only_buildrequires = False
+            if re.match(r"^\s*BuildRequires:", line):
+                continue
         match = SECTION.match(line)
         if match:
             skipping = match.group(1) in PACKAGER_ONLY_SECTIONS

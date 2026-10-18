@@ -177,6 +177,19 @@ class ValidationTests(unittest.TestCase):
         )
         self.assertEqual(self.check_with(current, previous, 0), 0)
 
+    def test_packager_only_build_requires_do_not_need_a_bump(self):
+        """Ignore explicitly marked BuildRequires used only by package checks."""
+        previous = "Version: 1\nRelease: 1%{?dist}\nBuildRequires: cargo\n%build\ncargo build\n"
+        current = ("Version: 1\nRelease: 1%{?dist}\nBuildRequires: cargo\n"
+                   "# packager-only: BuildRequires used only by %check tests\n"
+                   "BuildRequires: procps-ng\n%build\ncargo build\n")
+        self.assertEqual(self.check_with(current, previous, 0), 0)
+
+        changed_build_dependency = current.replace(
+            "BuildRequires: cargo\n", "BuildRequires: cargo\nBuildRequires: cmake\n"
+        )
+        self.assertEqual(self.check_with(changed_build_dependency, previous, 0), 1)
+
     def test_user_facing_spec_changes_still_need_a_bump(self):
         """Verify a build command change requires an EVR increase."""
         previous = "Version: 1\nRelease: 1%{?dist}\n%build\nmake\n"
