@@ -33,10 +33,12 @@ LICENSE_NAMES = {
 
 
 def git(repo: Path, *args: str) -> str:
+    """Run Git in repo and return stripped stdout, propagating subprocess errors."""
     return subprocess.check_output(["git", "-C", str(repo), *args], text=True).strip()
 
 
 def modules(repo: Path) -> list[tuple[str, str, str]]:
+    """Return sorted syntax submodule paths, HEAD commit pins, and configured URLs."""
     config = configparser.ConfigParser()
     config.read_string((repo / ".gitmodules").read_text())
     urls = {
@@ -56,6 +58,7 @@ def modules(repo: Path) -> list[tuple[str, str, str]]:
 
 
 def selected_files(archive: tarfile.TarFile) -> list[tarfile.TarInfo]:
+    """Select regular syntax definitions, README.md files, and license or notice files."""
     files = []
     for member in archive.getmembers():
         if not member.isfile():
@@ -70,6 +73,7 @@ def selected_files(archive: tarfile.TarFile) -> list[tarfile.TarInfo]:
 
 
 def main() -> None:
+    """Initialize approved pinned submodules and archive their sources and notices."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("prebuilt", type=Path, help="checkout of yazi-rs/prebuilt")
     parser.add_argument("output", type=Path, help="output syntax-source archive")

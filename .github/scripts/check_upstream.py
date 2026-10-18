@@ -14,6 +14,7 @@ REPOSITORIES = {"actionlint": "rhysd/actionlint", "herdr": "herdrdev/herdr", "ya
 
 
 def run(*args: str) -> str:
+    """Run a command at the repository root; return stripped stdout or raise RuntimeError."""
     result = subprocess.run(args, cwd=ROOT, text=True, capture_output=True, check=False)
     if result.returncode:
         raise RuntimeError(result.stderr.strip() or f"command failed: {' '.join(args)}")
@@ -30,6 +31,7 @@ def version_key(value: str) -> tuple[tuple[int, object], ...]:
 
 
 def package_version(package: str) -> str:
+    """Read the package spec's Version field, raising ValueError if it is absent."""
     spec = ROOT / "packages" / package / f"{package}.spec"
     match = re.search(r"^Version:\s*(\S+)", spec.read_text(encoding="utf-8"), re.MULTILINE)
     if not match:
@@ -38,6 +40,7 @@ def package_version(package: str) -> str:
 
 
 def main() -> int:
+    """Open missing update issues in GH_REPO for newer stable releases and return zero."""
     repository = os.environ["GH_REPO"]
     for package, upstream in REPOSITORIES.items():
         current = package_version(package)

@@ -56,12 +56,14 @@ class ValidationTests(unittest.TestCase):
             self.assertEqual(original, {p.name: p.read_bytes() for p in package.iterdir()})
 
     def test_validation_can_retain_srpm_in_package_directory(self):
+        """Verify validation retains the SRPM in the requested package output directory."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             package = self.fixture(root)
             output = root / "srpms" / "demo"
 
             def fake_run(command, *, cwd=None, capture=False):
+                """Simulate RPM queries and write an SRPM to the requested output directory."""
                 if command[0] == "rpmspec" and "--qf" in command:
                     return "demo\n"
                 if command[0] == "make":
@@ -212,6 +214,7 @@ class ValidationTests(unittest.TestCase):
                 self.assertEqual(changed_packages.changed_packages("base", paths), ["demo", "other"])
 
     def test_upstream_version_comparison_handles_numeric_components(self):
+        """Verify numeric version ordering, optional v prefixes, and empty-tag rejection."""
         self.assertGreater(check_upstream.version_key("v1.10.0"), check_upstream.version_key("1.9.9"))
         self.assertEqual(check_upstream.version_key("v2.0.0"), check_upstream.version_key("2.0.0"))
         with self.assertRaises(ValueError):

@@ -18,6 +18,7 @@ CHECKSUM_MEMBER = "vendor/yazi-prebuilt/.cargo-checksum.json"
 
 
 def safe_extract(archive_path: Path, destination: Path) -> None:
+    """Extract vendor files and directories; reject unsafe paths and other member types."""
     with tarfile.open(archive_path, "r:gz") as archive:
         for member in archive:
             path = PurePosixPath(member.name)
@@ -40,6 +41,7 @@ def safe_extract(archive_path: Path, destination: Path) -> None:
 
 
 def remove_prebuilt_objects(root: Path) -> None:
+    """Delete compiled objects and their Cargo checksum entries; fail on missing manifests."""
     extensions = {".a", ".lib", ".o", ".so", ".dll", ".exe"}
     manifests: dict[Path, set[str]] = {}
     for path in root.rglob("*"):
@@ -63,6 +65,7 @@ def remove_prebuilt_objects(root: Path) -> None:
 
 
 def write_archive(root: Path, output: Path) -> None:
+    """Archive the vendor root with sorted entries and normalized timestamps and owners."""
     with output.open("wb") as raw:
         with gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=0, compresslevel=9) as compressed:
             with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
@@ -86,6 +89,7 @@ def write_archive(root: Path, output: Path) -> None:
 
 
 def main() -> None:
+    """Replace vendored syntax data, remove compiled objects, and refresh the archive."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("vendor_archive", type=Path, help="current cargo vendor tarball")
     parser.add_argument("generated_syntaxes", type=Path, help="filtered built/syntaxes output")

@@ -28,6 +28,7 @@ struct Mapping {
     context_counts: Vec<usize>,
 }
 
+/// Remap a context ID to retained syntax indices, using Plain Text for excluded syntaxes.
 fn remap_id(id: &mut ContextId, mapping: &mut Mapping) -> Result<()> {
     let mut raw: Id = bincode::deserialize(&bincode::serialize(id)?)?;
     match mapping.indices.get(raw.syntax_index) {
@@ -58,6 +59,7 @@ enum Reference {
     Direct(ContextId),
 }
 
+/// Remap direct context references while preserving unresolved reference variants.
 fn remap_ref(reference: &mut ContextReference, mapping: &mut Mapping) -> Result<()> {
     let mut raw: Reference = bincode::deserialize(&bincode::serialize(reference)?)?;
     if let Reference::Direct(id) = &mut raw {
@@ -67,6 +69,7 @@ fn remap_ref(reference: &mut ContextReference, mapping: &mut Mapping) -> Result<
     Ok(())
 }
 
+/// Remap context IDs in lookups, prototypes, includes, and match operations.
 fn remap_contexts(lazy: &mut LazyContexts, mapping: &mut Mapping) -> Result<()> {
     for id in lazy.context_ids.values_mut() {
         remap_id(id, mapping)?;
@@ -110,6 +113,7 @@ struct SyntaxReference {
     serialized_lazy_contexts: Vec<u8>,
 }
 
+/// Serialize map entries in key order for reproducible syntax dumps.
 fn ordered_map<S, V>(map: &HashMap<String, V>, serializer: S) -> std::result::Result<S::Ok, S::Error>
 where
     S: Serializer,
@@ -119,6 +123,7 @@ where
     ordered.serialize(serializer)
 }
 
+/// Check syntax and context indices, then parse runtime fixtures with every syntax.
 fn validate(data: &[u8]) -> Result<()> {
     let set: SyntaxSet = dumps::from_uncompressed_data(data)?;
     let mut contexts: Vec<LazyContexts> = set.syntaxes.iter()
@@ -154,6 +159,7 @@ fn validate(data: &[u8]) -> Result<()> {
     Ok(())
 }
 
+/// Filter excluded grammars or validate an existing database from command-line paths.
 fn main() -> Result<()> {
     let mut args = env::args().skip(1);
     let input = args.next().ok_or("usage: yazi-syntax-filter INPUT OUTPUT")?;
@@ -239,10 +245,12 @@ fn main() -> Result<()> {
 mod tests {
     use super::*;
 
+    /// Construct a context ID using the pinned Syntect serialization layout.
     fn id(syntax_index: usize, context_index: usize) -> ContextId {
         bincode::deserialize(&bincode::serialize(&Id { syntax_index, context_index }).unwrap()).unwrap()
     }
 
+    /// Create a mapping that removes one syntax and retains two with known context counts.
     fn mapping() -> Mapping {
         Mapping {
             indices: vec![Some(0), None, Some(1)],
@@ -252,6 +260,7 @@ mod tests {
         }
     }
 
+    /// Verify retained syntax indices change while context indices stay intact.
     #[test]
     fn remaps_retained_indices_and_preserves_context() {
         let mut value = id(2, 2);
@@ -260,6 +269,7 @@ mod tests {
         assert_eq!((raw.syntax_index, raw.context_index), (1, 2));
     }
 
+    /// Verify excluded syntax references use Plain Text and increment the fallback count.
     #[test]
     fn excluded_context_falls_back_to_plain_main() {
         let mut value = id(1, 177);
@@ -270,6 +280,7 @@ mod tests {
         assert_eq!(mapping.fallbacks, 1);
     }
 
+    /// Verify out-of-range syntax and context indices are rejected.
     #[test]
     fn rejects_invalid_indices() {
         assert!(remap_id(&mut id(3, 0), &mut mapping()).is_err());
