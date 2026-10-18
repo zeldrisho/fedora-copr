@@ -160,7 +160,7 @@ class ValidationTests(unittest.TestCase):
 
     def check_with(self, current: str, previous: str, evr_comparison: int, files: str = "packages/demo/demo.spec"):
         """Run the EVR check with mocked Git outputs and an RPM comparison result."""
-        outputs = iter(("mergebase", files, current, previous))
+        outputs = iter(("mergebase", files, "", current, previous))
         with patch.object(check_nvr, "git", side_effect=lambda *args, **kwargs: next(outputs)):
             with patch.object(check_nvr, "rpmvercmp", return_value=evr_comparison):
                 return check_nvr.check("base")
@@ -183,6 +183,13 @@ class ValidationTests(unittest.TestCase):
         current = previous + "# packager-only: BuildRequires\nBuildRequires: procps-ng\n"
         self.assertEqual(check_nvr.user_facing_spec(current), check_nvr.user_facing_spec(previous))
 
+    def test_comment_only_buildrequires_marker_change_needs_no_bump(self):
+        """Adding the exemption marker above an existing requirement is comment-only."""
+        previous = "Version: 1\nRelease: 1%{?dist}\nBuildRequires: cargo\n"
+        current = previous.replace(
+            "BuildRequires: cargo", "# packager-only: BuildRequires\nBuildRequires: cargo")
+        self.assertEqual(self.check_with(current, previous, 0), 0)
+
     def test_remote_source_cache_detection_requires_matching_source_url(self):
         """Only classify a matching remote Source archive as a removable cache."""
         spec = ("Name: herdr\nVersion: 0.9.5\nRelease: 1%{?dist}\n"
@@ -191,6 +198,13 @@ class ValidationTests(unittest.TestCase):
             "packages/herdr/herdr-0.9.5.tar.gz", spec))
         self.assertFalse(check_nvr.is_remote_source_cache(
             "packages/herdr/herdr-0.9.5-vendor.tar.gz", spec))
+        mismatched_fragment = spec.replace(
+            "#/%{name}-%{version}.tar.gz", "#/different.tar.gz")
+        self.assertFalse(check_nvr.is_remote_source_cache(
+            "packages/herdr/herdr-0.9.5.tar.gz", mismatched_fragment))
+        local_source = spec + "Source1: herdr-0.9.5.tar.gz\n"
+        self.assertFalse(check_nvr.is_remote_source_cache(
+            "packages/herdr/herdr-0.9.5.tar.gz", local_source))
 
     def test_user_facing_spec_changes_still_need_a_bump(self):
         """Verify a build command change requires an EVR increase."""
@@ -203,6 +217,18 @@ class ValidationTests(unittest.TestCase):
         spec = "Version: 1\nRelease: 1%{?dist}\n%check\nmake test\n"
         files = "packages/demo/demo.spec\npackages/demo/demo-vendor.tar.bz2"
         self.assertEqual(self.check_with(spec, spec, 0, files), 1)
+
+    def test_deleted_remote_tar_xz_cache_needs_no_bump(self):
+        """Recognize deleted remote archives regardless of their extension."""
+        spec = (
+            "Name: demo\nVersion: 1\nRelease: 1%{?dist}\n"
+            "Source0: https://example.test/archive.tar.xz#/demo-1.tar.xz\n"
+        )
+        deleted = "packages/demo/demo-1.tar.xz"
+        outputs = iter(("mergebase", deleted, deleted, spec, spec))
+        with patch.object(check_nvr, "git", side_effect=lambda *args, **kwargs: next(outputs)):
+            with patch.object(check_nvr, "rpmvercmp", return_value=0):
+                self.assertEqual(check_nvr.check("base"), 0)
 
     def test_package_docs_do_not_require_bump_but_build_inputs_still_do(self):
         """Ignore package docs while preserving checks for real package inputs."""
@@ -227,7 +253,7 @@ class ValidationTests(unittest.TestCase):
             f"- {check_nvr.INITIAL_RELEASE_RESET_MARKER}\n"
         )
         previous = "Version: 1.7.12\nRelease: 2%{?dist}\n"
-        outputs = iter(("mergebase", "packages/actionlint/actionlint.spec", current, previous))
+        outputs = iter(("mergebase", "packages/actionlint/actionlint.spec", "", current, previous))
         with patch.object(check_nvr, "git", side_effect=lambda *args, **kwargs: next(outputs)):
             with patch.object(check_nvr, "rpmvercmp", return_value=-1):
                 self.assertEqual(check_nvr.check("base"), 0)

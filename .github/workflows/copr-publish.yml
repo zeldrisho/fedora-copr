@@ -13,6 +13,7 @@ on:
         type: string
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
@@ -21,7 +22,16 @@ jobs:
     uses: ./.github/workflows/ci.yml
 
   publish:
-    if: always() && ((github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch' && needs.manual-validation.result == 'success'))
+    if: >-
+      always() && (
+        (github.event_name == 'workflow_run'
+          && github.event.workflow_run.conclusion == 'success'
+          && github.event.workflow_run.event == 'push'
+          && github.event.workflow_run.head_branch == 'main'
+          && github.event.workflow_run.head_repository.full_name == github.repository)
+        || (github.event_name == 'workflow_dispatch'
+          && github.ref == 'refs/heads/main'
+          && needs.manual-validation.result == 'success'))
     needs: [manual-validation]
     runs-on: ubuntu-latest
     container: fedora:latest
@@ -33,7 +43,7 @@ jobs:
       COPR_PROJECT: zeldrisho/packages
     steps:
       - name: Install COPR client, Git and Python
-        run: dnf -y install copr-cli git python3
+        run: dnf -y install copr-cli gh git python3
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -49,7 +59,9 @@ jobs:
           if [[ -n "$PUBLISH_PACKAGES" ]]; then
             packages=$(python3 .github/scripts/changed_packages.py --packages "$PUBLISH_PACKAGES")
           else
-            before=$(git rev-parse "$PUBLISH_SHA^" 2>/dev/null || printf '%040d' 0)
+            before=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/copr-publish.yml/runs?branch=main&status=success&per_page=1" \\
+              --jq '.workflow_runs[0].head_sha // empty')
+            before=${before:-$(printf '%040d' 0)}
             packages=$(python3 .github/scripts/changed_packages.py --publish "$before")
           fi
           if [[ -z "$packages" ]]; then
@@ -77,5 +89,6 @@ jobs:
           done <<< "$packages"
         env:
           COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
+          GH_TOKEN: ${{ github.token }}
           PUBLISH_PACKAGES: ${{ inputs.packages }}
           PUBLISH_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
