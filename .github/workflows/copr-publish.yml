@@ -1,10 +1,6 @@
 name: COPR publish
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
     inputs:
       packages:
@@ -13,24 +9,13 @@ on:
         type: string
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
   manual-validation:
-    if: github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/ci.yml
 
   publish:
-    if: >-
-      always() && (
-        (github.event_name == 'workflow_run'
-          && github.event.workflow_run.conclusion == 'success'
-          && github.event.workflow_run.event == 'push'
-          && github.event.workflow_run.head_branch == 'main'
-          && github.event.workflow_run.head_repository.full_name == github.repository)
-        || (github.event_name == 'workflow_dispatch'
-          && needs.manual-validation.result == 'success'))
     needs: [manual-validation]
     runs-on: ubuntu-latest
     container: fedora:latest
@@ -42,31 +27,19 @@ jobs:
       COPR_PROJECT: zeldrisho/packages
     steps:
       - name: Install COPR client, Git and Python
-        run: dnf -y install copr-cli gh git python3
+        run: dnf -y install copr-cli git python3
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - name: Trust workspace for Git checks in the container
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Sync changed package recipes and submit builds
+      - name: Sync package recipes and submit builds
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -n "$PUBLISH_PACKAGES" ]]; then
-            packages=$(python3 .github/scripts/changed_packages.py --packages "$PUBLISH_PACKAGES")
-          else
-            before=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/copr-publish.yml/runs?branch=main&status=success&per_page=1" \
-              --jq '.workflow_runs[0].head_sha // empty')
-            before=${before:-$(printf '%040d' 0)}
-            packages=$(python3 .github/scripts/changed_packages.py --publish "$before")
-          fi
-          if [[ -z "$packages" ]]; then
-            echo 'No package build inputs changed; nothing to publish.'
-            exit 0
-          fi
+          packages=$(python3 .github/scripts/select_packages.py "$PUBLISH_PACKAGES")
           test -n "$COPR_CONFIG" || { echo 'COPR_CONFIG secret is required' >&2; exit 1; }
           umask 077
           config_path="$(mktemp)"
@@ -88,6 +61,5 @@ jobs:
           done <<< "$packages"
         env:
           COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
-          GH_TOKEN: ${{ github.token }}
           PUBLISH_PACKAGES: ${{ inputs.packages }}
-          PUBLISH_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          PUBLISH_SHA: ${{ github.sha }}

@@ -6,14 +6,14 @@ This guide describes how to maintain packages in this repository. For local setu
 
 ```text
 .copr/                  Shared SRPM preparation and COPR project metadata
-.github/workflows/      Pull-request validation and main-branch publishing
+.github/workflows/      Validation and manual COPR publishing
 packages/<name>/        Fedora spec and package-specific sources/docs
 scripts/                Repository validation helpers
 tests/                  Python tests for repository helpers
 docs/                   Shared development, packaging, and Fedora guidance
 ```
 
-GitHub Actions validates relevant pull requests and pushes to `main`: it runs repository tests, checks package EVR increases, verifies source-checksum manifests for all packages, and validates/lints package SRPMs. The Yazi filter helper's Cargo tests run when that helper changes. PRs receive no COPR credentials and do not submit builds. A separate publishing workflow submits COPR builds after successful validation on `main`; COPR's configured chroots perform binary builds asynchronously. The workflow uses `ubuntu-latest` and `fedora:latest`; a weekly/manual upstream check reports newer stable releases as issues but never updates packages automatically. Documentation-only changes do not trigger CI. A green PR does not prove that binary RPMs build or work: review COPR build results after merge and inspect/smoke-test binary packages as described in the toolchain guide.
+GitHub Actions validates relevant pull requests and pushes to `main`: it runs repository tests, checks package EVR increases, verifies source-checksum manifests for all packages, and validates/lints package SRPMs. The Yazi filter helper's Cargo tests run when that helper changes. PRs receive no COPR credentials and do not submit builds. COPR builds are submitted manually through the `COPR publish` workflow (Run workflow) or local `copr-cli`, never automatically on merge; COPR's configured chroots perform binary builds asynchronously. The workflow uses `ubuntu-latest` and `fedora:latest`; a weekly/manual upstream check reports newer stable releases as issues but never updates packages automatically. Documentation-only changes do not trigger CI. A green PR does not prove that binary RPMs build or work: review COPR build results after publishing and inspect/smoke-test binary packages as described in the toolchain guide.
 
 Every package lives in `packages/<name>/` and uses `packages/<name>/<name>.spec`; the directory, spec basename, and RPM `Name:` must match. Keep specs Fedora-submittable and COPR-specific behavior in `.copr/Makefile`. Package source archives live alongside the spec; their `Source` declarations show how builds consume them. Before changing an archive, read that package's `README.md` and relevant `docs/` notes for provenance and regeneration steps, then verify the package's `docs/checksums.sha256` manifest after the change. For example, see [actionlint's package notes](../packages/actionlint/README.md), [Herdr's notes](../packages/herdr/README.md), and [Yazi's notes](../packages/yazi/README.md). For Fedora review submissions, publish the matching SRPM at a public, directly downloadable URL and include that URL in Bugzilla; the SRPM contains the spec and required source archives for the reviewer.
 
@@ -30,6 +30,6 @@ Pull-request CI checks that RPM considers the new Version-Release greater than t
 
 ## Build and publish
 
-After merge, inspect the COPR build across its configured chroots; the local CI build does not replace those target builds. See [COPR setup](copr.md) for publishing details.
+Publish manually (see COPR setup), then inspect the COPR build across its configured chroots; the local CI build does not replace those target builds. See [COPR setup](copr.md) for publishing details.
 
 For submission to the official Fedora repositories, follow the [submission guide](submission.md) and use the [review template](templates/review.md). Keep package-specific review records under `packages/<name>/docs/`. COPR publication alone does not submit a Fedora package review.

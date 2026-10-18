@@ -19,7 +19,7 @@ def load_script(name: str, filename: str):
 
 validate = load_script("validate", "validate.py")
 check_nvr = load_script("check_nvr", "check_nvr.py")
-changed_packages = load_script("changed_packages", ".github/scripts/changed_packages.py")
+select_packages = load_script("select_packages", ".github/scripts/select_packages.py")
 check_upstream = load_script("check_upstream", ".github/scripts/check_upstream.py")
 
 
@@ -259,31 +259,6 @@ class ValidationTests(unittest.TestCase):
             with patch.object(check_nvr, "rpmvercmp", return_value=-1):
                 self.assertEqual(check_nvr.check("base"), 0)
 
-    def test_changed_package_selection_ignores_readme_and_includes_shared_changes(self):
-        """Verify README edits are ignored and shared inputs select all packages."""
-        with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
-            with patch.object(changed_packages, "git", return_value="packages/demo/README.md\n"):
-                self.assertEqual(changed_packages.changed_packages("base"), [])
-            with patch.object(changed_packages, "git", return_value="packages/demo/docs/audit.md\n"):
-                self.assertEqual(changed_packages.changed_packages("base"), [])
-            with patch.object(changed_packages, "git", return_value="packages/demo/docs/audit.md\npackages/demo/demo.spec\n"):
-                self.assertEqual(changed_packages.changed_packages("base"), ["demo"])
-            with patch.object(changed_packages, "git", return_value=".copr/Makefile\n"):
-                self.assertEqual(changed_packages.changed_packages("base"), ["demo", "other"])
-            with patch.object(changed_packages, "git", return_value="packages/other/other.spec\n"):
-                self.assertEqual(changed_packages.changed_packages("base"), ["other"])
-
-    def test_publish_selection_ignores_ci_scripts_and_tests(self):
-        """Verify only COPR shared inputs select all packages for publishing."""
-        paths = changed_packages.PUBLISH_GLOBAL_PATHS
-        with patch.object(changed_packages, "package_names", return_value=["demo", "other"]):
-            for changed in (".github/workflows/ci.yml", "scripts/validate.py", "tests/test_validation.py", "Makefile"):
-                with patch.object(changed_packages, "git", return_value=changed + "\n"):
-                    self.assertEqual(changed_packages.changed_packages("base", paths), [])
-                    self.assertEqual(changed_packages.changed_packages("base"), ["demo", "other"])
-            with patch.object(changed_packages, "git", return_value=".copr/Makefile\n"):
-                self.assertEqual(changed_packages.changed_packages("base", paths), ["demo", "other"])
-
     def test_upstream_version_comparison_handles_numeric_components(self):
         """Verify numeric version ordering, optional v prefixes, and empty-tag rejection."""
         self.assertGreater(check_upstream.version_key("v1.10.0"), check_upstream.version_key("1.9.9"))
@@ -297,17 +272,12 @@ class ValidationTests(unittest.TestCase):
     def test_explicit_package_selection_is_sorted_and_validated(self):
         """Validate explicit manual COPR package selections."""
         available = ["actionlint", "herdr", "yazi"]
-        self.assertEqual(changed_packages.selected_packages("yazi, herdr,herdr", available),
+        self.assertEqual(select_packages.selected_packages("yazi, herdr,herdr", available),
                          ["herdr", "yazi"])
         with self.assertRaisesRegex(ValueError, "unknown package.*missing"):
-            changed_packages.selected_packages("herdr,missing", available)
+            select_packages.selected_packages("herdr,missing", available)
         with self.assertRaisesRegex(ValueError, "at least one package"):
-            changed_packages.selected_packages(" , ", available)
-
-    def test_initial_push_selects_all_packages(self):
-        """Verify an all-zero base selects every available package."""
-        with patch.object(changed_packages, "package_names", return_value=["demo"]):
-            self.assertEqual(changed_packages.changed_packages("0" * 40), ["demo"])
+            select_packages.selected_packages(" , ", available)
 
 
 if __name__ == "__main__":
