@@ -77,7 +77,7 @@ The SRPM is retained in `~/rpmbuild/SRPMS`; binary RPMs and build logs are writt
 
 ## Build and inspect binary RPMs
 
-For an optional local isolated build, install Mock and its Fedora chroot configurations, then rebuild the SRPM in a target chroot. This is useful for pre-merge checks and targeted debugging; COPR remains authoritative for its configured publishing chroots. Mock resolves static and dynamic build requirements inside its buildroot:
+For a local isolated build, install Mock and its Fedora chroot configurations, then rebuild the SRPM in a target chroot. This is especially useful before merge when changing build requirements, compiler/toolchain integration, spec macros, or build/test steps, and when diagnosing a COPR chroot failure. For routine edits, it is optional; COPR remains authoritative for its configured publishing chroots. Mock resolves static and dynamic build requirements inside its buildroot:
 
 ```sh
 sudo dnf install mock mock-core-configs
