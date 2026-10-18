@@ -35,6 +35,7 @@ Source3:        yazi-ssh-config-LICENSE.md
 Source4:        yazi-%{version}-syntax-sources.tar.gz
 Source5:        yazi.1
 Source6:        ya.1
+Source7:        yazi-ssh-config-NOTICE.md
 Patch0:         yazi-disable-vendored-lua.patch
 Patch1:         yazi-lua54-f44.patch
 Patch2:         yazi-lua54-api.patch
@@ -109,6 +110,7 @@ install -Dpm 0644 yazi-cli/completions/_ya %{buildroot}%{zsh_completions_dir}/_y
 install -Dpm 0644 %{SOURCE5} %{buildroot}%{_mandir}/man1/yazi.1
 install -Dpm 0644 %{SOURCE6} %{buildroot}%{_mandir}/man1/ya.1
 install -Dpm 0644 %{SOURCE3} %{buildroot}%{_licensedir}/%{name}/LICENSE.ssh-config
+install -Dpm 0644 %{SOURCE7} %{buildroot}%{_licensedir}/%{name}/NOTICE.ssh-config
 install -Dpm 0644 LICENSE.syntaxes %{buildroot}%{_licensedir}/%{name}/LICENSE.syntaxes
 install -Dpm 0644 %{SOURCE4} %{buildroot}%{_docdir}/%{name}/syntax-sources.tar.gz
 
@@ -124,6 +126,7 @@ export RUSTONIG_DYNAMIC_LIBONIG=1
 %license LICENSE.dependencies
 %license cargo-vendor.txt
 %license %{_licensedir}/%{name}/LICENSE.ssh-config
+%license %{_licensedir}/%{name}/NOTICE.ssh-config
 %license %{_licensedir}/%{name}/LICENSE.syntaxes
 %doc README.md
 %doc %{_docdir}/%{name}/syntax-sources.tar.gz

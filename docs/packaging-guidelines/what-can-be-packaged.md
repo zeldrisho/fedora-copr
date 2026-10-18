@@ -34,7 +34,7 @@ Some examples of content which is permissible:
 
 - Package documentation or help files.
 - Clipart for use in office suites.
-- Background images (non-offensive, discriminatory, with permission to freely redistribute).
+- Background images (non-offensive, non-discriminatory, with permission to freely redistribute).
 - Fonts (under an open source license, with no ownership/legal concerns).
 - Game levels are not considered content, since games without levels would be non functional.
 - Sound or graphics included with the source tarball that the program or theme uses (or the documentation uses) are acceptable.

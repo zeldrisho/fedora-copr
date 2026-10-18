@@ -26,7 +26,7 @@ Read the [Packaging Guidelines](https://docs.fedoraproject.org/en-US/packaging-g
 
 Make sure you have an account in [Red Hat Bugzilla](https://bugzilla.redhat.com/).
 
-The email address that you use for your Bugzilla account should be the same email address as you use in the [Fedora Account System](#create_a_fedora_account) for all things related to Fedora Packaging.
+The email address that you use for your Bugzilla account should be the same email address as you use in the [Fedora Account System](#create-a-fedora-account) for all things related to Fedora Packaging.
 
 ### Create a Fedora Account
 

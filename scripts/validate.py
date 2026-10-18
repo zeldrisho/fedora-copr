@@ -116,12 +116,10 @@ def main() -> None:
     for package_dir in package_dirs:
         if not (package_dir / f"{package_dir.name}.spec").is_file():
             fail(f"expected spec not found: packages/{package_dir.name}/{package_dir.name}.spec")
-        if args.srpm_dir is not None:
-            validate_package(package_dir, args.srpm_dir / package_dir.name,
-                             args.srpm_dir / package_dir.name)
-        else:
-            with tempfile.TemporaryDirectory(prefix=f"fedora-copr-{package_dir.name}-") as temporary:
-                validate_package(package_dir, Path(temporary))
+        srpm_dir = (args.srpm_dir.resolve() / package_dir.name
+                    if args.srpm_dir is not None else None)
+        with tempfile.TemporaryDirectory(prefix=f"fedora-copr-{package_dir.name}-") as temporary:
+            validate_package(package_dir, Path(temporary), srpm_dir)
 
     print(f"Validated {len(package_dirs)} package(s).")
 

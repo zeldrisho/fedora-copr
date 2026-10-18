@@ -14,14 +14,14 @@ Because there is not yet a stable Rust ABI, and because conditional compilation 
 
 This document covers how to handle Rust code in packages, specific to the different ways in which projects can be set up:
 
-- [Rust "crates"](#_rust_crates): packages that are individually published on [crates.io](https://crates.io/), the official package registry for Rust (primarily libraries, but also "single-crate" applications)
-- [Non-crate Rust projects](#_non_crate_rust_projects): Rust projects that are not published on crates.io, or larger projects that are comprised of many crates (cargo workspace)
-- [Python projects](#_python_projects) with a "native" component implemented in Rust: usually built with [setuptools\_rust](https://github.com/PyO3/setuptools-rust) or [maturin](https://github.com/PyO3/maturin)
-- [mixed Rust / C/C++ projects](#_mixed_rust_cc_projects) where parts of the project are implemented in Rust: either built by wrapping cargo, or by utilizing [meson](https://mesonbuild.com/Rust.html) 's limited support for directly building Rust code
+- [Rust "crates"](#rust-crates): packages that are individually published on [crates.io](https://crates.io/), the official package registry for Rust (primarily libraries, but also "single-crate" applications)
+- [Non-crate Rust projects](#non-crate-rust-projects): Rust projects that are not published on crates.io, or larger projects that are comprised of many crates (cargo workspace)
+- [Python projects](#python-projects) with a "native" component implemented in Rust: usually built with [setuptools\_rust](https://github.com/PyO3/setuptools-rust) or [maturin](https://github.com/PyO3/maturin)
+- [mixed Rust / C/C++ projects](#mixed-rust--cc-projects) where parts of the project are implemented in Rust: either built by wrapping cargo, or by utilizing [meson](https://mesonbuild.com/Rust.html) 's limited support for directly building Rust code
 
 The [rust2rpm](https://codeberg.org/rust2rpm/rust2rpm) tool can be used to generate spec files for Rust crates from cargo / crate metadata. It is designed to produce spec files that are in line with the (Rust) Packaging Guidelines.
 
-There are also guidelines for [packaging shared libraries](#_building_shared_libraries_with_cargo_c) that are implemented in Rust (usually built and installed with [cargo-c](https://crates.io/crates/cargo-c)).
+There are also guidelines for packaging shared libraries that are implemented in Rust (usually built and installed with [cargo-c](https://crates.io/crates/cargo-c)).
 
 ## Generic rules
 
@@ -61,7 +61,7 @@ For example, a dependency on `serde = "1.0.100"` specified in a project’s `Car
 BuildRequires:  (crate(serde/default) >= 1.0.100 with crate(serde/default) < 2.0.0~)
 ```
 
-Refer to the section about [RPM macros](#_rpm_macros) for how to pass feature flags to this macro.
+Refer to the section about [RPM macros](#rpm-macros-1) for how to pass feature flags to this macro.
 
 ### License tags
 
@@ -73,7 +73,7 @@ The `cargo-rpm-macros` package provides two RPM macros that help with filling th
 
 - `%cargo_license_summary`
 
-This macro determines and prints a summary of all the licenses of the Rust crates that end up statically linked into final binaries (properly excluding build-only or test-only dependencies). This summary can then be copied from the build log into the spec file as a comment. The actual contents of the `License` tag can then be obtained by constructing a conjunction of these individial licenses (with SPDX `AND` operators).
+This macro determines and prints a summary of all the licenses of the Rust crates that end up statically linked into final binaries (properly excluding build-only or test-only dependencies). This summary can then be copied from the build log into the spec file as a comment. The actual contents of the `License` tag can then be obtained by constructing a conjunction of these individual licenses (with SPDX `AND` operators).
 
 - `%cargo_license`
 
@@ -101,7 +101,7 @@ If the dependency is not published on [crates.io](https://crates.io/), or if the
 
 Another way in which cargo supports specifying modified dependencies is by "patching" a crate source, specifying an alternative source for specific crates - which will likely be either git references or path-based dependencies that are present to override a crate that is published on [crates.io](https://crates.io/) with a (modified) local copy, or a git repository that points to a (modified) fork of the crate.
 
-These replacements **SHOULD** be dropped in favor of using only published versions of crates. If that is not possible, they must be replaced by path-based dependencies, similar to the process described for [git-type dependencies](#_replacing_git_dependencies).
+These replacements **SHOULD** be dropped in favor of using only published versions of crates. If that is not possible, they must be replaced by path-based dependencies, similar to the process described for [git-type dependencies](#replacing-git-dependencies).
 
 #### Using vendor tarballs
 
@@ -171,7 +171,7 @@ The canonical source of Rust crates is [crates.io](https://crates.io/). Projects
 
 If the sources published on [crates.io](https://crates.io/) do not contain all files that are necessary for creating the package (for example, missing `.desktop` file or man pages), the upstream sources can be used as an *additional* source, but they **MUST NOT** be used for building the crate itself. It is recommended to file an issue with the upstream project about including these additional files in published crates.
 
-Alternatively, if the project in question does not provide a Rust library interface, it can be packaged as a [Non-crate Rust project](#_non_crate_rust_projects) using the upstream sources instead.
+Alternatively, if the project in question does not provide a Rust library interface, it can be packaged as a [Non-crate Rust project](#non-crate-rust-projects) using the upstream sources instead.
 
 ### Crate license
 
@@ -183,7 +183,7 @@ For this reason, the license metadata for all Rust crates packaged for Fedora **
 
 Optional features / dependencies of Rust crates are translated into RPM subpackages to support resolving dependencies for features and optional dependencies of crates. The list of crate "features" (including any implicitly defined features for optional dependencies) **MUST** be kept in sync with the list of subpackages, i.e. for every feature `$foo` of the crate `$crate`, there must be a subpackage with name `rust-$crate+$foo-devel`, and vice-versa. This is required for RPM generators for `Provides` and `Requires` for these optional features / dependencies to work correctly.
 
-If optional features that are *not* part of the default feature set are unused and would pull in additional (possibly unavailable) dependencies, the package **MAY** omit subpackages for these specific feature names. However, care needs to be taken that the features corresponding to the ommitted subpackages are not "reachable" via subpackages that have *not* been omitted, since this would result in packages with unsatisfiable dependencies. Disabling optional features sometimes cannot be handled correctly simply by omitting subpackages for specific features. In these cases, the crate metadata in `Cargo.toml` needs to be patched accordinly instead.
+If optional features that are *not* part of the default feature set are unused and would pull in additional (possibly unavailable) dependencies, the package **MAY** omit subpackages for these specific feature names. However, care needs to be taken that the features corresponding to the omitted subpackages are not "reachable" via subpackages that have *not* been omitted, since this would result in packages with unsatisfiable dependencies. Disabling optional features sometimes cannot be handled correctly simply by omitting subpackages for specific features. In these cases, the crate metadata in `Cargo.toml` needs to be patched accordingly instead.
 
 Beware that the "default" feature is always implicitly defined by cargo, even if the crate metadata does not contain a `[features]` table or an explicitly defined "default" feature, so the subpackage for the "default" feature will be present in all packages for Rust crates with a library interface.
 
@@ -233,10 +233,10 @@ Rust crates can have three different kinds of tests in their test suites:
 
 By default, running `cargo test` (i.e. by calling the `%cargo_test` macro), all three kinds of tests are run. They can also be invoked separately (for example, because parts of the test suite or large data files are not included in published sources) by passing through filtering arguments to the underlying `cargo test` command:
 
-- `%cargo_test — --lib`: only run *"unit tests"* for the library interface
-- `%cargo_test — --bin foo`: only run *"unit tests"* for binary "foo"
-- `%cargo_test — --doc`: only run *"doctests"*
-- `%cargo_test — --test bar`: only run *"integration test"* "bar"
+- `%cargo_test -- --lib`: only run *"unit tests"* for the library interface
+- `%cargo_test -- --bin foo`: only run *"unit tests"* for binary "foo"
+- `%cargo_test -- --doc`: only run *"doctests"*
+- `%cargo_test -- --test bar`: only run *"integration test"* "bar"
 
 This can be combined with additional flags to skip tests with specific names (or that contain a specific string in their name) by passing the `--skip` argument through to the test harness (can be specified multiple times):
 
@@ -256,7 +256,7 @@ The most common cases are
 
 - applications that do not provide a library interface,
 - projects comprised of multiple crates (cargo workspaces) that may or may not be published (or useful) separately, and
-- Python packages implemented in Rust ([covered below](#_python_projects)).
+- Python packages implemented in Rust ([covered below](#python-projects)).
 
 Packages like this **MUST NOT** ship crate sources in `%{cargo_registry}`, i.e. they cannot ship `-devel` subpackages that contain crate sources or have subpackages that have virtual provides for `crate(...) = %{version}`.
 
@@ -274,11 +274,11 @@ The `%{crates_source}` macro **SHOULD NOT** be used for packages like this, even
 
 Any `-a` and `-n` flags or `-f` arguments that are passed to `%cargo_generate_buildrequires` are applied to *all* workspace members during dependency resolution.
 
-The `%cargo_install` macro **SHOULD NOT** be used for packages like this. Instead, use `install` or `cp` to copy built executables or shared libraries from `target/rpm/*` into the buildroot explicltly, as needed.
+The `%cargo_install` macro **SHOULD NOT** be used for packages like this. Instead, use `install` or `cp` to copy built executables or shared libraries from `target/rpm/*` into the buildroot explicitly, as needed.
 
 ## Python projects
 
-Python packages that use [setuptools\_rust](https://github.com/PyO3/setuptools-rust) or [maturin](https://github.com/PyO3/maturin) to build a "native" Python extension also need to apply the [generic rules](#_generic_rules) for Rust packages in addition to following the [Python Packaging Guidelines](https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/).
+Python packages that use [setuptools\_rust](https://github.com/PyO3/setuptools-rust) or [maturin](https://github.com/PyO3/maturin) to build a "native" Python extension also need to apply the [generic rules](#generic-rules) for Rust packages in addition to following the [Python Packaging Guidelines](https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/).
 
 Both [setuptools\_rust](https://github.com/PyO3/setuptools-rust) and [maturin](https://github.com/PyO3/maturin) build the native Python extension by calling cargo internally, so the basic setup for projects that build with cargo is required for packages like this as well.
 
@@ -286,19 +286,19 @@ This includes calling `%cargo_prep` in `%prep` to set up the build environment f
 
 Additionally, `%cargo_license` and / or `%cargo_license_summary` **MUST** be used to determine the licenses that apply to the statically linked Python extension.
 
-The packager also **MUST** ensure that the default [compiler flags](#_compiler_flags) are passed to rustc, and that debuginfo is not stripped during the build process due to settings in the `setuptools-rust` or `maturin` configuration.
+The packager also **MUST** ensure that the default [compiler flags](#compiler-flags) are passed to rustc, and that debuginfo is not stripped during the build process due to settings in the `setuptools-rust` or `maturin` configuration.
 
 ## Mixed Rust / C/C++ projects
 
 Handling of projects that include both C/C++ and Rust code depends on how building the Rust code is integrated into the project’s build system.
 
-Independent of the specific setup, the correct [compiler flags](#_compiler_flags) **MUST** be passed to rustc, and the License tag of the package that contains the Rust component **MUST** take the licenses of statically linked crates into account.
+Independent of the specific setup, the correct [compiler flags](#compiler-flags) **MUST** be passed to rustc, and the License tag of the package that contains the Rust component **MUST** take the licenses of statically linked crates into account.
 
 ### Building with cargo internally
 
 Projects with build systems that call cargo internally to build Rust components **MUST** follow the same guidelines as other projects that build Rust code with cargo.
 
-Packages **MUST** ensure that the cargo calls that are internal to the project’s build system do not pass flags or arguments that are incompatible with either the default [compiler flags](#_compiler_flags) or cargo options that are set in the `%cargo_build` macro or configured by `%cargo_prep`.
+Packages **MUST** ensure that the cargo calls that are internal to the project’s build system do not pass flags or arguments that are incompatible with either the default [compiler flags](#compiler-flags) or cargo options that are set in the `%cargo_build` macro or configured by `%cargo_prep`.
 
 ### Building with meson directly
 
@@ -309,11 +309,11 @@ Recent versions of [meson](https://mesonbuild.com/Rust.html) have limited suppor
 The process of building and installing Rust projects is almost entirely automated with several RPM macros:
 
 - `%cargo_prep`: This macro **MUST** be called in the `%prep` scriptlet after sources have been unpacked. It sets up the build environment for cargo and injects a cargo configuration file, which sets the default compiler flags and configures the local crate registry as a replacement for [crates.io](https://crates.io/).
-- `%cargo_generate_buildrequires`: This macro **MUST** be called in the `%generate_buildrequires` scriptlet, except when building with vendored dependencies. This is the mechanism that automatically generates depepdencies on other Rust crates based on the metadata in `Cargo.toml`.
+- `%cargo_generate_buildrequires`: This macro **MUST** be called in the `%generate_buildrequires` scriptlet, except when building with vendored dependencies. This is the mechanism that automatically generates dependencies on other Rust crates based on the metadata in `Cargo.toml`.
 - `%cargo_build`: This macro **MUST** only be called in the `%build` scriptlet unless the build is handled in another way, i.e. "cargo build" is called internally by build scripts. It runs `cargo build` with the appropriate command line arguments. Calling this macro **MAY** be skipped if the crate is not supported on the current CPU architecture.
 - `%cargo_install`: This macro **MUST** only be called in the `%install` scriptlet for crates that provide a library interface. It runs `cargo package` and installs the resulting directory tree into `%{buildroot}/%{crate_instdir}` (i.e. `%{buildroot}/%{cargo_registry}/%{crate}-%{version}/`). For crates that provide `bin` targets, it installs all built executables into `%{buildroot}/%{_bindir}`. If any built executables need to be installed in a different location, they can be moved after calling `%cargo_install`, or `%cargo_install` can be replaced with manual installation steps (copying from `target/rpm/*`). To prevent installation of executables by this macro, the `%cargo_install_bin` macro can be defined to `0`. To prevent installation of library sources by this macro, the `%cargo_install_lib` macro can be defined to `0`.
 - `%cargo_test`: This macro **MUST** only be called in the `%check` scriptlet. It runs `cargo test` with the appropriate command line arguments. Calling this macro **MAY** be skipped if the crate is not supported on the current CPU architecture or if tests are disabled in general.
-- `%cargo_license` / `%cargo_license_summary`: These macros **MUST** be called in the `%build` scriptlet after `%cargo_build` when building crates that include binary targets. They can be used to print the list of the licenses of the crates that are statically linked into any built executable or shared library (see [License tags](#_license_tags)).
+- `%cargo_license` / `%cargo_license_summary`: These macros **MUST** be called in the `%build` scriptlet after `%cargo_build` when building crates that include binary targets. They can be used to print the list of the licenses of the crates that are statically linked into any built executable or shared library (see [License tags](#license-tags)).
 - `%cargo_vendor_manifest`: This macro **MUST** be called in the `%build` scriptlet after `%cargo_build` when building Rust projects with vendored dependencies. It writes a machine-readable list of all vendored dependencies to `cargo-vendor.txt`, which **MUST** be included as a `%license` file in the package that contains the statically linked executable(s).
 
 All packages for Rust crates **MUST** set either `%bcond check 1` or `%bcond check 0`. The value of this macro affects whether `%cargo_generate_buildrequires` includes dependencies that are required for building and running tests.

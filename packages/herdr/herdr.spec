@@ -18,7 +18,7 @@ License:        %{shrink:
     (Zlib OR Apache-2.0 OR MIT) AND ISC
 }
 URL:            https://github.com/herdrdev/herdr
-Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz
+Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 Source1:        herdr-%{version}-vendor.tar.gz
 Source2:        herdr-%{version}-zig-deps.tar.gz
 

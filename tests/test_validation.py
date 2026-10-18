@@ -60,6 +60,7 @@ class ValidationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             package = self.fixture(root)
+            workspace = root / "workspace"
             output = root / "srpms" / "demo"
 
             def fake_run(command, *, cwd=None, capture=False):
@@ -72,8 +73,36 @@ class ValidationTests(unittest.TestCase):
                 return ""
 
             with patch.object(validate, "run", side_effect=fake_run):
-                validate.validate_package(package, output, output)
+                validate.validate_package(package, workspace, output)
             self.assertTrue((output / "demo-1-1.src.rpm").is_file())
+
+    def test_main_uses_fresh_workspace_when_retaining_srpms(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package_root = root / "packages"
+            package_root.mkdir()
+            self.fixture(package_root)
+            srpm_root = root / "retained"
+            workspaces = []
+
+            def fake_validate(package_dir, workspace, srpm_output=None):
+                self.assertEqual(package_dir.name, "demo")
+                self.assertNotEqual(workspace, srpm_output)
+                self.assertTrue(workspace.is_dir())
+                workspaces.append(workspace)
+                srpm_output.mkdir(parents=True, exist_ok=True)
+                (srpm_output / "demo-1-1.src.rpm").touch()
+
+            for _ in range(2):
+                with patch.object(validate, "PACKAGES", package_root), \
+                     patch.object(validate, "TOOLS", ()), \
+                     patch.object(validate.sys, "argv", ["validate", "--srpm-dir", str(srpm_root)]), \
+                     patch.object(validate, "validate_package", side_effect=fake_validate):
+                    validate.main()
+
+            self.assertNotEqual(workspaces[0], workspaces[1])
+            self.assertTrue(all(not workspace.exists() for workspace in workspaces))
+            self.assertTrue((srpm_root / "demo" / "demo-1-1.src.rpm").is_file())
 
     def test_rejects_multiple_srpms(self):
         """Verify validation rejects a build that produces more than one SRPM."""
@@ -217,6 +246,9 @@ class ValidationTests(unittest.TestCase):
         """Verify numeric version ordering, optional v prefixes, and empty-tag rejection."""
         self.assertGreater(check_upstream.version_key("v1.10.0"), check_upstream.version_key("1.9.9"))
         self.assertEqual(check_upstream.version_key("v2.0.0"), check_upstream.version_key("2.0.0"))
+        self.assertEqual(check_upstream.version_key("1.2"), check_upstream.version_key("1.2.0"))
+        self.assertLess(check_upstream.version_key("1.2.3rc1"), check_upstream.version_key("1.2.3"))
+        self.assertLess(check_upstream.version_key("1.2.3-rc.1"), check_upstream.version_key("1.2.3"))
         with self.assertRaises(ValueError):
             check_upstream.version_key("v")
 

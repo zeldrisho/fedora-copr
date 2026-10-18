@@ -29,12 +29,14 @@ Obtain matching clean-chroot evidence from COPR or a local Mock build. Mock is n
 
 ```sh
 package=<name>
-mkdir -p "dist/review/$package"
+mkdir -p dist/review
+resultdir=$(mktemp -d "dist/review/$package.XXXXXX")
 mock -r fedora-rawhide-x86_64 \
-  --resultdir "$PWD/dist/review/$package" \
+  --resultdir "$PWD/$resultdir" \
   --rebuild "dist/srpm/$package-*.src.rpm"
 rpmlint "packages/$package/$package.spec" \
-  "dist/review/$package"/*.rpm
+  "dist/srpm/$package-"*.src.rpm \
+  "$resultdir"/*.rpm
 ```
 
 Use a result directory containing only artifacts from this build. Keep the full Mock logs and unmodified lint output. Confirm the license report, dependency provides, installed license files, and runtime behavior. A successful host rebuild does **not** replace this isolated build or prove offline operation. See [toolchain commands](toolchain.md) for RPM inspection and the package's maintenance notes for package-specific source regeneration and test exclusions.

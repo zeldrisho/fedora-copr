@@ -63,6 +63,7 @@ To repeat, use a new temporary directory:
 
 ```sh
 work=$(mktemp -d)
+spectool --get-files --source 0 --directory "$work" packages/actionlint/actionlint.spec
 cp packages/actionlint/actionlint.spec \
   packages/actionlint/go-vendor-tools.toml \
   packages/actionlint/actionlint-1.7.12.tar.gz "$work/"

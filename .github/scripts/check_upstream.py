@@ -21,13 +21,17 @@ def run(*args: str) -> str:
     return result.stdout.strip()
 
 
-def version_key(value: str) -> tuple[tuple[int, object], ...]:
-    """Compare simple numeric/dotted upstream tags, ignoring a leading v."""
+def version_key(value: str) -> tuple[tuple[int, ...], int, str]:
+    """Compare dotted numeric tags, ordering suffixed pre-releases before releases."""
     value = value.removeprefix("v")
-    parts = re.findall(r"\d+|[A-Za-z]+", value)
-    if not parts:
+    match = re.fullmatch(r"(\d+(?:\.\d+)*)(.*)", value)
+    if not match:
         raise ValueError(f"unsupported version: {value!r}")
-    return tuple((0, int(part)) if part.isdigit() else (1, part.lower()) for part in parts)
+    numbers = [int(part) for part in match.group(1).split(".")]
+    while len(numbers) > 1 and numbers[-1] == 0:
+        numbers.pop()
+    suffix = match.group(2).lower()
+    return tuple(numbers), int(not suffix), suffix
 
 
 def package_version(package: str) -> str:
@@ -49,7 +53,7 @@ def main() -> int:
             print(f"{package}: current {current}, latest stable {latest}")
             continue
         title = f"feat({package}): update to {latest}"
-        existing = run("gh", "issue", "list", "--repo", repository, "--state", "open", "--search", title, "--json", "title", "--jq", ".[].title")
+        existing = run("gh", "issue", "list", "--repo", repository, "--state", "open", "--search", f'"{title}" in:title', "--limit", "100", "--json", "title", "--jq", ".[].title")
         if title in existing.splitlines():
             print(f"{package}: issue already open for {latest}")
             continue

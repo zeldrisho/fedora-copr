@@ -61,7 +61,7 @@ You can also use `fedpkg set-distgit-token`.
 - If you want to add your package to more Fedora releases and not just Rawhide, see [Requesting branches](https://docs.fedoraproject.org/en-US/package-maintainers/Package_Maintenance_Guide/#requesting_branches).
 - When [fedora-scm-requests tickets](https://forge.fedoraproject.org/releng/fedora-scm-requests/issues) for the requested repository and branches are closed, checkout the package:
 	```
-	fedpkg clone
+	fedpkg clone my-package
 	```
 - Now you can [import your SRPM package](https://docs.fedoraproject.org/en-US/package-maintainers/New_Package_Process_for_New_Contributors/#import_commit_and_build_your_package). Do a final check of spec file tags, etc.
 - Request a Koji build by running `fedpkg build`. (You will need to set up [Kerberos for Fedora project](https://fedoraproject.org/wiki/Infrastructure/Kerberos))

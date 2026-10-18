@@ -60,7 +60,9 @@ jobs:
             python3 scripts/check_nvr.py "$BASE_REF"
           fi
       - name: Verify package source checksums
+        shell: bash
         run: |
+          shopt -s nullglob
           for manifest in packages/*/docs/checksums.sha256; do
             sha256sum --check "$manifest"
           done
@@ -135,6 +137,7 @@ jobs:
   upstream-check:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       issues: write

@@ -27,4 +27,4 @@ make -C ../.. validate
 
 Repository validation covers the spec and SRPM, not binary RPM linting or runtime behavior. Build and inspect the binary RPM, run `rpmlint` on it, and test the installed command as well.
 
-The package's `%check` skips tests that require live HTTP because Fedora builds run offline, and omits `scripts/check-checks`, which maintains upstream's lint-check documentation and needs ShellCheck and pyflakes. The remaining tests run offline. CI builds the binary RPM locally before merge; COPR build logs confirm the configured target chroots after publishing.
+The package's `%check` skips tests that require live HTTP because Fedora builds run offline, and omits `scripts/check-checks`, which maintains upstream's lint-check documentation and needs ShellCheck and pyflakes. The remaining tests run offline. CI validates package metadata and SRPMs before merge; COPR builds binary RPMs after publishing.

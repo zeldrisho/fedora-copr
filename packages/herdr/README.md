@@ -12,8 +12,8 @@ To refresh source bundles for a new release:
 
 1. Download the tagged source archive and inspect its Cargo lockfile, path dependencies, and Zig `build.zig.zon`.
 2. Run `cargo vendor cargo-vendor` from the source tree and archive the resulting directory as `herdr-<version>-vendor.tar.gz`.
-3. Build the Linux target using the required Fedora Zig version with an empty Zig package cache and populated `ZIG_GLOBAL_CACHE_DIR`. Capture all resolved archives under its `p/` directory and archive that directory as `herdr-<version>-zig-deps.tar.gz`.
-4. Rebuild from a clean source tree with networking disabled, using only the two archives. Verify no new package cache downloads occur. Refresh `cargo-vendor.txt`, linked-dependency license reporting, source license inventory, and the spec's `License:` expression.
+3. Start with an empty `p/` package-cache directory in `ZIG_GLOBAL_CACHE_DIR` and build the Linux target using the required Fedora Zig version. This source-preparation build may access the network to resolve packages; it populates `p/` with the resolved source archives. Archive that directory as `herdr-<version>-zig-deps.tar.gz`.
+4. Rebuild from a clean source tree with networking disabled, using only the two archives. Verify no new package-cache downloads occur. Refresh `cargo-vendor.txt`, linked-dependency license reporting, source license inventory, and the spec's `License:` expression.
 5. Review the bundled Ghostty/Zig dependency licenses and any changes to linked crate licenses; retain their license files in `%license` as needed.
 
 Both archives are source inputs, not prebuilt program code. The Zig cache was populated by a Linux x86_64 `-Demit-lib-vt` build; the Fedora target architectures must each be validated before being considered supported.
