@@ -66,8 +66,9 @@ export HERDR_BUILD_CHANNEL=stable
 export ZIG_GLOBAL_CACHE_DIR="$PWD/zig-global-cache"
 # Integration tests need a running server, and tests must be serial because
 # they modify process-wide signal dispositions.
+export CARGO_PROFILE_RPM_LTO=false
 export CARGO_PROFILE_RPM_CODEGEN_UNITS=16
-%cargo_test -- --bins --test-threads=1
+%cargo_test -- --bins -- --test-threads=1
 ./target/rpm/herdr --version | grep -F '%{version}'
 ./target/rpm/herdr completion bash >/dev/null
 

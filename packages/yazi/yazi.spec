@@ -110,6 +110,8 @@ install -Dpm 0644 LICENSE.syntaxes %{buildroot}%{_licensedir}/%{name}/LICENSE.sy
 install -Dpm 0644 %{SOURCE4} %{buildroot}%{_docdir}/%{name}/syntax-sources.tar.gz
 
 %check
+export CARGO_PROFILE_RPM_LTO=false
+export CARGO_PROFILE_RPM_CODEGEN_UNITS=16
 export VERGEN_GIT_SHA=%{yazi_commit}
 export JEMALLOC_SYS_WITH_LG_PAGE=14
 export RUSTONIG_SYSTEM_LIBONIG=1
