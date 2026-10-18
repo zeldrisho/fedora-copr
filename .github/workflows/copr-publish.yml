@@ -30,7 +30,6 @@ jobs:
           && github.event.workflow_run.head_branch == 'main'
           && github.event.workflow_run.head_repository.full_name == github.repository)
         || (github.event_name == 'workflow_dispatch'
-          && github.ref == 'refs/heads/main'
           && needs.manual-validation.result == 'success'))
     needs: [manual-validation]
     runs-on: ubuntu-latest
@@ -59,7 +58,7 @@ jobs:
           if [[ -n "$PUBLISH_PACKAGES" ]]; then
             packages=$(python3 .github/scripts/changed_packages.py --packages "$PUBLISH_PACKAGES")
           else
-            before=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/copr-publish.yml/runs?branch=main&status=success&per_page=1" \\
+            before=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/copr-publish.yml/runs?branch=main&status=success&per_page=1" \
               --jq '.workflow_runs[0].head_sha // empty')
             before=${before:-$(printf '%040d' 0)}
             packages=$(python3 .github/scripts/changed_packages.py --publish "$before")

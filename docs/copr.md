@@ -36,9 +36,28 @@ Use the project's existing settings as authoritative; `.copr/project.toml` is do
 
 The `CI` workflow runs for relevant pull requests and qualifying pushes to `main`; documentation-only changes do not trigger it. It checks EVR increases, runs repository tests, verifies source-checksum manifests for all packages, and validates/lints package SRPMs. It does not build binary RPMs. After a successful `CI` run for a push to `main`, `COPR publish` selects changed package inputs, updates SCM recipes for the exact validated commit, and submits builds with `--nowait`. COPR's configured chroots build asynchronously; submission success does not mean the COPR builds succeeded. Monitor COPR results after submission.
 
-To submit selected packages manually, run **Actions → COPR publish → Run workflow** on `main` and enter a comma-separated package list (for example, `herdr,yazi`). This runs validation before submitting the requested builds. The weekly/manual `Upstream check` workflow is separate and checks for newer releases; it does not publish packages. A documented changelog note alone is not sufficient to authorize an EVR reset; verify all prior builds were withdrawn and not downloaded or installed, then follow repository maintainer policy before such a reset.
+To submit selected packages manually from any branch, run **Actions → COPR publish → Run workflow**, select the branch, and enter a comma-separated package list (for example, `herdr,yazi`). This validates the selected branch and submits builds for that exact commit. Manual publishing requires the `COPR_CONFIG` secret. The weekly/manual `Upstream check` workflow is separate and checks for newer releases; it does not publish packages. A documented changelog note alone is not sufficient to authorize an EVR reset; verify all prior builds were withdrawn and not downloaded or installed, then follow repository maintainer policy before such a reset.
 
 The `Upstream check` workflow checks the latest stable GitHub release for actionlint, Herdr, and Yazi. It opens a review issue when the release tag is newer than the packaged version, using a Conventional Commit-style title such as `feat(yazi): update to 26.10.0`; it does not update specs or submit builds. Check the upstream repository and Fedora packaging constraints before acting on an issue.
+
+## Diagnose builds
+
+Build submission is not build completion. The publish workflow uses `--nowait`, so use the build link or ID in the action log/summary to follow the COPR build through all configured chroots. A successful submission only confirms that COPR accepted the request.
+
+For diagnosis, separate the stages:
+
+- If SRPM preparation fails, inspect declared `Source` entries, source availability, and the shared `.copr/Makefile` behavior. CI validation exercises SRPM creation and linting but does not build binary RPMs.
+- If an individual chroot fails, inspect its COPR build log for missing build requirements, Fedora-version incompatibilities, or build/test steps that try to access the network. Reproduce locally with Mock when useful; see the [toolchain guide](toolchain.md).
+- If the build succeeds but the package is unusable, inspect and install the binary RPM in a clean Fedora environment, then smoke-test the packaged command. See the binary RPM review steps in the [toolchain guide](toolchain.md).
+
+To isolate the COPR build from SCM recipe preparation, retain a locally prepared SRPM and submit it directly. This creates a real COPR build; it is a maintainer diagnostic path, not a substitute for the normal validated publishing workflow:
+
+```sh
+make srpm PACKAGE=actionlint OUTDIR="$HOME/rpmbuild/SRPMS"
+copr-cli build zeldrisho/packages "$HOME"/rpmbuild/SRPMS/actionlint-*.src.rpm
+```
+
+Install and configure `copr-cli` as described in the [toolchain guide](toolchain.md). Direct submission uses the configured account and may publish the resulting package to the project repository.
 
 Configure the repository's GitHub Actions secret once:
 
