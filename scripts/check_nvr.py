@@ -75,34 +75,15 @@ SECTION = re.compile(
 PACKAGER_ONLY_SECTIONS = {"check", "changelog"}
 
 
-def packager_only_buildrequires(text: str) -> set[str]:
-    """Return BuildRequires values marked as packager-only in a spec."""
-    values: set[str] = set()
-    lines = iter(text.splitlines())
-    for line in lines:
-        if re.match(r"^\s*#\s*packager-only:\s*BuildRequires\b", line):
-            requirement = next(lines, "")
-            match = re.match(r"^\s*BuildRequires:\s*(.*?)\s*$", requirement)
-            if match:
-                values.add(match.group(1))
-    return values
-
-
-def user_facing_spec(text: str, ignored_buildrequires: set[str] | None = None) -> str:
+def user_facing_spec(text: str) -> str:
     """Return the spec text that can change what users get.
 
     Drop full-line comments, blank lines, and the %check and %changelog
     sections, since edits confined to those do not alter the installed package.
-    Also drop BuildRequires values listed in ``ignored_buildrequires``. These
-    are test/check-only requirements explicitly marked in either compared spec.
     """
     kept: list[str] = []
-    ignored_buildrequires = ignored_buildrequires or set()
     skipping = False
     for line in text.splitlines():
-        buildrequire = re.match(r"^\s*BuildRequires:\s*(.*?)\s*$", line)
-        if buildrequire and buildrequire.group(1) in ignored_buildrequires:
-            continue
         match = SECTION.match(line)
         if match:
             skipping = match.group(1) in PACKAGER_ONLY_SECTIONS
@@ -163,12 +144,7 @@ def check(base: str) -> int:
             print(f"{name}: new package")
             continue
         files = [item for item in changed if item.startswith(f"packages/{name}/")]
-        ignored_buildrequires = (
-            packager_only_buildrequires(current) | packager_only_buildrequires(previous)
-        )
-        if files == [path] and user_facing_spec(current, ignored_buildrequires) == user_facing_spec(
-            previous, ignored_buildrequires
-        ):
+        if files == [path] and user_facing_spec(current) == user_facing_spec(previous):
             print(f"{name}: packager-only spec change; no bump required")
             continue
         try:

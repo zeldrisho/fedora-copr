@@ -13,15 +13,13 @@ Summary:        Static checker for GitHub Actions workflow files
 License:        Apache-2.0 AND BSD-3-Clause AND MIT
 URL:            %{gourl}
 Source0:        %{gosource}
-# Generated with Go Vendor Tools (go_vendor_archive create actionlint.spec).
-# Checked-in archive keeps Fedora builds offline.
+# Generated with Go Vendor Tools; keep vendored sources available for offline builds.
 Source1:        %{archivename}-vendor.tar.bz2
 Source2:        go-vendor-tools.toml
 
 BuildRequires:  go-vendor-tools
 BuildRequires:  rubygem-ronn-ng
 
-# Optional integrations used by actionlint for embedded shell and Python checks.
 Recommends:     ShellCheck
 Recommends:     python3-pyflakes
 
@@ -51,9 +49,8 @@ install -Dpm0644 man/actionlint.1 %{buildroot}%{_mandir}/man1/actionlint.1
 %check
 %go_vendor_license_check -c %{S:2}
 %if %{with check}
-# Exclude scripts/check-checks: it maintains upstream docs/checks.md and needs shellcheck and pyflakes.
-# Skip tests that fetch live HTTP resources; Fedora builds run offline.
-# Isolate generator invocations because go test's -skip slash matching applies per subtest component.
+# Skip network-dependent tests and upstream's documentation-maintenance test.
+# Separate generator tests because go test -skip matches slash-separated components.
 %gotest -skip '^(TestDetectErrorBadRequest|TestFetchError|TestFetchRemoteYAML|TestWriteOutdatedActionAsJSONL|TestDetectNewRelease|TestCouldNotFetch|TestFetchURL)$' . ./cmd/actionlint ./scripts/generate-availability ./scripts/generate-webhook-events
 %gotest -skip '^(TestDetectErrorBadRequest|TestFetchError|TestFetchRemoteYAML|TestWriteOutdatedActionAsJSONL|TestDetectNewRelease|TestCouldNotFetch|TestFetchURL|TestDetectNoRelease)$' ./scripts/generate-popular-actions
 %gotest -run '^TestDetectNoRelease$' -skip '^TestDetectNoRelease$/^no_new_version\.json$' ./scripts/generate-popular-actions

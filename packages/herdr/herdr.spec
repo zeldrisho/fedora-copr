@@ -30,7 +30,6 @@ BuildRequires:  gcc
 BuildRequires:  cmake
 # The unit tests create and inspect Git repositories and worktrees.
 BuildRequires:  git-core
-# packager-only: BuildRequires used exclusively by %check tests
 BuildRequires:  procps-ng
 
 ExclusiveArch:  x86_64 aarch64
@@ -40,9 +39,7 @@ ExclusiveArch:  x86_64 aarch64
 %prep
 %autosetup -n %{name}-%{version} -a1 -N
 mkdir -p zig-global-cache
-# Includes the exact Zig package archives used by the Linux libghostty-vt build.
 tar -xzf %{SOURCE2} -C zig-global-cache
-# Clean tool-generated state and initialize Cargo's offline vendor configuration.
 rm -rf vendor/libghostty-vt/.zig-cache
 %cargo_prep -v cargo-vendor
 
@@ -66,11 +63,8 @@ install -Dpm 0644 herdr.fish %{buildroot}%{fish_completions_dir}/herdr.fish
 %check
 export HERDR_BUILD_CHANNEL=stable
 export ZIG_GLOBAL_CACHE_DIR="$PWD/zig-global-cache"
-# The integration tests start live Herdr servers, which do not come up inside the
-# Mock build environment (the server socket never appears), so run the unit tests.
-# Keep tests serial because Herdr tests modify process-wide signal dispositions.
-# Use more codegen units for test binaries to avoid pathological Fedora 44 compile
-# times; these settings are confined to %check and do not affect the shipped binary.
+# Integration tests need a running server, and tests must be serial because
+# they modify process-wide signal dispositions.
 export CARGO_PROFILE_RPM_CODEGEN_UNITS=16
 %cargo_test -- --bins --test-threads=1
 ./target/rpm/herdr --version | grep -F '%{version}'

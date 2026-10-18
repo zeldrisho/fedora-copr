@@ -1,18 +1,10 @@
 name: CI
 
 on:
-  workflow_dispatch:
-    inputs:
-      packages:
-        description: Comma-separated package names to validate and submit (for example, herdr,yazi); leave empty for the upstream check
-        required: false
-        type: string
-  schedule:
-    - cron: '17 8 * * 1'
   pull_request:
     paths:
       - '.copr/**'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/**'
       - '.github/scripts/**'
       - 'packages/**'
       - 'scripts/**'
@@ -22,12 +14,13 @@ on:
     branches: [main]
     paths:
       - '.copr/**'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/**'
       - '.github/scripts/**'
       - 'packages/**'
       - 'scripts/**'
       - 'tests/**'
       - 'Makefile'
+  workflow_call:
 
 permissions:
   contents: read
@@ -38,7 +31,6 @@ concurrency:
 
 jobs:
   validate:
-    if: github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.packages != '')
     runs-on: ubuntu-latest
     container: fedora:latest
     steps:
@@ -57,7 +49,7 @@ jobs:
         run: python3 -m unittest discover -s tests -v
       - name: Check package EVR bumps
         env:
-          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event_name == 'workflow_dispatch' && github.sha || github.event.before }}
+          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before || github.sha }}
         run: |
           if [[ "$BASE_REF" =~ ^0+$ ]]; then
             echo 'Skipping EVR comparison for the initial push.'
@@ -75,7 +67,7 @@ jobs:
         run: python3 scripts/validate.py
       - name: Test Yazi syntax database filter
         env:
-          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event_name == 'workflow_dispatch' && github.sha || github.event.before }}
+          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before || github.sha }}
         run: |
           if [[ ! "$BASE_REF" =~ ^0+$ ]]; then
             changed=$(git diff --name-only "$BASE_REF" HEAD)
@@ -86,79 +78,3 @@ jobs:
           fi
           dnf -y install cargo rust oniguruma-devel
           cargo test --locked --manifest-path packages/yazi/scripts/filter-syntax-database/Cargo.toml
-
-  publish:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.packages != '')
-    needs: validate
-    runs-on: ubuntu-latest
-    container: fedora:latest
-    timeout-minutes: 360
-    concurrency:
-      group: copr-publish
-      cancel-in-progress: false
-    env:
-      COPR_PROJECT: zeldrisho/packages
-    steps:
-      - name: Install COPR client, Git and Python
-        run: dnf -y install copr-cli git python3
-      - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Trust workspace for Git checks in the container
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Sync changed package recipes and submit builds
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -n "$PUBLISH_PACKAGES" ]]; then
-            packages=$(python3 .github/scripts/changed_packages.py --packages "$PUBLISH_PACKAGES")
-          else
-            packages=$(python3 .github/scripts/changed_packages.py --publish "$GITHUB_EVENT_BEFORE")
-          fi
-          if [[ -z "$packages" ]]; then
-            echo 'No package build inputs changed; nothing to publish.'
-            exit 0
-          fi
-          test -n "$COPR_CONFIG" || { echo 'COPR_CONFIG secret is required' >&2; exit 1; }
-          umask 077
-          config_path="$(mktemp)"
-          trap 'rm -f "$config_path"' EXIT
-          printf '%s\n' "$COPR_CONFIG" > "$config_path"
-          copr=(copr-cli --config "$config_path")
-          package_names="$("${copr[@]}" list-package-names "$COPR_PROJECT")"
-          while IFS= read -r package; do
-            [[ -n "$package" ]] || continue
-            common_args=("$COPR_PROJECT" --name "$package" --clone-url https://github.com/zeldrisho/fedora-copr.git --commit "$GITHUB_SHA" --subdir "packages/$package" --spec "$package.spec" --type git --method make_srpm --webhook-rebuild off)
-            if grep -Fxq "$package" <<<"$package_names"; then
-              "${copr[@]}" edit-package-scm "${common_args[@]}"
-            else
-              "${copr[@]}" add-package-scm "${common_args[@]}"
-            fi
-            build_output="$("${copr[@]}" build-package "$COPR_PROJECT" --name "$package" --nowait)"
-            printf '%s\n' "### $package COPR submission" "$build_output" >> "$GITHUB_STEP_SUMMARY"
-            printf '%s\n' "$build_output"
-          done <<< "$packages"
-        env:
-          COPR_CONFIG: ${{ secrets.COPR_CONFIG }}
-          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
-          PUBLISH_PACKAGES: ${{ inputs.packages }}
-
-  upstream-check:
-    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.packages == '')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      issues: write
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Report upstream releases
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: python3 .github/scripts/check_upstream.py
