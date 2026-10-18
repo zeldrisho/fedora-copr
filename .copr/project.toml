@@ -5,7 +5,7 @@
 name = "packages"
 owner = "zeldrisho"
 chroots = ["fedora-44-x86_64", "fedora-45-x86_64", "fedora-rawhide-x86_64"]
-description = "Fedora-submittable RPM specs, staged on COPR."
+description = "Fedora RPM packaging with builds published on COPR."
 homepage = "https://github.com/zeldrisho/fedora-copr"
 
 [repository]

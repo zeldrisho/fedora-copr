@@ -8,8 +8,7 @@ Name:           yazi
 Version:        26.9.1
 Release:        1%{?dist}
 Summary:        Blazing fast terminal file manager
-# Cargo licenses are from the cargo license-summary macro. The final terms additionally
-# include syntax-source licenses and the GPL-3.0-only SSH grammar license.
+# Include syntax-source licenses and the GPL-3.0-only SSH grammar license.
 License:        %{shrink:
     ((MIT OR Apache-2.0) AND Unicode-3.0) AND
     (0BSD OR MIT OR Apache-2.0) AND Apache-2.0 AND
@@ -71,15 +70,11 @@ Recommends:     zoxide
 mkdir -p syntax-sources
 /usr/bin/tar -xzf %{SOURCE4} -C syntax-sources
 cp syntax-sources/syntax-sources/LICENSE.syntaxes LICENSE.syntaxes
-# The vendor archive contains target-specific upstream crate source archives.
-# Remove prebuilt objects and libraries before any build, as Fedora requires.
+# Remove prebuilt objects and libraries from vendored crates before building.
 find vendor -type f \( -name '*.a' -o -name '*.lib' -o -name '*.o' -o -name '*.so' -o -name '*.dll' -o -name '*.exe' \) -delete
-# Some crates mark Rust source files executable; remove that bit so RPM does
-# not mistake crate-level #![...] attributes in debug sources for shebangs.
 find vendor -type f -name '*.rs' -exec chmod a-x {} +
 %cargo_prep -v vendor
-# The forked ratatui Git dependency is vendored too; redirect its source to the
-# same offline vendor directory as crates.io dependencies.
+# Use the vendored source for the forked ratatui Git dependency.
 cat >> .cargo/config.toml <<'EOF'
 [source."git+https://github.com/yazi-rs/ratatui.git?branch=fix_buffer_diff_wide_cells"]
 git = "https://github.com/yazi-rs/ratatui.git"
@@ -115,6 +110,8 @@ install -Dpm 0644 LICENSE.syntaxes %{buildroot}%{_licensedir}/%{name}/LICENSE.sy
 install -Dpm 0644 %{SOURCE4} %{buildroot}%{_docdir}/%{name}/syntax-sources.tar.gz
 
 %check
+export CARGO_PROFILE_RPM_LTO=false
+export CARGO_PROFILE_RPM_CODEGEN_UNITS=16
 export VERGEN_GIT_SHA=%{yazi_commit}
 export JEMALLOC_SYS_WITH_LG_PAGE=14
 export RUSTONIG_SYSTEM_LIBONIG=1

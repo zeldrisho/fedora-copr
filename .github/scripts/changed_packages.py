@@ -32,6 +32,17 @@ def package_names() -> list[str]:
                   if path.is_dir() and (path / f"{path.name}.spec").is_file())
 
 
+def selected_packages(requested: str, available: list[str]) -> list[str]:
+    """Validate and sort a comma-separated explicit package selection."""
+    names = {name.strip() for name in requested.split(",") if name.strip()}
+    unknown = sorted(names - set(available))
+    if not names:
+        raise ValueError("at least one package name is required")
+    if unknown:
+        raise ValueError(f"unknown package(s): {', '.join(unknown)}")
+    return sorted(names)
+
+
 def changed_packages(base: str | None, global_paths: tuple[str, ...] = GLOBAL_PATHS) -> list[str]:
     """Select packages changed from base to HEAD, ignoring README and docs files.
 
@@ -66,14 +77,19 @@ def main() -> int:
         "--publish", action="store_true",
         help="select packages for COPR submission: only .copr/ changes count as shared",
     )
+    selection.add_argument(
+        "--packages", metavar="NAMES",
+        help="select an explicit comma-separated list of package names",
+    )
     args = parser.parse_args()
     try:
-        if args.publish:
-            paths = PUBLISH_GLOBAL_PATHS
+        if args.packages is not None:
+            packages = selected_packages(args.packages, package_names())
         else:
-            paths = GLOBAL_PATHS
-        print("\n".join(changed_packages(args.base, paths)))
-    except (RuntimeError, OSError) as exc:
+            paths = PUBLISH_GLOBAL_PATHS if args.publish else GLOBAL_PATHS
+            packages = changed_packages(args.base, paths)
+        print("\n".join(packages))
+    except (RuntimeError, OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     return 0

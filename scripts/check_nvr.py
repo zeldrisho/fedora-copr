@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_PATH = re.compile(r"^packages/([^/]+)/")
@@ -75,7 +76,7 @@ SECTION = re.compile(
 PACKAGER_ONLY_SECTIONS = {"check", "changelog"}
 
 
-def user_facing_spec(text: str) -> str:
+def user_facing_spec(text: str, *, ignore_packager_buildrequires: bool = True) -> str:
     """Return the spec text that can change what users get.
 
     Drop full-line comments, blank lines, and the %check and %changelog
@@ -83,14 +84,59 @@ def user_facing_spec(text: str) -> str:
     """
     kept: list[str] = []
     skipping = False
-    for line in text.splitlines():
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
         match = SECTION.match(line)
         if match:
             skipping = match.group(1) in PACKAGER_ONLY_SECTIONS
         if skipping or not line.strip() or line.lstrip().startswith("#"):
             continue
+        if (ignore_packager_buildrequires and index
+                and lines[index - 1].strip() == "# packager-only: BuildRequires"
+                and re.match(r"^BuildRequires:", line)):
+            continue
         kept.append(line.rstrip())
     return "\n".join(kept)
+
+
+def is_remote_source_cache(path: str, spec: str) -> bool:
+    """Return whether a package file duplicates a remotely fetched Source URL.
+
+    This permits removing a checked-in cache of an upstream archive when the
+    spec still declares that exact archive as a remote source for SRPM creation.
+    Modified or newly added source archives remain build-input changes.
+    """
+    name_match = re.search(r"^Name:\s*(\S+)", spec, re.MULTILINE)
+    try:
+        version, _ = spec_values(spec)
+    except ValueError:
+        return False
+    if not name_match:
+        return False
+    filename = path.rsplit("/", 1)[-1]
+    url_match = re.search(r"^URL:\s*(\S+)", spec, re.MULTILINE)
+    package_url = url_match.group(1) if url_match else ""
+    sources = [
+        source.replace("%{name}", name_match.group(1))
+        .replace("%{version}", version)
+        .replace("%{url}", package_url)
+        for source in re.findall(r"^Source\d*:\s*(\S+)", spec, re.MULTILINE)
+    ]
+    local_sources = {
+        unquote(source.rsplit("/", 1)[-1])
+        for source in sources
+        if not urlsplit(source).scheme
+    }
+    if filename in local_sources:
+        return False
+    for source in sources:
+        parsed = urlsplit(source)
+        if not parsed.scheme:
+            continue
+        selected_path = parsed.fragment if parsed.fragment.startswith("/") else parsed.path
+        if unquote(selected_path.rsplit("/", 1)[-1]) == filename:
+            return True
+    return False
 
 
 def rpmvercmp(left: str, right: str) -> int:
@@ -131,6 +177,9 @@ def check(base: str) -> int:
 
     changed = [line for line in git("diff", "--name-only", mergebase, "HEAD", "--", "packages/").splitlines()
                if not IGNORED.match(line)]
+    deleted_paths = set(git(
+        "diff", "--diff-filter=D", "--name-only", mergebase, "HEAD", "--", "packages/"
+    ).splitlines())
     packages = sorted({match.group(1) for path in changed if (match := PACKAGE_PATH.match(path))})
     status = 0
     for name in packages:
@@ -144,7 +193,17 @@ def check(base: str) -> int:
             print(f"{name}: new package")
             continue
         files = [item for item in changed if item.startswith(f"packages/{name}/")]
-        if files == [path] and user_facing_spec(current) == user_facing_spec(previous):
+        files = [item for item in files if not (
+            item in deleted_paths and is_remote_source_cache(item, previous)
+        )]
+        if not files:
+            print(f"{name}: removed cached remote source; no bump required")
+            continue
+        if files == [path] and (
+            user_facing_spec(current, ignore_packager_buildrequires=False)
+            == user_facing_spec(previous, ignore_packager_buildrequires=False)
+            or user_facing_spec(current) == user_facing_spec(previous)
+        ):
             print(f"{name}: packager-only spec change; no bump required")
             continue
         try:
