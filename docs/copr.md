@@ -50,7 +50,7 @@ For diagnosis, separate the stages:
 - If an individual chroot fails, inspect its COPR build log for missing build requirements, Fedora-version incompatibilities, or build/test steps that try to access the network. Reproduce locally with Mock when useful; see the [toolchain guide](toolchain.md).
 - If the build succeeds but the package is unusable, inspect and install the binary RPM in a clean Fedora environment, then smoke-test the packaged command. See the binary RPM review steps in the [toolchain guide](toolchain.md).
 
-To isolate the COPR build from SCM recipe preparation, retain a locally prepared SRPM and submit it directly. This creates a real COPR build; it is a maintainer path that skips the workflow's validation:
+To isolate the COPR build from SCM recipe preparation, retain a locally prepared SRPM and submit it directly. This creates a real COPR build; it skips the workflow's validation, so run `scripts/validate.py` first and submit only if it passes:
 
 ```sh
 make srpm PACKAGE=actionlint OUTDIR="$HOME/rpmbuild/SRPMS"
