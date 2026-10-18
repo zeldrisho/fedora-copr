@@ -1,14 +1,21 @@
 # actionlint Fedora review record
 
-**Submitted:** [Bug 2554537](https://bugzilla.redhat.com/show_bug.cgi?id=2554537), created 2026-10-17 by `zeldrisho@proton.me`; status NEW in the contributor-provided confirmation. The initial description includes the spec/SRPM URLs, package description, Fedora username, and sponsorship request. The contributor-provided update at 04:32 UTC confirms Blocks contains `FE-NEEDSPONSOR` (tracker bug 177841). The fuller draft below is supporting material for follow-up comments, not the exact submitted description. The [source and installation audit](audit.md) records the completed packager checks and their limits.
+**Current review:** [Bug 2554709](https://bugzilla.redhat.com/show_bug.cgi?id=2554709), confirmed by the contributor as the replacement review for **actionlint 1.7.12-2**. The contributor confirmed closing the previous [bug 2554537](https://bugzilla.redhat.com/show_bug.cgi?id=2554537) after instructions to mark it as a duplicate of the replacement. Live Bugzilla status, resolution, and sponsorship tracking on the replacement have not been independently verified. Previous discussion and unresolved feedback remain relevant.
+
+## Current review artifacts
+
+- Spec: https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/srpm-builds/11165663/actionlint.spec
+- SRPM: https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/srpm-builds/11165663/actionlint-1.7.12-2.src.rpm
+
+These are contributor-provided URLs; artifact contents and matching binary-build results have not been verified here. The expanded draft and evidence below retain historical **1.7.12-1** URLs and results, not validation of the replacement artifacts. The [source and installation audit](audit.md) records the completed packager checks and their limits.
 
 ## Bugzilla fields
 
 - Summary: `Review Request: actionlint - Static checker for GitHub Actions workflow files`
 - Fedora account: `zeldrisho`
-- Blocks: `FE-NEEDSPONSOR` (sponsorship requested by the contributor).
+- Blocks: `FE-NEEDSPONSOR` (sponsorship requested by the contributor; confirmed on the old review, not independently verified on the replacement).
 
-## Follow-up reference (expanded draft)
+## Historical follow-up reference (expanded draft)
 
 ```text
 Spec URL: https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/srpm-builds/11162667/actionlint.spec
