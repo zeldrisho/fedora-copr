@@ -44,10 +44,13 @@ Reload the running server configuration.
 Attach to a named persistent session.
 .TP
 .B update [--handoff]
-Update Herdr, optionally opting into live handoff.
+Update an installer-managed installation, optionally opting into live handoff.
+RPM users must update through their package manager instead
+(for example, \fBsudo dnf upgrade herdr\fR).
 .TP
 .B channel set stable|preview
-Select the update channel.
+Select the update channel for an installer-managed installation.
+This does not select the RPM package update channel.
 .TP
 .B completion bash|zsh|fish
 Print shell completion definitions.

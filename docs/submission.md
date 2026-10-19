@@ -13,7 +13,7 @@ Repository-specific checklist for submitting a package to the official Fedora re
   python3 -m unittest discover -s tests -v
   ```
 
-- Build and retain the matching SRPM with `make srpm PACKAGE=<name>`. Check the exact spec, sources, checksums, and NVR. Do not reuse a published NVR for different RPM contents.
+- Build and retain the matching SRPM with `make srpm PACKAGE=herdr` (replace `herdr` with the package name). Check the exact spec, sources, checksums, and NVR. Do not reuse a published NVR for different RPM contents.
 - Obtain clean-chroot build evidence using COPR or Mock. Follow `docs/toolchain.md` for build and RPM inspection commands. Record target, exact artifact identity, logs, lint results, and limitations.
 - Review licensing against source contents and current Fedora policy; automated scans are supporting evidence, not a legal determination. Record the audit and unresolved questions.
 

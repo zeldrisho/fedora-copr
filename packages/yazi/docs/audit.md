@@ -26,8 +26,8 @@
 Checksums for checked-in archives and the license text are also maintained in [`checksums.sha256`](checksums.sha256) and verified in CI with `sha256sum --check`. Equivalent manifests cover the checked-in source archives for every package. Update the audit record and manifest whenever a checked-in source archive changes; remotely fetched sources remain recorded in this audit.
 
 - Upstream source archive: `66857f1b670469daf258edd0bb2ea51d9ad3e2cab4eea9684028c80059fd6862`.
-- Vendor archive: `2aaf458731afc9c25c1b55d65974037aaf2d979aab5dc96756cbf3a34fd3ed1f`.
-- Filtered syntax database: `2cde35ee6567f169b80e30f1f4c63c41abe5a835f151cf04ea13b470a48d64cf`.
+- Vendor archive: `5819e9eca5d9838c7f9d4d847ecd4b2cf76d5f046bda5d6b77f514bd96d6911f`.
+- Filtered syntax database: `7b059dccadc001f3f766f5359d296a4047b5483984754601e4ac62e010a272c1`.
 - Syntax-source archive: `bb322afff60783a64144a54700bf6a65cee38177a82b029fa0266cb07d05a3e7`.
 - SSH syntax archive: `d13c5c410d976cf0c6fe52e2d0317a966bcf0899603b66e3e92b1bd5c7b24100`.
 - SSH license text: `5bcea00646cd676b4276fd75aaf3a4d42e438333714454f13d12469b8b949088`.
@@ -43,6 +43,10 @@ The six flagged grammars and source trees have been removed conservatively pendi
 ## Verification status
 
 Current status (2026-10-19): COPR build [11170512](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170512/) succeeded on Fedora Rawhide x86_64 (`fc46`) for release 2. Fedora Review reports zero binary/SRPM rpmlint errors and two invalid-URL warnings for locally generated archives; debuginfo lint has zero warnings. The review used `--prebuilt` and installed no packages. Licensecheck reports 24,495 unknown files; this count has been reconciled as file-scanner output, not legal approval. Documentation measures 766,182 bytes in two files and `/usr/share` 1,034,240 bytes. Cargo completed in 59m36s in this build versus 81m11s in build 11170142; this variance does not identify a cause. Both builds used optimized Fedora Rust flags, full LTO, one codegen unit, and debuginfo. No controlled LTO/parallelism experiment has been performed. Release 3 narrows the binary license expression based on source-level linkage review and remains unbuilt. The linked CC0-1.0 `notify` code requires Fedora Legal clarification before review submission. See [review.md](review.md) for blockers.
+
+### Release 4 preparation checks
+
+- Restored Strace to the compiled syntax database to match its retained source and explicit MIT grant. Regenerated from the original `yazi-prebuilt` 0.1.0 crate after verifying its recorded SHA-256; the helper retained and runtime-validated 189 definitions with 9 excluded-language references mapped to Plain Text. All three helper unit tests passed offline. Refreshed the vendor archive and Cargo syntax-file checksum; the syntax-source archive is unchanged. Binary RPM build and installed smoke checks for release 4 remain outstanding.
 
 ### Historical preparation checks
 

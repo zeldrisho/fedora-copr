@@ -180,7 +180,7 @@ fn main() -> Result<()> {
     validate(&data)?;
     let excluded = [
         "hosts", "less", "livescript", "nginx", "verilog", "F#", "INI",
-        "HTML (Jinja2)", "Jinja2", "Racket", "Strace", "Todo.txt",
+        "HTML (Jinja2)", "Jinja2", "Racket", "Todo.txt",
         "Fortran (Fixed Form)", "Fortran (Modern)", "Fortran Namelist",
         "GFortran Build Results", "OpenMP (Fortran)",
     ];

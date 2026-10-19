@@ -30,7 +30,7 @@ Every package lives in `packages/<name>/` and uses `packages/<name>/<name>.spec`
 
 For changes affecting the packaged executable or behavior, increment `Release` and add a changelog entry. Do not bump for docs, comments, `%check`, or build-only changes that do not change the RPM. Never reuse a published NVR if RPM contents could differ, including license or documentation payload changes.
 
-CI checks that RPM considers the new EVR greater than the merge-base value. The checker ignores package README/docs-only changes, certain test-only `BuildRequires`, and removal of a checked-in source cache when the spec declares that source remotely; modifications or additions to source archives still require an EVR increase. A Release 1 reset for the same Version is accepted only with the exact marker `Initial release reset: all prior COPR builds withdrawn and confirmed not downloaded or installed`, and only when prior builds were actually withdrawn and confirmed not installed. See the checker for its precise conditions.
+CI checks that RPM considers the new EVR greater than the merge-base value. The checker ignores package README/docs-only changes, certain test-only `BuildRequires`, and removal of a checked-in source cache when the spec declares that source remotely; modifications or additions to source archives still require an EVR increase. A Release 1 reset for the same Version is accepted only with the exact marker `Initial release reset: all prior COPR builds withdrawn and confirmed not downloaded or installed`, and only when prior builds were actually withdrawn and confirmed not downloaded or installed. See the checker for its precise conditions.
 
 ## Build and publish
 

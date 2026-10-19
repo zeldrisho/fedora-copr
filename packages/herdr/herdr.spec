@@ -4,7 +4,7 @@ terminal workspaces, panes, and agent-aware workflows.}
 
 Name:           herdr
 Version:        0.9.5
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Terminal workspace manager for AI coding agents
 License:        %{shrink:
     ((MIT OR Apache-2.0) AND Unicode-3.0) AND
@@ -105,6 +105,9 @@ export CARGO_PROFILE_RPM_LTO=false
 %{fish_completions_dir}/herdr.fish
 
 %changelog
+* Mon Oct 19 2026 Zeldris Ho <zeldrisho@proton.me> - 0.9.5-4
+- Clarify package-manager updates in the manual page
+
 * Mon Oct 19 2026 Zeldris Ho <zeldrisho@proton.me> - 0.9.5-3
 - Preserve the upstream and Ghostty license texts as separate files
 
