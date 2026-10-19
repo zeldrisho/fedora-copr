@@ -22,6 +22,12 @@ OMITTED = {
     "syntaxes/livescript": "upstream repository is unavailable; no source snapshot",
     "syntaxes/nginx": "upstream repository is unavailable; no source snapshot",
     "syntaxes/verilog": "no license grant found for the pinned snapshot",
+    "syntaxes/fortran": "no redistribution grant verified for the pinned snapshot",
+    "syntaxes/fsharp": "no redistribution grant verified for the pinned snapshot",
+    "syntaxes/ini": "README attributes material to an unidentified source",
+    "syntaxes/jinja2": "no redistribution grant verified for the pinned snapshot",
+    "syntaxes/racket": "no redistribution grant verified for the pinned snapshot",
+    "syntaxes/todo-txt": "no redistribution grant verified for the pinned snapshot",
 }
 LICENSE_NAMES = {
     "license",
@@ -133,6 +139,12 @@ def main() -> None:
                         content = data.read()
                         if any(rel.name.lower().startswith(prefix) for prefix in LICENSE_NAMES):
                             license_texts.append((f"{module_path}/{rel}", content.decode(errors="replace")))
+                        elif module_path == "syntaxes/strace" and rel.name.lower() == "readme.md":
+                            text = content.decode(errors="replace")
+                            marker = "# License"
+                            if marker not in text:
+                                raise SystemExit("Strace README no longer contains its documented license grant")
+                            license_texts.append((f"{module_path}/README.md (license section)", text.split(marker, 1)[1].strip()))
                         info = tarfile.TarInfo(f"syntax-sources/{module_path}/{rel}")
                         info.size = len(content)
                         info.mode = member.mode & 0o644

@@ -6,7 +6,7 @@ async I/O.}
 
 Name:           yazi
 Version:        26.9.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Blazing fast terminal file manager
 # Include syntax-source licenses and the GPL-3.0-only SSH grammar license.
 License:        %{shrink:
@@ -135,5 +135,8 @@ install -Dpm 0644 %{SOURCE4} %{buildroot}%{_docdir}/%{name}/syntax-sources.tar.g
 %{_mandir}/man1/ya.1*
 
 %changelog
+* Mon Oct 19 2026 Zeldris Ho <zeldrisho@proton.me> - 26.9.1-2
+- Remove syntax grammars without verified redistribution grants or source provenance
+
 * Sat Oct 17 2026 Zeldris Ho <zeldrisho@proton.me> - 26.9.1-1
 - Initial package
