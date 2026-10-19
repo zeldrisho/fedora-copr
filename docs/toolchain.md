@@ -31,21 +31,23 @@ Replace `<chroot>` with a chroot from the selected build that matches the Fedora
 
 ## Package build dependencies
 
-Install package-specific dependencies when building a package locally. For Rust applications such as Yazi, install Cargo and Fedora's Rust RPM macros before resolving the spec's generated crate requirements:
+For **new packages**, perform an initial local package build and record its elapsed time before deciding whether subsequent builds should be local or use COPR. For existing packages, base that choice on measured build time and maintenance needs. Current policy is to use COPR for Herdr and Yazi binary builds because local builds take too long; local SRPM creation and repository validation remain useful and permitted. COPR artifacts/logs are authoritative for their target chroots.
+
+Install package-specific dependencies when building locally. For Rust applications such as Yazi, shared tools include Cargo and Fedora's Rust RPM macros:
 
 ```sh
 sudo dnf install cargo cargo-rpm-macros lua-devel oniguruma-devel
 ```
 
-For **Herdr**, install the Zig compiler required by the release (0.9.5 requires Zig 0.16.0):
+Yazi uses Fedora's system Lua and Oniguruma rather than building these C libraries from bundled sources. For **Herdr**, install the Zig compiler required by the release (0.9.5 requires Zig 0.16.0):
 
 ```sh
 sudo dnf install zig
 ```
 
-Herdr's Cargo crate sources and Zig package sources are provided by package-local archives; `%build` and `%check` must not download dependencies. See [Herdr package notes](../packages/herdr/README.md) for source-bundle refresh guidance.
+Herdr's Cargo crate sources and Zig package sources are provided by package-local archives; `%build` and `%check` must not download dependencies. See [Herdr package notes](../packages/herdr/README.md) and [Yazi package notes](../packages/yazi/README.md) for package-specific source and build constraints.
 
-Yazi uses Fedora's Lua 5.4 and Oniguruma libraries rather than building those C libraries from bundled sources. For specs using `%cargo_generate_buildrequires`, static `dnf builddep <spec>` is not enough: first generate the dynamic requirements, then ask DNF to resolve them:
+For specs using `%cargo_generate_buildrequires`, static `dnf builddep <spec>` is not enough: first generate the dynamic requirements, then ask DNF to resolve them:
 
 ```sh
 rpmbuild -br packages/<name>/<name>.spec \
@@ -54,7 +56,7 @@ rpmbuild -br packages/<name>/<name>.spec \
 sudo dnf builddep /tmp/buildreqs/<name>-*.buildreqs.nosrc.rpm
 ```
 
-`cargo-rpm-macros` provides `%cargo_prep`, `%cargo_generate_buildrequires`, `%cargo_build`, `%cargo_test`, and the Cargo license-report macros. Build with Fedora macros and an offline dependency configuration; do not let Cargo download crates during `%build` or `%check`. If generated crate requirements are unavailable in Fedora, resolve that dependency gap before proceeding; do not silently switch to an unreviewed vendor bundle. For Yazi-specific source and license update notes, see [Yazi package notes](../packages/yazi/README.md).
+`cargo-rpm-macros` provides `%cargo_prep`, `%cargo_generate_buildrequires`, `%cargo_build`, `%cargo_test`, and Cargo license-report macros. Use Fedora macros and offline dependency configuration; do not allow Cargo to download crates during `%build` or `%check`.
 
 Install package-specific dependencies when building a package locally. For **actionlint**, these include Go, Fedora Go RPM macros, Go Vendor Tools, and `ronn-ng`:
 
@@ -75,18 +77,13 @@ make srpm PACKAGE=actionlint
 python3 -m unittest discover -s tests -v
 ```
 
-`make validate` runs repository checks, creates an SRPM through the same shared Makefile target used by COPR, and runs rpmlint on the spec and SRPM. It does not build or lint binary RPMs. Validation copies each package into a temporary directory and removes the SRPM and scratch build files when it exits; use `make srpm` when you want to keep an SRPM. By default, `make srpm` writes it under `dist/srpm` in the repository. CI verifies each package's `docs/checksums.sha256` manifest with `sha256sum --check`; run `for manifest in packages/*/docs/checksums.sha256; do sha256sum --check "$manifest"; done` locally. When changing the Yazi syntax filter helper, run `cargo test --locked --manifest-path packages/yazi/scripts/filter-syntax-database/Cargo.toml`.
+`make validate` runs repository checks, creates SRPMs through the shared Makefile target used by COPR, and runs rpmlint on specs and SRPMs; it does not build or lint binary RPMs. Validation copies packages into temporary directories and removes SRPMs and scratch build files when it exits; use `make srpm` when you want to retain an SRPM. By default, `make srpm` writes it under `dist/srpm` in the repository. CI verifies each package's `docs/checksums.sha256` manifest with `sha256sum --check`; run `for manifest in packages/*/docs/checksums.sha256; do sha256sum --check "$manifest"; done` locally. When changing the Yazi syntax filter helper, run `cargo test --locked --manifest-path packages/yazi/scripts/filter-syntax-database/Cargo.toml`.
 
-For a quick **host build** (not an isolated or CI-equivalent check), keep artifacts in the standard RPM workspace by writing the SRPM to `~/rpmbuild/SRPMS` and rebuilding it with `~/rpmbuild` as the top directory:
+A quick **host binary build** is not an isolated or CI-equivalent check. For a new package's initial local build, or a package whose measured build time makes local builds practical, replace `<name>` below with its package directory/spec name. Do not use these commands for current Herdr or Yazi binary builds; use COPR unless the maintainer revises that choice based on timing evidence.
 
 ```sh
-make srpm PACKAGE=yazi OUTDIR="$HOME/rpmbuild/SRPMS"
-mkdir -p /tmp/buildreqs
-rpmbuild -br packages/yazi/yazi.spec \
-  --define '_sourcedir packages/yazi' \
-  --define '_srcrpmdir /tmp/buildreqs'
-sudo dnf builddep /tmp/buildreqs/yazi-*.buildreqs.nosrc.rpm
-rpmbuild --rebuild "$HOME"/rpmbuild/SRPMS/yazi-*.src.rpm \
+make srpm PACKAGE=<name> OUTDIR="$HOME/rpmbuild/SRPMS"
+rpmbuild --rebuild "$HOME"/rpmbuild/SRPMS/<name>-*.src.rpm \
   --define "_topdir $HOME/rpmbuild"
 ```
 
@@ -94,7 +91,7 @@ The SRPM is retained in `~/rpmbuild/SRPMS`; binary RPMs and build logs are writt
 
 ## Build and inspect binary RPMs
 
-For a local isolated build, install Mock and its Fedora chroot configurations, then rebuild the SRPM in a target chroot. This is especially useful before merge when changing build requirements, compiler/toolchain integration, spec macros, or build/test steps, and when diagnosing a COPR chroot failure. For routine edits, it is optional; COPR remains authoritative for its configured publishing chroots. Mock resolves static and dynamic build requirements inside its buildroot:
+A local isolated binary build can use Mock and its Fedora chroot configurations for new-package initial builds and packages whose build duration permits it. For current Herdr and Yazi builds, diagnose failures from COPR logs and use COPR. Mock resolves static and dynamic build requirements inside its buildroot:
 
 ```sh
 sudo dnf install mock mock-core-configs

@@ -21,6 +21,7 @@
 
 - Keep each Fedora spec at `packages/<name>/<name>.spec`; match directory, spec basename, and `Name:`.
 - Before package changes, consult the relevant repository guidance and package-local spec, README, or maintenance notes for the area being changed; do not reread unrelated documentation for mechanical or unrelated edits. For changes to shared build, validation, or publishing behavior, consult the relevant `.copr/`, CI, and development guidance.
+- For new packages, perform an initial local package build and record its duration. For existing packages, choose local builds or COPR based on measured build time and maintenance needs; currently use COPR for Herdr and Yazi binary builds because their local builds take too long. Local SRPM creation and repository validation remain allowed.
 - When installing new development or packaging dependencies, update `docs/toolchain.md` with the corresponding local setup instructions so maintainers can reproduce the environment.
 - Before creating a spec for a new package, review the relevant local Fedora guidance to determine whether the software is eligible for Fedora and whether its sources and licensing are acceptable. Start with `docs/packaging-guidelines/what-can-be-packaged.md`, then consult applicable packaging and licensing references; resolve eligibility concerns before treating the package as submittable.
 - Keep specs plain and Fedora-submittable; no COPR-only logic or rpkg templates.
