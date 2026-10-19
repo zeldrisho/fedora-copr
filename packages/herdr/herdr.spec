@@ -4,7 +4,7 @@ terminal workspaces, panes, and agent-aware workflows.}
 
 Name:           herdr
 Version:        0.9.5
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Terminal workspace manager for AI coding agents
 License:        %{shrink:
     ((MIT OR Apache-2.0) AND Unicode-3.0) AND
@@ -21,6 +21,7 @@ URL:            https://github.com/herdrdev/herdr
 Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 Source1:        herdr-%{version}-vendor.tar.gz
 Source2:        herdr-%{version}-zig-deps.tar.gz
+Source3:        herdr.1
 
 BuildRequires:  cargo-rpm-macros
 BuildRequires:  cargo
@@ -54,6 +55,7 @@ export ZIG_GLOBAL_CACHE_DIR="$PWD/zig-global-cache"
 
 %install
 install -Dpm 0755 target/rpm/herdr %{buildroot}%{_bindir}/herdr
+install -Dpm 0644 %{SOURCE3} %{buildroot}%{_mandir}/man1/herdr.1
 target/rpm/herdr completion bash > herdr.bash
 target/rpm/herdr completion zsh > _herdr
 target/rpm/herdr completion fish > herdr.fish
@@ -79,10 +81,14 @@ export CARGO_PROFILE_RPM_LTO=false
 %license cargo-vendor.txt
 %doc README.md
 %{_bindir}/herdr
+%{_mandir}/man1/herdr.1*
 %{bash_completions_dir}/herdr
 %{zsh_completions_dir}/_herdr
 %{fish_completions_dir}/herdr.fish
 
 %changelog
+* Mon Oct 19 2026 Zeldris Ho <zeldrisho@proton.me> - 0.9.5-2
+- Add a manual page
+
 * Sat Oct 17 2026 Zeldris Ho <zeldrisho@proton.me> - 0.9.5-1
 - Initial package

@@ -1,0 +1,104 @@
+.TH HERDR 1 "October 2026" "herdr 0.9.5" "User Commands"
+.SH NAME
+herdr \- terminal workspace manager for coding agents
+.SH SYNOPSIS
+.B herdr
+.RI [ options ]
+.br
+.B herdr
+.BI --session " name"
+.RI [ options ]
+.br
+.B herdr
+.BI --machine " label-or-id command"
+.br
+.B herdr
+.BI --remote " ssh-target"
+.RI [ --session " name" ]
+.br
+.B herdr
+.B session attach
+.I name
+.br
+.B herdr
+.I command
+.RI [ subcommand ]
+.SH DESCRIPTION
+.B herdr
+launches or attaches to a persistent terminal workspace. It can manage
+sessions, workspaces, tabs, panes, agents, integrations, and saved remote
+machines. It can also run as a headless server or attach to a remote server
+through SSH.
+.SH COMMANDS
+.TP
+.B status [server|client]
+Show local client and running server status.
+.TP
+.B server stop
+Stop the running server via the API socket.
+.TP
+.B server reload-config
+Reload the running server configuration.
+.TP
+.B session attach \fIname\fR
+Attach to a named persistent session.
+.TP
+.B update [--handoff]
+Update Herdr, optionally opting into live handoff.
+.TP
+.B channel set stable|preview
+Select the update channel.
+.TP
+.B completion bash|zsh|fish
+Print shell completion definitions.
+.PP
+Other command groups include \fBmachine\fR, \fBapi\fR, \fBconfig\fR,
+\fBworkspace\fR, \fBworktree\fR, \fBtab\fR, \fBnotification\fR,
+\fBagent\fR, \fBpane\fR, \fBsession\fR, and \fBintegration\fR.
+Run \fBherdr --help\fR for the current command summary.
+.SH OPTIONS
+.TP
+.B --session \fIname\fR
+Use or create a named persistent session.
+.TP
+.B --machine \fIlabel-or-id\fR
+Run an API command on a saved SSH machine.
+.TP
+.B --remote \fIssh-target\fR
+Attach through SSH to a remote Herdr server.
+.TP
+.B --remote-keybindings local|server
+Select keybindings for remote app attachment. The default is \fBlocal\fR.
+.TP
+.B --handoff
+Opt into live handoff for update or remote attachment.
+.TP
+.B --default-config
+Print the default configuration and exit.
+.TP
+.B --skill
+Print the agent skill file and exit.
+.TP
+.B -V, --version
+Print version information and exit.
+.TP
+.B -h, --help
+Print help and exit.
+.SH FILES
+.TP
+.I ~/.config/herdr/config.toml
+Default configuration file. The \fBHERDR_CONFIG_PATH\fR environment variable
+can override its location.
+.TP
+.I ~/.config/herdr/herdr.log
+Default application log; client and server logs are also written alongside it.
+.SH ENVIRONMENT
+.TP
+.B HERDR_CONFIG_PATH
+Override the path to the configuration file.
+.SH SEE ALSO
+.BR tmux (1)
+.SH AUTHORS
+Herdr contributors.
+.SH BUGS
+Report bugs at <https://github.com/herdrdev/herdr/issues>.
