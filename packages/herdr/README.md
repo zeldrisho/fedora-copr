@@ -16,7 +16,7 @@ To refresh source bundles for a new release:
 4. Rebuild from a clean source tree with networking disabled, using only the two archives. Verify no new package-cache downloads occur. Refresh `cargo-vendor.txt`, linked-dependency license reporting, source license inventory, and the spec's `License:` expression.
 5. Review the bundled Ghostty/Zig dependency licenses and any changes to linked crate licenses; retain their license files in `%license` as needed.
 
-Both archives are source inputs, not prebuilt program code. The Zig cache was populated by a Linux x86_64 `-Demit-lib-vt` build; the Fedora target architectures must each be validated before being considered supported.
+Both archives are source inputs, not prebuilt program code. The Zig cache was populated by a Linux x86_64 `-Demit-lib-vt` build. The package supports x86_64 only; other architectures are intentionally not declared as supported.
 
 ## Behavior and support
 

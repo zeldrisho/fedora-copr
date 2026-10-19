@@ -1,35 +1,54 @@
-# Herdr package review checklist
+# Herdr Fedora package review preparation
 
-This is a preparation record, not official Fedora review approval. Evidence below was checked on 2026-10-19.
+This is a maintainer preparation record, not an official Fedora review or approval. It is **not yet ready to file**: the final source/license audit and matching clean build/RPM evidence are outstanding. Keep this status current; do not paste this record as a completed review request until the blockers below are resolved.
 
-## Published build evidence
+## Package and artifact identity
 
-- Latest COPR build [11170135](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170135/) succeeded; the Rawhide review used `herdr-0.9.5-2.fc46`. Its [review output](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11170135-herdr/fedora-review/review.txt) still has manual items unassessed and ran with prebuilt RPMs: it is not Mock-build or installed-package runtime evidence. Its SRPM predates the later Zig-cache pruning and added license metadata/files, so its lint results do not validate the current working-tree spec. Rpmlint has two expected invalid-URL warnings for local Source1/Source2 archives, no reported errors, and clean debuginfo lint. Licensecheck reports 18,419 unknown files, so this output does not resolve source licensing. The installed-package check reports no package installed. It also flags `%define rustflags_codegen_units 16` for reviewer justification; the README documents that this affects only test compilation to reduce test-harness compile time, while the release binary keeps Fedora's normal flags. The `--prebuilt` build note is not a failed COPR build.
-- Prior COPR build [11168076](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11168076/) succeeded for Fedora 44, Fedora 45, and Rawhide, x86_64: `herdr-0.9.5-1`.
-- Public [SRPM](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/srpm-builds/11168076/herdr-0.9.5-1.src.rpm) and [built Rawhide spec](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11168076-herdr/herdr.spec).
-- [Rawhide review and lint output](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11168076-herdr/fedora-review/review.txt): binary/SRPM lint reports 0 errors and 3 warnings (missing `herdr(1)` and non-URL Source1/Source2). Debuginfo lint reports 0 errors and 0 warnings, with filters applied. The upstream source checksum matches.
-- The review ran with `--prebuilt`; its Mock-build warning does not indicate a failed COPR build. Its installed-package section says the packages were not installed despite the passing checklist label; that section is not runtime evidence.
-- Latest Rawhide builder log: [build 11168076](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11168076-herdr/builder-live.log.gz). Cargo's optimized package build took 19m07s; `%check` compiled its test targets in 9m33s and ran 3,669 tests (3,657 passed, 12 ignored). This is a substantial but plausible clean build for the Rust workspace plus Zig-built Ghostty component and full unit suite on a 2 GiB COPR worker.
-- Fedora 44 host installation is confirmed: `herdr-0.9.5-1.fc44.x86_64`. `rpm -V` passes; `herdr --version` reports `0.9.5`; Bash completion generation succeeds. Installed requirements, bundled-crate provides, file list, and license-file list were inspected. `rpmlint -i herdr yazi` reports only Herdr's missing-manual-page warning (0 errors, 1 warning, 7 filtered).
-- Repository validation passes for all three packages; 19 Python tests pass. These checks do not replace binary builds or interactive testing.
+- Package: `herdr` (`packages/herdr/herdr.spec`)
+- Current spec NVR: `herdr-0.9.5-2`
+- Upstream: <https://github.com/herdrdev/herdr>, tag `v0.9.5`
+- Upstream archive SHA-256: `a2486b09a8153630f6a19e72606ba1c961a6194bce13c09cba67ccce5e4252de`
+- Cargo vendor archive SHA-256: `b131b52f4d794ecc34abdababe76f3324a1f20b7c5657ef4bf5fb75fde695f93`
+- Zig source cache archive SHA-256: `9714eeb9b258e276e4b991d349a64641031b53f95ade7aa188cf06ccaaa8af1a`
+- The two local dependency archives are deliberate source inputs without individual upstream URLs. Their provenance and regeneration procedure are documented in `../README.md` and `audit.md`.
 
-## Checklist and remaining review work
+**Do not submit `0.9.5-2` as a new or changed SRPM if those contents have already been published.** The spec now declares x86_64 only, matching the architecture with recorded builds. No Release bump was made for this review-preparation change. Before publishing, ensure the submitted NVR does not reuse a published build with different package contents.
 
-- Follow-up COPR check: build [11170135](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170135/) is succeeded. Its Rawhide fedora-review artifact is linked above. A direct Fedora dist-git check returned 404 for `rpms/herdr`; the Fedora Bugzilla Package Review query returned no exact Herdr review (the only substring hit was an unrelated 2016 vblade review). The Fedora Accounts public profile for the COPR username responds, but public data did not establish packager-group membership or sponsorship status; maintainer confirmation remains necessary.
+## Evidence gathered
 
-- [x] Package name, directory, and spec basename are `herdr`.
-- [x] Upstream source is a versioned source archive; Rust and Zig dependencies are supplied as source archives.
-- [x] Executable is built locally; no upstream binary is installed.
-- [x] Shell completions are generated from the built executable.
-- [x] Project and dependency license files are included; linked Cargo licenses are recorded.
-- [x] Fedora 44, Fedora 45, and Rawhide x86_64 COPR builds succeed.
-- [x] Fedora 44 installed version/completion checks and RPM integrity verification pass.
-- [ ] Finish source-level license/build inclusion review for every Zig component. The spec now installs uucode MIT, Wuffs MIT/Apache-2.0, and Highway BSD-3-Clause texts and includes BSD-3-Clause in `License:`. The cache omits `iterm2_themes`, which is lazy and not consumed by `-Demit-lib-vt`; the spec change and curated cache have not been rebuilt. Verify exact linked components, generated `%license` files, and binary `License:` metadata in a completed RPM. The scanner's 18,419 unknown-file count is not a conclusion that all are unlicensed.
-- [x] Added `herdr(1)` based on the installed executable's `--help` output. Release 0.9.5-2 now includes it; rebuild and refresh matching artifacts before filing.
-- [x] Review source-bundle provenance/regeneration notes in `../README.md` and the audit; non-URL local archives are intentional, not broken download endpoints. Build 11170135's review output confirms the two rpmlint invalid-URL warnings are for these local source archives. The cache archive now omits the unused, unlicensed-looking lazy `iterm2_themes` source.
-- [x] Review compiler flags and justify the check-local `%define rustflags_codegen_units 16`: the flag only reduces test-harness compilation cost; `%build` does not set it, so the release binary retains Fedora's normal Rust flags. See `../README.md`.
-- [ ] Retain/lint a matching SRPM and inspect all binary subpackages, including debugsource/debuginfo, independently of the generated review.
-- [ ] Validate aarch64 and offline build behavior. Upstream's `build.rs` maps `aarch64-unknown-linux-gnu` to Zig `aarch64-linux-gnu`, but all recorded COPR builds are x86_64; support is declared, not proven. Cargo vendor and the curated Zig source cache provide the inputs, but a network-disabled clean build has not been demonstrated.
-- [ ] Runtime checks are partial: using installed `herdr-0.9.5-1.fc44` on Fedora 44 WSL inside an isolated user namespace and temporary home, Herdr started and stopped a named server session; created/listed/closed a workspace; ran a pane command and matched its output; and split, focused, resized, listed, and closed panes. The same isolated server remained available after client CLI operations. Automated interactive PTY detach/reattach did not pass; manual pane interaction and detach/reattach in a clean Fedora environment remain outstanding. These checks do not validate the unbuilt current spec changes.
+- `scripts/validate.py` passes for all three repository packages (run during this preparation). It validates SRPM generation and spec lint, not a current Herdr binary build or runtime behavior.
+- COPR build [11170135](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170135/) succeeded, but it predates the current local Zig cache/license changes. Its generated review used `--prebuilt`; it is not a clean Mock build, installed-RPM check, or evidence for the current spec.
+- Earlier COPR builds [11168076](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11168076/) passed for Fedora 44, Fedora 45, and Rawhide on x86_64, but likewise do not validate the current contents.
+- Fedora 44 testing of installed `0.9.5-1` confirmed `rpm -V`, version output, Bash completion, server start/stop, workspace CRUD, and several pane operations. This is useful historical evidence only. Interactive detach/reattach was not verified; it does not test the current SRPM.
+- The old `fedora-review` output reports 0 rpmlint errors but includes warnings for missing man page (fixed in `0.9.5-2`) and local Source1/Source2 URLs, plus a large unknown-license scan count. It is stale for the current sources. Rpmlint and fedora-review must be rerun on the final artifacts.
 
-Do not reuse `0.9.5-1` for changes to installed files or dependencies: it is now published and installed. The manual-page addition is packaged as `0.9.5-2`. COPR success is not a Bugzilla review or official Fedora Rawhide inclusion.
+## Blockers before filing
+
+- [ ] Complete the source-level license audit for all content in the upstream, Cargo vendor, and Zig archives. Specifically assess the `Pixels` CC0 data and zlib source/contrib licensing, the enabled Ghostty features and linked code, and whether any included permissively licensed component's license text must be installed. Scanner output alone is not a license determination. Record file/source evidence and an appropriate SPDX expression in `audit.md`.
+- [ ] Build the final spec and inspect its actual binary RPM: `License:` metadata, installed `%license` files, linked/bundled native components and Provides, and all subpackages including debuginfo/debugsource.
+- [ ] Obtain a clean Rawhide build of the final matching SRPM; demonstrate network-disabled build/test phases. The current saved build/review evidence is not sufficient.
+- [x] Architecture scope is x86_64 only. The spec no longer claims aarch64 support; no aarch64 build is required for this review.
+- [ ] Run rpmlint on the final spec, SRPM, and every binary RPM; retain the complete, unmodified output and explain intentional warnings.
+- [ ] Install the final RPM in a clean Fedora environment. Recheck integrity, version, generated shell completions, server/workspace/pane behavior, and interactive detach/reattach. Record the environment and limitations.
+- [ ] Refresh the duplicate/retired package and open-review search immediately before filing; the prior checks are time-sensitive. Confirm Fedora account/Bugzilla linkage and whether sponsorship is needed.
+- [ ] Publish the exact matching spec and SRPM at public, directly downloadable HTTPS URLs and fill in those URLs and final build-log links below.
+
+## Bugzilla draft (complete only after blockers clear)
+
+**Summary:** `Review Request: herdr - terminal workspace manager for AI coding agents`
+
+**Description:**
+
+> This is a review request for Herdr, a terminal workspace manager for coding agents. The package builds the upstream v0.9.5 source with Fedora Rust and Zig toolchains and installs the executable, manual page, and Bash/Zsh/Fish completions.
+>
+> Spec: **[public HTTPS URL to exact submitted spec]**
+>
+> SRPM: **[public HTTPS URL to exact submitted SRPM]**
+>
+> Build logs/results: **[public URL(s)]**
+>
+> License/source audit and package test notes: **[public URL or concise summary]**
+>
+> **[If sponsorship is needed: I am seeking a Fedora packager sponsor.]**
+
+In Bugzilla, set `FE-NEEDSPONSOR` in **Blocks** when applicable (not Depends On). Submit with the Fedora Package Review product/component and use the account linked to the Fedora account. This draft is not an assertion of review approval; only the reviewer can grant it.

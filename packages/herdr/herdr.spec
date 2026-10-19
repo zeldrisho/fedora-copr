@@ -34,7 +34,7 @@ BuildRequires:  git-core
 # packager-only: BuildRequires
 BuildRequires:  procps-ng
 
-ExclusiveArch:  x86_64 aarch64
+ExclusiveArch:  x86_64
 
 %description %_description
 
