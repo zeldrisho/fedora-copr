@@ -17,4 +17,4 @@ See the [package development guide](docs/development.md) and [COPR publishing gu
 
 ## License
 
-Repository-authored documentation and packaging infrastructure are licensed under [MIT](LICENSE). Local Fedora reference copies under [`docs/packaging-guidelines/`](docs/packaging-guidelines/README.md) and [`docs/package-maintainers/`](docs/package-maintainers/README.md) retain their upstream terms and attribution; each packaged application retains its own upstream license.
+[MIT](LICENSE)

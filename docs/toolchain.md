@@ -66,7 +66,7 @@ sudo dnf install go go-rpm-macros go-vendor-tools rubygem-ronn-ng
 
 GitHub Actions validates and lints SRPMs but does not build binary RPMs. COPR performs published builds in its configured chroots once you submit them; a successful PR check is not evidence that package compilation, installation, or runtime smoke tests pass. `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
 
-The upstream source archive and generated Go vendor archive are included as SRPM sources; Go modules are not fetched during the build. See [actionlint package notes](../packages/actionlint/README.md) and the [Go Packaging Guidelines](packaging-guidelines/golang.md) when updating vendored sources and licensing.
+The upstream source archive and generated Go vendor archive are included as SRPM sources; Go modules are not fetched during the build. See [actionlint package notes](../packages/actionlint/README.md) and current [Fedora Go guidance](references.md#fedora-packaging) when updating vendored sources and licensing.
 
 ## Common commands
 
