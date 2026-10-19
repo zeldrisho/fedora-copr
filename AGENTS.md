@@ -2,8 +2,9 @@
 
 ## Toolchain
 
-- Use Fedora RPM tooling: `rpm-build`, `rpmdevtools`, `rpmlint`, and GNU Make.
+- Use Fedora RPM tooling: `rpm-build`, `rpmdevtools`, `rpmlint`, GNU Make, and `copr-cli`.
 - Use Python 3 for repository validation scripts.
+- Prefer `copr-cli` for COPR status, build, and artifact operations; use HTTP only for information the CLI cannot provide.
 
 ## Commands
 
@@ -11,6 +12,8 @@
 | --- | --- |
 | Validate all packages | `scripts/validate.py` |
 | Build and retain a package SRPM | `(cd packages/<name> && make -f ../../.copr/Makefile srpm spec=<name>.spec outdir="$HOME/rpmbuild/SRPMS")` |
+| List COPR builds | `copr-cli list-builds zeldrisho/packages --output-format json` |
+| Download a COPR review | `copr-cli download-build <build-id> -r <chroot> --review --dest dist/review/<name>` |
 | Find files and directories | `fd '<pattern>' [path]` |
 | Find a local upstream reference | `rg -l -F '<source-url>' docs/` |
 

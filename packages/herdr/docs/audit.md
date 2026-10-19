@@ -12,4 +12,8 @@
 - Cargo linked-license summary: generated with `cargo2rpm --path Cargo.toml license-summary`; includes choices of 0BSD, Apache-2.0, BSL-1.0, BSD-2-Clause, ISC, LGPL-2.1-or-later, MIT, Unicode-3.0, Unlicense, and Zlib. The binary license expression in the spec combines these expressions and ISC for Ghostty/Wuffs build inputs. Revalidate after dependency changes.
 - Upstream build settings: `HERDR_BUILD_CHANNEL=stable`; release source pins Rust 1.96.1.
 
-This record does not replace RPM build validation. Verify both Fedora target architectures and Fedora 44, Fedora 45, and Rawhide before publication; review all files in both source bundles and re-run the build in a network-disabled chroot.
+## Verification status (2026-10-19)
+
+COPR build [11168076](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11168076/) succeeded for Fedora 44, Fedora 45, and Rawhide x86_64. The Fedora 44 host installation passes RPM integrity verification, reports version 0.9.5, and generates Bash completions. See the [review record](review.md) for artifact links, Rawhide automated-review findings, and remaining manual checks.
+
+This record does not replace source-level license review or clean-environment runtime validation. aarch64, offline build behavior, individual Zig license texts, and interactive server/workspace operations still need verification. Version-release `0.9.5-1` is now published and installed and must not be reused for changed contents.

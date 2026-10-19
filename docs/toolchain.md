@@ -12,6 +12,23 @@ sudo dnf install rpm-build rpmdevtools rpmlint make copr-cli
 
 `rpmdevtools` provides `spectool` for staging declared sources. If `spectool` is missing in COPR's minimal SRPM environment, the shared `.copr/Makefile` installs `rpmdevtools` with DNF.
 
+## COPR CLI setup
+
+Read-only queries such as `copr-cli list-builds zeldrisho/packages` do not need credentials. For submissions, sign in to the [COPR API configuration page](https://copr.fedorainfracloud.org/api/) and save its generated configuration locally as `~/.config/copr` (create `~/.config` if needed). Restrict access with `chmod 600 ~/.config/copr`, then check the configured identity with `copr-cli whoami`. Never commit or print the configuration: it contains an API token. This local configuration is separate from GitHub's `COPR_CONFIG` secret.
+
+Use the CLI for build status and artifacts:
+
+```sh
+copr-cli list-builds zeldrisho/packages --output-format json
+copr-cli status <build-id>
+copr-cli download-build <build-id> -r <chroot> \
+  --review --dest dist/review/<name>
+```
+
+Replace `<chroot>` with a chroot from the selected build that matches the Fedora release and architecture you want to inspect.
+
+`packages/<name>/` contains packaging inputs, not published binary RPMs or generated COPR review reports. Review downloads belong under ignored `dist/review/`. To install a published package, use DNF as described in the root [README](../README.md); no manual RPM download is needed. Use `download-build --rpms` only when binary artifacts are needed for inspection or a separate test environment.
+
 ## Package build dependencies
 
 Install package-specific dependencies when building a package locally. For Rust applications such as Yazi, install Cargo and Fedora's Rust RPM macros before resolving the spec's generated crate requirements:
