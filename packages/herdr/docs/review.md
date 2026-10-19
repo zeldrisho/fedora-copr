@@ -16,6 +16,8 @@ This is a maintainer preparation record, not an official Fedora review or approv
 
 ## Evidence gathered
 
+- COPR build [11170581](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170581/) builds successfully on Rawhide but fails Fedora 44 and Fedora 45 during `%check`: the test process receives SIGPIPE while the Rust harness is printing test progress. The failure occurs during test-harness output after process-global SIGPIPE configuration has been changed; the exact triggering test or code path is not yet confirmed. It is not a compile or dependency-resolution failure. A test-only patch now keeps the Rust-default ignored SIGPIPE disposition in place around CLI output helpers; verify it with full Fedora 44/45 test builds before treating the issue as resolved.
+- `scripts/validate.py` passes with the test-only patch. This validates SRPM generation and rpmlint, not the binary build or test behavior.
 - `scripts/validate.py` passes for all three repository packages (run during this preparation). It validates SRPM generation and spec lint, not a current Herdr binary build or runtime behavior.
 - COPR build [11170135](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170135/) succeeded, but it predates the current local Zig cache/license changes. Its generated review used `--prebuilt`; it is not a clean Mock build, installed-RPM check, or evidence for the current spec.
 - Earlier COPR builds [11168076](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11168076/) passed for Fedora 44, Fedora 45, and Rawhide on x86_64, but likewise do not validate the current contents.

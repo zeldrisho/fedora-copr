@@ -22,6 +22,7 @@ Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/%{name}-%{version}.
 Source1:        herdr-%{version}-vendor.tar.gz
 Source2:        herdr-%{version}-zig-deps.tar.gz
 Source3:        herdr.1
+Patch0:         herdr-%{version}-test-sigpipe.patch
 
 BuildRequires:  cargo-rpm-macros
 BuildRequires:  cargo
@@ -40,6 +41,7 @@ ExclusiveArch:  x86_64
 
 %prep
 %autosetup -n %{name}-%{version} -a1 -N
+%autopatch -p1
 mkdir -p zig-global-cache
 tar -xzf %{SOURCE2} -C zig-global-cache
 # Extract license texts for bundled Zig dependencies used by the Linux build.
@@ -75,8 +77,9 @@ install -Dpm 0644 herdr.fish %{buildroot}%{fish_completions_dir}/herdr.fish
 %check
 export HERDR_BUILD_CHANNEL=stable
 export ZIG_GLOBAL_CACHE_DIR="$PWD/zig-global-cache"
-# Integration tests need a running server, and tests must be serial because
-# they modify process-wide signal dispositions.
+# Integration tests need a running server. Keep tests serial because they
+# modify process-wide signal dispositions; the test-only patch also prevents
+# CLI output helpers from enabling SIGPIPE's default action in the harness.
 export CARGO_PROFILE_RPM_LTO=false
 %define rustflags_codegen_units 16
 %cargo_test -- --bins -- --test-threads=1
