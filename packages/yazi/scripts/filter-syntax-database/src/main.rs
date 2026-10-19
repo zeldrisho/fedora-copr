@@ -178,8 +178,16 @@ fn main() -> Result<()> {
     // This helper requires the original upstream database, never an already
     // filtered one with potentially stale indices.
     validate(&data)?;
-    let excluded = ["hosts", "less", "livescript", "nginx", "verilog"];
+    let excluded = [
+        "hosts", "less", "livescript", "nginx", "verilog", "F#", "INI",
+        "HTML (Jinja2)", "Jinja2", "Racket", "Todo.txt",
+        "Fortran (Fixed Form)", "Fortran (Modern)", "Fortran Namelist",
+        "GFortran Build Results", "OpenMP (Fortran)",
+    ];
     let mut old_to_new = vec![None; set.syntaxes.len()];
+    let matched: Vec<_> = excluded.iter().filter(|name| {
+        set.syntaxes.iter().any(|syntax| syntax.name.eq_ignore_ascii_case(name))
+    }).collect();
     let mut retained = Vec::with_capacity(set.syntaxes.len());
     for (old_index, syntax) in set.syntaxes.into_iter().enumerate() {
         if excluded.iter().any(|name| syntax.name.eq_ignore_ascii_case(name)) {
@@ -189,7 +197,8 @@ fn main() -> Result<()> {
         retained.push(syntax);
     }
     if old_to_new.iter().filter(|index| index.is_none()).count() != excluded.len() {
-        return Err("input must contain all five excluded grammars; use the original upstream database".into());
+        let missing: Vec<_> = excluded.iter().filter(|name| !matched.contains(name)).collect();
+        return Err(format!("input must contain every excluded grammar; missing {missing:?}; use the original upstream database").into());
     }
     set.syntaxes = retained;
     let plain_index = set.syntaxes.iter().position(|syntax| syntax.name == "Plain Text")

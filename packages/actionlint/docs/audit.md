@@ -1,6 +1,6 @@
 # actionlint source and installation audit
 
-Preparation audit for **actionlint 1.7.12-1**, using the sources in COPR build **11162667**. This is a packager self-check, not Fedora reviewer approval or a legal determination. See the [review record](review.md), [Fedora Go guidance](../../../docs/packaging-guidelines/golang.md), and [licensing guidance](../../../docs/packaging-guidelines/licensing-guidelines.md).
+Preparation audit for **actionlint 1.7.12-1**, using the sources in COPR build **11162667**. This is a packager self-check, not Fedora reviewer approval or a legal determination. See the [review record](review.md) and current [Fedora guidance links](../../../docs/references.md).
 
 ## Licensing findings
 

@@ -1,34 +1,33 @@
 # Fedora package review notes: yazi
 
-This is a preparation record, not evidence of Fedora review approval. The package has not yet been submitted. Evidence below was checked on 2026-10-19.
+Preparation record, not Fedora review approval. Review request not filed. Current package is Yazi 26.9.1 Release 3; review evidence below distinguishes the built Release 2 RPM from the unbuilt/unverified Release 3 state recorded during the last update (2026-10-19). Recheck COPR and Bugzilla before relying on status.
 
-## Request
+## Request and filing
 
-- Review bug: Not filed.
-- Fedora account: Not recorded; confirm the maintainer's account and sponsorship needs before filing.
-- Sponsorship requested: Not determined.
-- Package summary: Terminal file manager written in Rust.
+- Summary: `Review Request: yazi - Blazing fast terminal file manager`
 - Upstream: [Yazi v26.9.1](https://github.com/sxyazi/yazi/releases/tag/v26.9.1).
-- Duplicate check: The maintainer previously confirmed there is no existing Fedora Yazi package or review; recheck before filing.
+- Bug: not filed. Fedora account, packager membership, Bugzilla association, and sponsorship status must be confirmed.
+- Duplicate search previously found no `rpms/yazi` dist-git repository and no Bugzilla Package Review API matches. Recheck immediately before filing.
+- Publish immutable public HTTPS URLs for the exact matching Release 3 spec and SRPM. The local SRPM path is not a public review URL.
+- If proceeding before the CC0 question is resolved, explicitly disclose it; see [legal-inquiry.md](legal-inquiry.md). That inquiry is a draft, not a Fedora determination.
 
-## Artifacts and build evidence
+## Build evidence
 
-- COPR build [11168077](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11168077/) succeeded for Fedora 44, Fedora 45, and Rawhide, x86_64: `yazi-26.9.1-1`.
-- Public [SRPM](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/srpm-builds/11168077/yazi-26.9.1-1.src.rpm) and [built Rawhide spec](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11168077-yazi/yazi.spec).
-- [Rawhide review and lint output](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11168077-yazi/fedora-review/review.txt): binary/SRPM lint reports 0 errors and 2 warnings, both for non-URL source bundles (Source1 and Source4). Debuginfo lint reports 0 errors and 0 warnings, with filters applied. Checked upstream source checksums match. Missing-man-page warnings are gone.
-- The review ran with `--prebuilt`; its Mock-build warning does not mean the COPR build failed. The installed-package section says the packages were not installed despite the passing checklist label; that section is not runtime evidence.
-- Installed Fedora 44 RPM `yazi-26.9.1-1.fc44.x86_64` passes `rpm -V`. Both `yazi --version` and `ya --version` report `26.9.1` and commit `8dd895c695a5950330c2623eb43debf323b60654`.
-- The installed RPM includes both manual pages, generated completions, syntax sources, and dependency/syntax license files. Requirements include `file`, system Lua 5.4, and Oniguruma; bundled-crate provides, file list, and license-file list were inspected. Installed lint has no Yazi warnings (`rpmlint -i herdr yazi`: 0 errors, 1 Herdr warning, 7 filtered).
-- Yazi starts and quits with `q` successfully in a 100x24 pseudo-terminal with a temporary isolated home/config/cache/state directory. This is a host startup smoke test, not a clean-chroot or preview/integration test. A non-terminal invocation failed with an ioctl error; a PTY without dimensions also failed, so terminal dimensions must be supplied for automated TUI checks.
-- `scripts/validate.py` passes for all three packages; 19 Python tests pass. Earlier local `%check` evidence reported zero upstream tests, so it should not be interpreted as functional coverage.
+| Artifact | Evidence | Limits |
+| --- | --- | --- |
+| Release 2 (`26.9.1-2.fc46`) | COPR [11170512](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170512/) succeeded on Rawhide x86_64 with network disabled. | Does not validate Release 3 or other chroots/architectures. |
+| Release 2 review report | [Fedora Review output](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11170512-yazi/fedora-review/review.txt); run with `--prebuilt`. | No packages installed; its runtime/install markers are not runtime evidence. Rpmlint had zero errors and two local-archive `invalid-url` warnings. |
+| Release 3 (`26.9.1-3`) | Repository validation and SRPM generation passed; retained SRPM was recorded at `$HOME/rpmbuild/SRPMS/yazi-26.9.1-3.fc44.src.rpm`. | COPR build 11171273 was recorded as submitted/running, with no result recorded. Verify its current status and obtain matching build evidence. |
 
-## Outstanding work
+The Release 2 license scanner reported 24,495 unknown/generated files; this is scanner output, not a licensing conclusion. Its 26 Cargo SPDX expressions matched that release's spec expression, which likewise does not establish eligibility. Release 3 removes NCSA and CC-BY-SA-3.0 based on source/linkage review; recheck the final build's license summary. The CC0-1.0 use in linked `notify` 8.2.0 remains an unresolved eligibility question. See [audit.md](audit.md) and [legal-inquiry.md](legal-inquiry.md).
 
-- Investigate the review's missing C/C++ compiler BuildRequires finding against native Cargo dependencies; add an explicit compiler requirement if needed rather than relying on a transitive dependency.
-- Reconcile licensecheck findings (24,509 unknown-license files) with the source-level audit and linked-license report. Scanner counts alone are not license violations or legal approval.
-- Review source-bundle provenance/regeneration notes in `../README.md`; local generated archives intentionally do not have download URLs.
-- Justify check-local `%define rustflags_codegen_units 16`, and assess the documentation/data-size flags (789,451 documentation bytes and 1,054,720 bytes in `/usr/share`) before deciding whether a subpackage is useful.
-- Independently inspect all binary subpackages and debug artifacts, verify build/test networking constraints, and test interactive previews, syntax highlighting, navigation, and optional integrations in clean Fedora environments. A successful x86_64 build does not validate other architectures.
-- File the Fedora review request only after the manual review checks are complete; add its URL/status here.
+## Remaining checks
 
-Do not reuse `26.9.1-1` for changes to installed files or dependencies: it is now published and installed. COPR success is not official Fedora Rawhide inclusion.
+- Obtain a Fedora Legal determination or keep the CC0 question clearly disclosed in any review request.
+- Verify current COPR status, exact Release 3 artifacts, build logs, offline behavior, and lint results; do not transfer Release 2 evidence to Release 3.
+- Inspect matching main, debuginfo, and debugsource RPMs: metadata, dependencies, bundled provides, files, and license payload.
+- Resolve the large syntax-source documentation archive's placement/rationale and the spec's documentation-install method; then build and inspect any changed candidate.
+- In a clean Fedora installation with isolated state and a sized PTY, test navigation, retained syntax highlighting, excluded-grammar fallback, previews, and optional integrations. Existing historical PTY checks cover only basic startup/navigation.
+- Confirm account/sponsorship and duplicate-search results; publish matching immutable spec/SRPM URLs before filing.
+
+Release 2 is published and must not be reused for different contents. COPR success is not Fedora review approval or official Fedora inclusion.
