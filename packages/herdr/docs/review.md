@@ -4,7 +4,8 @@ This is a preparation record, not official Fedora review approval. Evidence belo
 
 ## Published build evidence
 
-- COPR build [11168076](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11168076/) succeeded for Fedora 44, Fedora 45, and Rawhide, x86_64: `herdr-0.9.5-1`.
+- Latest COPR build [11170135](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170135/) succeeded; the Rawhide review used `herdr-0.9.5-2.fc46`. Its [review output](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11170135-herdr/fedora-review/review.txt) still has manual items unassessed and ran with prebuilt RPMs: it is not Mock-build or installed-package runtime evidence. Its SRPM predates the later Zig-cache pruning and added license metadata/files, so its lint results do not validate the current working-tree spec. Rpmlint has two expected invalid-URL warnings for local Source1/Source2 archives, no reported errors, and clean debuginfo lint. Licensecheck reports 18,419 unknown files, so this output does not resolve source licensing. The installed-package check reports no package installed. It also flags `%define rustflags_codegen_units 16` for reviewer justification; the README documents that this affects only test compilation to reduce test-harness compile time, while the release binary keeps Fedora's normal flags. The `--prebuilt` build note is not a failed COPR build.
+- Prior COPR build [11168076](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11168076/) succeeded for Fedora 44, Fedora 45, and Rawhide, x86_64: `herdr-0.9.5-1`.
 - Public [SRPM](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/srpm-builds/11168076/herdr-0.9.5-1.src.rpm) and [built Rawhide spec](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11168076-herdr/herdr.spec).
 - [Rawhide review and lint output](https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/fedora-rawhide-x86_64/11168076-herdr/fedora-review/review.txt): binary/SRPM lint reports 0 errors and 3 warnings (missing `herdr(1)` and non-URL Source1/Source2). Debuginfo lint reports 0 errors and 0 warnings, with filters applied. The upstream source checksum matches.
 - The review ran with `--prebuilt`; its Mock-build warning does not indicate a failed COPR build. Its installed-package section says the packages were not installed despite the passing checklist label; that section is not runtime evidence.
@@ -14,6 +15,8 @@ This is a preparation record, not official Fedora review approval. Evidence belo
 
 ## Checklist and remaining review work
 
+- Follow-up COPR check: build [11170135](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11170135/) is succeeded. Its Rawhide fedora-review artifact is linked above. A direct Fedora dist-git check returned 404 for `rpms/herdr`; the Fedora Bugzilla Package Review query returned no exact Herdr review (the only substring hit was an unrelated 2016 vblade review). The Fedora Accounts public profile for the COPR username responds, but public data did not establish packager-group membership or sponsorship status; maintainer confirmation remains necessary.
+
 - [x] Package name, directory, and spec basename are `herdr`.
 - [x] Upstream source is a versioned source archive; Rust and Zig dependencies are supplied as source archives.
 - [x] Executable is built locally; no upstream binary is installed.
@@ -21,12 +24,12 @@ This is a preparation record, not official Fedora review approval. Evidence belo
 - [x] Project and dependency license files are included; linked Cargo licenses are recorded.
 - [x] Fedora 44, Fedora 45, and Rawhide x86_64 COPR builds succeed.
 - [x] Fedora 44 installed version/completion checks and RPM integrity verification pass.
-- [ ] Confirm every Zig component's license and add its specific text to `%license` where required. The scanner reports 18,419 unknown-license files; this requires source-level assessment, not a conclusion that all are unlicensed.
+- [ ] Finish source-level license/build inclusion review for every Zig component. The spec now installs uucode MIT, Wuffs MIT/Apache-2.0, and Highway BSD-3-Clause texts and includes BSD-3-Clause in `License:`. The cache omits `iterm2_themes`, which is lazy and not consumed by `-Demit-lib-vt`; the spec change and curated cache have not been rebuilt. Verify exact linked components, generated `%license` files, and binary `License:` metadata in a completed RPM. The scanner's 18,419 unknown-file count is not a conclusion that all are unlicensed.
 - [x] Added `herdr(1)` based on the installed executable's `--help` output. Release 0.9.5-2 now includes it; rebuild and refresh matching artifacts before filing.
-- [ ] Review source-bundle provenance/regeneration notes in `../README.md` and the audit; non-URL local archives are intentional, not broken download endpoints.
-- [ ] Review compiler flags and justify the check-local `%define rustflags_codegen_units 16` (the release binary retains normal flags).
+- [x] Review source-bundle provenance/regeneration notes in `../README.md` and the audit; non-URL local archives are intentional, not broken download endpoints. Build 11170135's review output confirms the two rpmlint invalid-URL warnings are for these local source archives. The cache archive now omits the unused, unlicensed-looking lazy `iterm2_themes` source.
+- [x] Review compiler flags and justify the check-local `%define rustflags_codegen_units 16`: the flag only reduces test-harness compilation cost; `%build` does not set it, so the release binary retains Fedora's normal Rust flags. See `../README.md`.
 - [ ] Retain/lint a matching SRPM and inspect all binary subpackages, including debugsource/debuginfo, independently of the generated review.
-- [ ] Validate aarch64 and offline build behavior; successful x86_64 builds do not establish either.
-- [ ] Install and smoke-test server/workspace creation, detach/reattach, and terminal panes in clean Fedora environments. The host version/completion checks above do not cover these operations.
+- [ ] Validate aarch64 and offline build behavior. Upstream's `build.rs` maps `aarch64-unknown-linux-gnu` to Zig `aarch64-linux-gnu`, but all recorded COPR builds are x86_64; support is declared, not proven. Cargo vendor and the curated Zig source cache provide the inputs, but a network-disabled clean build has not been demonstrated.
+- [ ] Runtime checks are partial: using installed `herdr-0.9.5-1.fc44` on Fedora 44 WSL inside an isolated user namespace and temporary home, Herdr started and stopped a named server session; created/listed/closed a workspace; ran a pane command and matched its output; and split, focused, resized, listed, and closed panes. The same isolated server remained available after client CLI operations. Automated interactive PTY detach/reattach did not pass; manual pane interaction and detach/reattach in a clean Fedora environment remain outstanding. These checks do not validate the unbuilt current spec changes.
 
 Do not reuse `0.9.5-1` for changes to installed files or dependencies: it is now published and installed. The manual-page addition is packaged as `0.9.5-2`. COPR success is not a Bugzilla review or official Fedora Rawhide inclusion.
