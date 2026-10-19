@@ -4,7 +4,7 @@ terminal workspaces, panes, and agent-aware workflows.}
 
 Name:           herdr
 Version:        0.9.5
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Terminal workspace manager for AI coding agents
 License:        %{shrink:
     ((MIT OR Apache-2.0) AND Unicode-3.0) AND
@@ -44,6 +44,8 @@ ExclusiveArch:  x86_64
 %autopatch -p1
 mkdir -p zig-global-cache
 tar -xzf %{SOURCE2} -C zig-global-cache
+# Preserve Ghostty's MIT license separately from Herdr's Apache-2.0 license.
+install -pm 0644 vendor/libghostty-vt/LICENSE LICENSE.ghostty-vt
 # Extract license texts for bundled Zig dependencies used by the Linux build.
 tar -xOzf zig-global-cache/p/N-V-__8AAGmZhABbsPJLfbqrh6JTHsXhY6qCaLAQyx25e0XE.tar.gz N-V-__8AAGmZhABbsPJLfbqrh6JTHsXhY6qCaLAQyx25e0XE/LICENSE-BSD3 > LICENSE.highway
 tar -xOzf zig-global-cache/p/uucode-0.2.0-ZZjBPlK5VADj7fdoq7G8LIHzD5o6FSkcBXXrRWr4jnrA.tar.gz uucode-0.2.0-ZZjBPlK5VADj7fdoq7G8LIHzD5o6FSkcBXXrRWr4jnrA/LICENSE.md > LICENSE.uucode
@@ -92,7 +94,7 @@ export CARGO_PROFILE_RPM_LTO=false
 %license %{_licensedir}/%{name}/LICENSE.uucode
 %license %{_licensedir}/%{name}/LICENSE.wuffs-apache
 %license %{_licensedir}/%{name}/LICENSE.wuffs-mit
-%license vendor/libghostty-vt/LICENSE
+%license LICENSE.ghostty-vt
 %license LICENSE.dependencies
 %license cargo-vendor.txt
 %doc README.md
@@ -103,6 +105,9 @@ export CARGO_PROFILE_RPM_LTO=false
 %{fish_completions_dir}/herdr.fish
 
 %changelog
+* Mon Oct 19 2026 Zeldris Ho <zeldrisho@proton.me> - 0.9.5-3
+- Preserve the upstream and Ghostty license texts as separate files
+
 * Mon Oct 19 2026 Zeldris Ho <zeldrisho@proton.me> - 0.9.5-2
 - Add a manual page
 
