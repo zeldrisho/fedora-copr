@@ -11,6 +11,14 @@ sudo dnf copr enable zeldrisho/packages
 sudo dnf install actionlint
 ```
 
+The repository also provides `herdr` and `yazi`; install all three with:
+
+```sh
+sudo dnf --refresh install actionlint herdr yazi
+```
+
+Builds target Fedora 44, Fedora 45, and Rawhide on x86_64. DNF selects the repository for your Fedora release and resolves dependencies; do not install Rawhide RPMs on a stable Fedora system. Packaging inputs under `packages/` are not binary RPMs. Use DNF for installation rather than downloading build artifacts manually.
+
 Upgrade packages with `sudo dnf upgrade`, remove one with `sudo dnf remove <package-name>`, or disable the repository with:
 
 ```sh

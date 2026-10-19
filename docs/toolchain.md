@@ -7,10 +7,27 @@ The repository uses Fedora RPM tooling for spec validation, SRPM creation, and b
 Install the tools used by repository validation and local SRPM builds:
 
 ```sh
-sudo dnf install rpm-build rpmdevtools rpmlint make
+sudo dnf install rpm-build rpmdevtools rpmlint make copr-cli
 ```
 
 `rpmdevtools` provides `spectool` for staging declared sources. If `spectool` is missing in COPR's minimal SRPM environment, the shared `.copr/Makefile` installs `rpmdevtools` with DNF.
+
+## COPR CLI setup
+
+Read-only queries such as `copr-cli list-builds zeldrisho/packages` do not need credentials. For submissions, sign in to the [COPR API configuration page](https://copr.fedorainfracloud.org/api/) and save its generated configuration locally as `~/.config/copr` (create `~/.config` if needed). Restrict access with `chmod 600 ~/.config/copr`, then check the configured identity with `copr-cli whoami`. Never commit or print the configuration: it contains an API token. This local configuration is separate from GitHub's `COPR_CONFIG` secret.
+
+Use the CLI for build status and artifacts:
+
+```sh
+copr-cli list-builds zeldrisho/packages --output-format json
+copr-cli status <build-id>
+copr-cli download-build <build-id> -r <chroot> \
+  --review --dest dist/review/<name>
+```
+
+Replace `<chroot>` with a chroot from the selected build that matches the Fedora release and architecture you want to inspect.
+
+`packages/<name>/` contains packaging inputs, not published binary RPMs or generated COPR review reports. Review downloads belong under ignored `dist/review/`. To install a published package, use DNF as described in the root [README](../README.md); no manual RPM download is needed. Use `download-build --rpms` only when binary artifacts are needed for inspection or a separate test environment.
 
 ## Package build dependencies
 
@@ -45,7 +62,7 @@ Install package-specific dependencies when building a package locally. For **act
 sudo dnf install go go-rpm-macros go-vendor-tools rubygem-ronn-ng
 ```
 
-GitHub Actions validates and lints SRPMs but does not build binary RPMs. COPR performs published builds in its configured chroots after changes reach `main`; a successful PR check is not evidence that package compilation, installation, or runtime smoke tests pass. `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
+GitHub Actions validates and lints SRPMs but does not build binary RPMs. COPR performs published builds in its configured chroots once you submit them; a successful PR check is not evidence that package compilation, installation, or runtime smoke tests pass. `go2rpm` is optional for package generation or maintenance, not a declared build requirement.
 
 The upstream source archive and generated Go vendor archive are included as SRPM sources; Go modules are not fetched during the build. See [actionlint package notes](../packages/actionlint/README.md) and the [Go Packaging Guidelines](packaging-guidelines/golang.md) when updating vendored sources and licensing.
 
@@ -77,7 +94,7 @@ The SRPM is retained in `~/rpmbuild/SRPMS`; binary RPMs and build logs are writt
 
 ## Build and inspect binary RPMs
 
-For an optional local isolated build, install Mock and its Fedora chroot configurations, then rebuild the SRPM in a target chroot. This is useful for pre-merge checks and targeted debugging; COPR remains authoritative for its configured publishing chroots. Mock resolves static and dynamic build requirements inside its buildroot:
+For a local isolated build, install Mock and its Fedora chroot configurations, then rebuild the SRPM in a target chroot. This is especially useful before merge when changing build requirements, compiler/toolchain integration, spec macros, or build/test steps, and when diagnosing a COPR chroot failure. For routine edits, it is optional; COPR remains authoritative for its configured publishing chroots. Mock resolves static and dynamic build requirements inside its buildroot:
 
 ```sh
 sudo dnf install mock mock-core-configs
