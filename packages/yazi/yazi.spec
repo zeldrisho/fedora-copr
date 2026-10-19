@@ -6,7 +6,7 @@ async I/O.}
 
 Name:           yazi
 Version:        26.9.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Blazing fast terminal file manager
 # Include syntax-source licenses and the GPL-3.0-only SSH grammar license.
 License:        %{shrink:
@@ -22,8 +22,8 @@ License:        %{shrink:
     (MIT OR Apache-2.0 OR LGPL-2.1-or-later) AND
     (MIT OR Apache-2.0 OR Zlib) AND (MIT OR Zlib OR Apache-2.0) AND
     MPL-2.0 AND Unicode-3.0 AND (Unlicense OR MIT) AND Zlib AND
-    (Zlib OR Apache-2.0 OR MIT) AND NCSA AND CC-BY-SA-3.0 AND
-    BSD-2-Clause-Views AND WTFPL AND GPL-3.0-only AND
+    (Zlib OR Apache-2.0 OR MIT) AND BSD-2-Clause-Views AND WTFPL AND
+    GPL-3.0-only AND
     LicenseRef-Fedora-UltraPermissive
 }
 URL:            https://github.com/sxyazi/yazi
@@ -135,6 +135,9 @@ install -Dpm 0644 %{SOURCE4} %{buildroot}%{_docdir}/%{name}/syntax-sources.tar.g
 %{_mandir}/man1/ya.1*
 
 %changelog
+* Mon Oct 19 2026 Zeldris Ho <zeldrisho@proton.me> - 26.9.1-3
+- Remove licenses found only in unlinked source files from the binary expression
+
 * Mon Oct 19 2026 Zeldris Ho <zeldrisho@proton.me> - 26.9.1-2
 - Remove syntax grammars without verified redistribution grants or source provenance
 

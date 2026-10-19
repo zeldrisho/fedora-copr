@@ -4,6 +4,7 @@ Local copies of Fedora packaging guidance, retained for offline reference. Consu
 
 - [Packaging Guidelines](packaging-guidelines.md) — general spec, source, dependency, build, and file policies.
 - [Go Packaging Guidelines](golang.md) — Go packaging, vendoring, build flags, and licensing.
+- [Allowed Licenses](allowed-licenses.md) — Fedora Legal's allowed-license categories and restrictions relevant to package license audits.
 - [Licensing Guidelines](licensing-guidelines.md) — `%license` files and RPM `License:` field.
 - [Naming Guidelines](naming.md) — package naming.
 - [Package Review Guidelines](review-guidelines.md) — package self-review checklist.
