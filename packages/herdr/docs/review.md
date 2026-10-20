@@ -8,6 +8,7 @@ Maintainer tracking record, not an official Fedora review or approval. Fedora Pa
 - Upstream: <https://github.com/herdrdev/herdr>, tag `v0.9.5`
 - Current NVR: `herdr-0.9.5-4`
 - Retained SRPM: `$HOME/rpmbuild/SRPMS/herdr-0.9.5-4.fc44.src.rpm`
+- Public SRPM: https://download.copr.fedorainfracloud.org/results/zeldrisho/packages/srpm-builds/11171729/herdr-0.9.5-4.fc44.src.rpm
 - SRPM SHA-256: `9a3ab3387adb66fac135c6324e6e65084494e0ae3c364a00e95592a61e39df44`
 - Candidate COPR build: [11171729](https://copr.fedorainfracloud.org/coprs/zeldrisho/packages/build/11171729/)
 - Result: succeeded on Fedora 44, Fedora 45, and Rawhide, x86_64.
@@ -22,6 +23,12 @@ On 2026-10-19, `scripts/validate.py`, all 19 repository unit tests, and both pac
 
 - Bug [2555980](https://bugzilla.redhat.com/show_bug.cgi?id=2555980): `Review Request: herdr - Terminal workspace manager for AI coding agents`.
 - Filed 2026-10-20 by Fedora account `zeldrisho`; status NEW, component Package Review, blocks sponsor tracker [177841](https://bugzilla.redhat.com/show_bug.cgi?id=177841).
+
+### Package-name availability checks (2026-10-20)
+
+- Neither package is published in the official Fedora repositories yet; the exact Fedora Packages pages for [herdr](https://packages.fedoraproject.org/pkgs/herdr/) and [yazi](https://packages.fedoraproject.org/pkgs/yazi/) returned 404, as expected for these pending review requests. This does not by itself establish that the package names are available.
+- Fedora dist-git package pages were blocked by an anti-bot challenge; queried exact-name API paths for `herdr` and `yazi` returned 404. These checks do not establish that no dist-git repository exists.
+- Bugzilla QuickSearch for each name rendered no result rows, but a scoped Package Review REST query could not be completed. The known current review requests are [2555980](https://bugzilla.redhat.com/show_bug.cgi?id=2555980) and [2555981](https://bugzilla.redhat.com/show_bug.cgi?id=2555981); the broader search was inconclusive, not proof that there are no prior or related review requests.
 
 The automated Fedora Review report runs with `--prebuilt`; its `Reviewer should test that the package builds in mock` item remains for the human reviewer, but the actual COPR binary build succeeded independently in all three configured chroots. The Rawhide builder log records `enable_net: False`, 3,657 tests passed (12 ignored), and the version/completion smoke checks. The report's installed-package checks are not runtime evidence: its attachment says neither `herdr` nor `herdr-debuginfo` was installed. RPM inspection confirms the Release 4 main package has distinct `/usr/share/licenses/herdr/LICENSE` and `LICENSE.ghostty-vt` entries, along with the dependency and Zig license files. The binary RPM and debuginfo rpmlint checks show zero errors/warnings; source/spec check reports two local archive `invalid-url` warnings.
 
