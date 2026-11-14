@@ -2,7 +2,7 @@
 
 ## Status
 
-Vite+ is experimental. Packit PR and main publishing jobs are enabled, but livecheck updates remain disabled pending a successful build. COPR build [11324037](https://copr.fedorainfracloud.org/coprs/build/11324037/) failed because TypeScript discovered intentionally invalid Yuku test fixtures inside the workspace. The spec now extracts only Yuku's license, not its tests.
+Vite+ is experimental. Packit PR and main publishing jobs remain enabled; disabling the pair is deferred, so merging can publish unvalidated RPMs. Fedora build/runtime validation and applicable-notice review remain outstanding. Livecheck updates remain disabled pending a successful build. COPR build [11324037](https://copr.fedorainfracloud.org/coprs/build/11324037/) failed because TypeScript discovered intentionally invalid Yuku test fixtures inside the workspace. The spec now extracts only Yuku's license, not its tests.
 
 ## Sources and build
 

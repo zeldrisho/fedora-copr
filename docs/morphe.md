@@ -10,6 +10,10 @@ The RPM builds the desktop application, Morphe patcher and library, and jadb fro
 
 Fedora retired Gradle, so the build uses the prebuilt Gradle distribution pinned by [upstream's wrapper](https://github.com/MorpheApp/morphe-desktop/blob/v2.1.1/gradle/wrapper/gradle-wrapper.properties). Source archives and Gradle are hash-checked during SRPM preparation and `%prep`; a checksum does not independently establish provenance. The RPM build resolves Maven and Gradle dependencies over the network instead of maintaining generated caches in the SRPM. Those inputs can change and include prebuilt components; the JAR bundles libraries. Keep applicable notices and address corresponding-source obligations before distribution. Network-enabled Packit PR and main publishing jobs are configured; their COPR artifacts are public. The revised RPM build has not been verified on Fedora. Earlier successful COPR build [11321130](https://copr.fedorainfracloud.org/coprs/build/11321130/) packaged an upstream prebuilt `morphe-desktop-2.1.1-all.jar`; its success does not validate the current source build. That older build and its published artifacts should be reviewed for the same redistribution concerns.
 
+## Validation
+
+The spec configures desktop-file validation, CLI version/help checks, and an offline `utility clear-cache` check that asserts a stale patch file is removed. jadb's Maven tests are skipped with `-Dmaven.test.skip=true`; the Gradle build invokes `shadowJar`, not an upstream test suite. No Fedora target has been verified for the revised source build, so these configured checks are not reported as passed. GUI startup, native-component downloads, APK patching and ADB/device integration remain untested. See [shared validation guidance](development.md#testing-and-validation).
+
 ## Updates and limitations
 
 Livecheck updates the main release and the shared `checksums.sha256` manifest. Component versions and Gradle remain pinned separately; update them if the new release needs them. Review build results and corresponding-source obligations before relying on or distributing the package.
