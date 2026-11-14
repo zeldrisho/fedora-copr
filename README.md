@@ -11,6 +11,4 @@ sudo dnf install <package>
 Recipes: actionlint, gomi, herdr, homebrew, kotlin-toolchain, morphe, pi-coding-agent, rea, smali, vite-plus, and yazi. Some packages bootstrap or
 download components at runtime; see the package notes in [`docs/`](docs/).
 
-For build status, known issues, and resuming automation, see [development](docs/development.md).
-
 Packaging files are licensed under [MIT](LICENSE); packaged software has its own licenses.

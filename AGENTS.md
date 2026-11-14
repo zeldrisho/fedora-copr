@@ -28,7 +28,7 @@
 - Adapt builds to the toolchain available on each Fedora release.
 - Prefer upstream build instructions and existing packaging when useful; document important adaptations. Prebuilt dependencies are acceptable when rebuilding them adds disproportionate effort.
 - Keep package changes focused; check existing issues and pull requests before duplicating work when practical.
-- Recheck livecheck support when adding or changing a package; update detection/tests or document an explicit manual-update reason (see `docs/development.md`).
+- Recheck livecheck support when adding or changing a package; update detection/tests or document an explicit manual-update reason (see `docs/livecheck.md`).
 - Before concluding a Fedora dependency is unavailable, check alternative package names and providers; document any remaining uncertainty.
 - Prefer offline functional package checks beyond version and help; document exceptions.
 - Link patches to upstream issues or pull requests when available.
@@ -41,8 +41,9 @@
 | Need | File |
 | --- | --- |
 | User installation guide | `README.md` |
-| COPR setup and builds | `docs/development.md` |
-| Herdr packaging and limitations | `docs/herdr.md` |
-| Packaging and commit conventions | `docs/conventions.md` |
+| COPR setup and builds | `docs/packit.md` |
+| Automated updates | `docs/livecheck.md` |
+| Package notes and template | `docs/<package>.md`, `docs/template.md` |
+| Packaging and validation | `docs/development.md` |
 | Source RPM preparation | `.packit/prepare-sources.sh` |
 | Packit PR builds | `.packit.yaml` |

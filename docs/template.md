@@ -16,7 +16,7 @@ Describe source inputs, verification, important upstream adaptations and patches
 
 ## Validation
 
-List functional checks, targets actually tested, skipped tests and significant gaps. Link shared [validation guidance](development.md#package-review-and-validation).
+List functional checks, targets actually tested, skipped tests and significant gaps. Link shared [validation guidance](development.md#testing-and-validation).
 
 ## Updates and limitations
 
