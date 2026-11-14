@@ -35,7 +35,7 @@ jobs:
 
   update:
     needs: discover
-    if: needs.discover.outputs.packages != '[]'
+    if: needs.discover.outputs.packages != '[]' && vars.PI_UPDATES_ENABLED == 'true'
     permissions:
       contents: write
       pull-requests: write
@@ -47,6 +47,9 @@ jobs:
         exclude:
           - package: pi-coding-agent
           - package: vite-plus
+          - package: morphe
+          - package: rea
+          - package: kotlin-toolchain
     uses: ./.github/workflows/pi.yml
     with:
       package: ${{ matrix.package }}

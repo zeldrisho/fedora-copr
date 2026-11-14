@@ -35,8 +35,12 @@ For new packages and updates, review:
 Run applicable repository tests; package notes list additional checks. The livecheck workflow runs the Python helper tests separately from RPM builds:
 
 ```sh
-python3 .packit/test-paths.py
-for t in .github/scripts/test-*.py packages/*/test-*.py; do python3 "$t"; done
+(
+  python3 .packit/test-paths.py || exit "$?"
+  for t in .github/scripts/test-*.py packages/*/test-*.py; do
+    python3 "$t" || exit "$?"
+  done
+)
 ```
 
 Prefer a `%check` that exercises installed functionality and asserts a result or failure, beyond version or help output. Run upstream suites where practical and document tests skipped due to network, interactive requirements or other constraints.

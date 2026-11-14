@@ -1,8 +1,10 @@
 # Yazi packaging
 
+Yazi is a terminal file manager. The `yazi` RPM provides `yazi` and `ya`; see the [installation instructions](../README.md).
+
 ## Status
 
-Packit PR and main publishing jobs are enabled; target builds and interactive behavior remain unverified.
+Packit PR and main publishing jobs and livecheck are enabled; target builds and interactive behavior remain unverified.
 
 ## Sources and build
 
@@ -11,6 +13,10 @@ Packit PR and main publishing jobs are enabled; target builds and interactive be
 The build follows the existing COPR spec's GCC C17 workaround for Oniguruma and 16 KiB jemalloc page setting. Both need verification on the supported chroots and architectures. The release declares Rust 1.95.0 as its minimum; locked dependencies may require a newer compiler.
 
 Fedora's Rust guidelines recommend using packaged crates where possible. This personal COPR instead vendors the locked dependencies to support an offline RPM build, including upstream's Git fork. The spec uses `%set_build_flags` and `cargo-rpm-macros` as recommended; it deliberately does not use `%cargo_generate_buildrequires`, which Fedora's guidelines prohibit for vendored dependencies.
+
+## Validation
+
+The RPM `%check` runs both version commands and `cargo test --locked --offline`. Target-chroot builds and interactive behavior remain unverified; see [shared validation guidance](development.md#testing-and-validation).
 
 ## Updates and limitations
 

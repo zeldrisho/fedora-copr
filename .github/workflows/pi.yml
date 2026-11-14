@@ -74,7 +74,7 @@ jobs:
           [[ "$PACKAGE" =~ ^[a-zA-Z0-9_+.-]+$ && "$PACKAGE" != . && "$PACKAGE" != .. ]]
           mkdir "$RUNNER_TEMP/update"
           git add -A -- "packages/$PACKAGE"
-          git diff --cached --binary > "$RUNNER_TEMP/update/changes.patch"
+          git diff --cached --no-renames --binary -- "packages/$PACKAGE" > "$RUNNER_TEMP/update/changes.patch"
           cp "$RUNNER_TEMP/report.md" "$RUNNER_TEMP/update/report.md"
           if [ -f "$RUNNER_TEMP/impact.md" ]; then
             cp "$RUNNER_TEMP/impact.md" "$RUNNER_TEMP/update/impact.md"
@@ -119,8 +119,9 @@ jobs:
             echo "Branch $branch already exists; leaving it unchanged."
             exit 0
           fi
+          # Validate against a disposable index before the patch can alter trusted files.
+          python3 .github/scripts/verify-update.py "$PACKAGE" "$VERSION" "$CHANGES"
           git apply --index "$CHANGES"
-          python3 .github/scripts/verify-update.py "$PACKAGE" "$VERSION"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git switch -c "$branch"

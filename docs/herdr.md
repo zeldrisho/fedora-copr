@@ -1,5 +1,7 @@
 # Herdr packaging
 
+Herdr is a terminal workspace manager for coding agents. The `herdr` RPM provides the `herdr` command; see the [installation instructions](../README.md).
+
 ## Status
 
 Packit PR and main publishing jobs are enabled; toolchain availability and target builds remain unverified. The RPM build is designed to run without network access.

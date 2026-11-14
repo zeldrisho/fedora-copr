@@ -1,0 +1,27 @@
+name: Repository tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  helpers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check Packit paths
+        run: |
+          yq --version | grep -F 'mikefarah/yq'
+          python3 .packit/test-paths.py
+      - name: Test helpers
+        run: |
+          for test in .github/scripts/test-*.py packages/*/test-*.py; do
+            echo "== $test"
+            python3 "$test"
+          done
