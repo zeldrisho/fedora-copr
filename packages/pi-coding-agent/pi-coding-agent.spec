@@ -74,6 +74,9 @@ printf '{"private":true}\n' > runtime/package.json
 export npm_config_audit=false npm_config_fund=false
 cd runtime
 npm install --omit=dev --ignore-scripts %{SOURCE0}
+# Fail clearly if npm installs into the extracted upstream package instead of
+# this runtime project; COPR build 11324034 failed that way.
+test -d node_modules/@earendil-works/pi-tui
 # Replace all upstream native prebuilds with a helper built for this target.
 cd node_modules/@earendil-works/pi-tui
 patch -p3 < %{PATCH0}
