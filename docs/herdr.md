@@ -4,15 +4,15 @@ Herdr is a terminal workspace manager for coding agents. The `herdr` RPM provide
 
 ## Status
 
-Packit PR and main publishing jobs are enabled; toolchain availability and target builds remain unverified. The RPM build is designed to run without network access.
+Packit PR and main publishing jobs are enabled. [PR #1](https://github.com/zeldrisho/fedora-copr/pull/1/checks) passed on Fedora 44, Fedora 45 and Rawhide on x86_64 and aarch64. RPM builds run without network access.
 
 ## Sources and build
 
-`packages/herdr/prepare-sources.sh` runs in COPR's SRPM builder. It verifies the upstream archive, vendors locked Cargo dependencies and prefetches Zig dependencies. The spec is intended to compile offline from the resulting dependency archive; this flow is not yet verified in COPR.
+`packages/herdr/prepare-sources.sh` runs in COPR's SRPM builder. It verifies the upstream archive, vendors locked Cargo dependencies and prefetches Zig dependencies. The RPM builds in PR #1 compiled offline from the resulting dependency archive. The one-line downstream patch explicitly selects Zig's baseline CPU for the vendored Ghostty library to avoid depending on builder-specific CPU features. Upstream already supplies a target triple; whether that makes the explicit baseline redundant has not been verified with Zig 0.16.0.
 
 ## Updates and limitations
 
-- The source-build recipe is experimental. The SRPM builder and target chroots need Zig 0.16.0, and the latter need Rust/Cargo 1.96.1 or later. Availability and compatibility remain to be tested.
+- The SRPM builder and target chroots need Zig 0.16.0, and the latter need Rust/Cargo 1.96.1 or later. Recheck toolchain availability on updates.
 - The spec includes the Apache-2.0 and statically linked Ghostty MIT notices, but other statically linked and vendored dependencies have not yet been audited.
 - Test both the version command and an interactive session on each supported architecture before relying on the package.
 

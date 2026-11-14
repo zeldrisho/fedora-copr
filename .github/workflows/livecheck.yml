@@ -35,7 +35,7 @@ jobs:
 
   update:
     needs: discover
-    if: needs.discover.outputs.packages != '[]' && vars.PI_UPDATES_ENABLED == 'true'
+    if: needs.discover.outputs.packages != '[]'
     permissions:
       contents: write
       pull-requests: write
@@ -43,11 +43,11 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJSON(needs.discover.outputs.packages) }}
-        # Re-enable after the corresponding Packit builds are fixed.
+        # Re-enable updates only after the revised Fedora builds pass validation.
         exclude:
-          - package: pi-coding-agent
           - package: vite-plus
           - package: morphe
+          - package: pi-coding-agent
           - package: rea
           - package: kotlin-toolchain
     uses: ./.github/workflows/pi.yml

@@ -1,4 +1,4 @@
-name: Repository tests
+name: CI
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  helpers:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -25,3 +25,5 @@ jobs:
             echo "== $test"
             python3 "$test"
           done
+      - name: Test Vite+ source preparation
+        run: bash packages/vite-plus/test-source-preparation.sh

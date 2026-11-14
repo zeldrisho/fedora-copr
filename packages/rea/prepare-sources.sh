@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Verify the upstream npm archive before creating the SRPM.
+# Verify the upstream npm archive and the pinned OpenPGP.js source before
+# creating the SRPM.
 set -euo pipefail
-version=$(rpmspec -q --srpm --qf '%{VERSION}' "$1")
-printf '%s  %s\n' "$(<source.sha256)" "$2/rea-agents-${version}.tgz" | sha256sum -c -
+sources=$2
+(cd "$sources" && sha256sum -c checksums.sha256)

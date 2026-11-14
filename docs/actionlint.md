@@ -2,7 +2,7 @@
 
 ## Status
 
-Packit PR and main publishing jobs are enabled; the revised recipe still needs target builds.
+Packit PR and main publishing jobs are enabled. [PR #1](https://github.com/zeldrisho/fedora-copr/pull/1/checks) passed on Fedora 44, Fedora 45 and Rawhide on x86_64 and aarch64.
 
 ## Sources and build
 
@@ -10,7 +10,7 @@ Packit PR and main publishing jobs are enabled; the revised recipe still needs t
 
 ## Updates and limitations
 
-- The recipe has not yet been verified in COPR. Check Fedora 44, Fedora 45, and Rawhide on `x86_64` and `aarch64` before publishing. Tests for optional external checkers may be skipped when those tools are absent from the build environment. Two upstream maintenance-generator test packages are excluded: `check-checks` expects a Git checkout and `generate-popular-actions` expects GitHub responses. The core tests and other generator tests still run, except `generate-webhook-events`'s `TestFetchURL` and `TestFetchError/not_found`, which contact GitHub; the latter failed offline in COPR build 11321842.
+- Tests for optional external checkers may be skipped when those tools are absent from the build environment. Two upstream maintenance-generator test packages are excluded: `check-checks` expects a Git checkout and `generate-popular-actions` expects GitHub responses. The core tests and other generator tests still run, except `generate-webhook-events`'s `TestFetchURL` and `TestFetchError/not_found`, which contact GitHub; the latter failed offline in COPR build 11321842.
 - The provisional license expression includes upstream's MIT license, BSD-3-Clause for `golang.org/x/sync` v0.20.0, and Apache-2.0 for `go.yaml.in/yaml/v4` v4.0.0-rc.3, both imported by actionlint. The YAML module also includes MIT-licensed libyaml-derived files and a NOTICE. An inspection of root license files for all modules pinned in `go.mod` found MIT, BSD-3-Clause and Apache-2.0; that is not a file-level or linked-binary audit. Vendored notices are retained, but review the actual binary's dependencies, nested notices, and complete expression before redistribution.
 - Review new releases for Go version requirements, dependency licenses, and changes to source layout or build flags.
 

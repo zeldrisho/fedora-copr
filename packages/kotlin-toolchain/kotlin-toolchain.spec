@@ -12,7 +12,8 @@ Source3:        checksums.sha256
 BuildArch:      noarch
 BuildRequires:  coreutils
 Requires:       java-25-openjdk-headless
-Requires:       coreutils curl gzip tar util-linux
+# The upstream wrapper uses sed to read project-local version pins.
+Requires:       coreutils curl gzip sed tar util-linux
 Conflicts:      kotlin
 
 %description
@@ -36,7 +37,7 @@ sh -n %{buildroot}%{_libexecdir}/%{name}/upstream-wrapper
 grep -Fx 'kotlin_cli_version=%{version}' %{SOURCE0}
 grep -E '^kotlin_cli_sha256=[0-9a-f]{64}$' %{SOURCE0}
 # Test the launcher offline with a fixture instead of downloading the toolchain.
-printf '#!/bin/sh\nprintf "%%s\\n" "$KOTLIN_CLI_JAVA_HOME" "$@"\n' > fake-wrapper
+printf '%%s\n' '#!/bin/sh' 'printf "%%s\n" "$KOTLIN_CLI_JAVA_HOME" "$@"' > fake-wrapper
 sed "s|/usr/libexec/kotlin-toolchain/upstream-wrapper|$PWD/fake-wrapper|" %{SOURCE2} > test-launcher
 KOTLIN_CLI_JAVA_HOME=/test/java sh test-launcher 'two words' > launcher-output
 printf '/test/java\ntwo words\n' > launcher-expected

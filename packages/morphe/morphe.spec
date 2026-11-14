@@ -38,6 +38,11 @@ tar -xf %{SOURCE5} -C jadb --strip-components=1
 unzip -q %{SOURCE6}
 # Follow Homebrew's composite-build substitutions; the versioned system JDK
 # avoids Gradle downloading a toolchain and works independently of defaults.
+# Fail instead of silently losing these adaptations when upstream changes.
+test "$(grep -Fc 'file("../$libraryPath")' settings.gradle.kts)" -eq 1
+test "$(grep -Fc 'app.morphe:morphe-library"' settings.gradle.kts)" -eq 1
+test "$(grep -Fc 'credentials {' build.gradle.kts)" -eq 1
+test "$(grep -Fc 'jvmToolchain(21)' build.gradle.kts)" -eq 1
 sed -i 's|file("../$libraryPath")|file("$libraryPath")|; s|app.morphe:morphe-library"|app.morphe:morphe-library-jvm"|' settings.gradle.kts
 sed -i 's|credentials {|content { includeGroup("app.morphe") }; credentials {|; s|jvmToolchain(21)||' build.gradle.kts
 

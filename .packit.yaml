@@ -171,21 +171,68 @@ jobs:
     owner: zeldrisho
     project: packages
     enable_net: false
-  # Disabled after COPR build 11324034 failed; restore both jobs after fixing it.
-  # - job: copr_build
-  #   trigger: pull_request
-  #   identifier: pi-coding-agent
-  #   packages: [pi-coding-agent]
-  #   targets: *fedora-targets
-  #   enable_net: true
-  # - job: copr_build
-  #   trigger: commit
-  #   branch: main$
-  #   identifier: pi-coding-agent
-  #   packages: [pi-coding-agent]
-  #   owner: zeldrisho
-  #   project: packages
-  #   enable_net: true
+  - job: copr_build
+    trigger: pull_request
+    identifier: kotlin-toolchain
+    packages: [kotlin-toolchain]
+    targets: *fedora-targets
+    enable_net: false
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: kotlin-toolchain
+    packages: [kotlin-toolchain]
+    owner: zeldrisho
+    project: packages
+    enable_net: false
+  - job: copr_build
+    trigger: pull_request
+    identifier: morphe
+    packages: [morphe]
+    targets: *fedora-targets
+    enable_net: true
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: morphe
+    packages: [morphe]
+    owner: zeldrisho
+    project: packages
+    enable_net: true
+  - job: copr_build
+    trigger: pull_request
+    identifier: pi-coding-agent
+    packages: [pi-coding-agent]
+    targets: *fedora-targets
+    enable_net: true
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: pi-coding-agent
+    packages: [pi-coding-agent]
+    owner: zeldrisho
+    project: packages
+    enable_net: true
+  - job: copr_build
+    trigger: pull_request
+    identifier: rea
+    packages: [rea]
+    # REA 6.9.0 requires nodejs24 >= 24.22.1; Fedora 44/45 stable ship 24.18.0.
+    # Restrict rea to Rawhide and re-add fedora-44/45 (both arches) to this
+    # and the commit job once the nodejs24 update reaches stable.
+    targets: &rawhide-targets
+      - fedora-rawhide-x86_64
+      - fedora-rawhide-aarch64
+    enable_net: true
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: rea
+    packages: [rea]
+    owner: zeldrisho
+    project: packages
+    targets: *rawhide-targets
+    enable_net: true
   - job: copr_build
     trigger: pull_request
     identifier: yazi
@@ -200,18 +247,17 @@ jobs:
     owner: zeldrisho
     project: packages
     enable_net: false
-  # Disabled after COPR build 11324037 failed. Vite+ requires network access.
-  # - job: copr_build
-  #   trigger: pull_request
-  #   identifier: vite-plus
-  #   packages: [vite-plus]
-  #   targets: *fedora-targets
-  #   enable_net: true
-  # - job: copr_build
-  #   trigger: commit
-  #   branch: main$
-  #   identifier: vite-plus
-  #   packages: [vite-plus]
-  #   owner: zeldrisho
-  #   project: packages
-  #   enable_net: true
+  - job: copr_build
+    trigger: pull_request
+    identifier: vite-plus
+    packages: [vite-plus]
+    targets: *fedora-targets
+    enable_net: true
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: vite-plus
+    packages: [vite-plus]
+    owner: zeldrisho
+    project: packages
+    enable_net: true
