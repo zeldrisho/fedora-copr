@@ -20,7 +20,7 @@ Review all updates and applicable Packit builds; nothing merges automatically. E
 
 ## Pi review and permissions
 
-Livecheck calls `.github/workflows/pi.yml` for each discovered package. When an update exists, Pi reads release notes since the packaged version, updates coordinated inputs, runs practical checks and writes the PR body. A manual-update marker stays in place if Pi cannot safely complete the proposal. A failed Pi run creates no PR.
+Livecheck calls `.github/workflows/pi.yml` for each discovered package. When an update exists, Pi reads release notes since the packaged version, updates coordinated inputs, runs practical checks and writes an advisory report with scope, evidence, checks and unresolved issues. Its status is not an automated approval; review the report and verify its claims. See [post-build review](development.md#post-build-review) for RPM and log checks that cannot be established by the pre-build review. A manual-update marker stays in place if Pi cannot safely complete the proposal. A failed Pi run creates no PR; the workflow retains up to 60 KB from the end of a failed report as a one-day Actions artifact, or a note if no report was created. Treat the artifact like the workflow log: it may contain untrusted upstream text or sensitive output.
 
 Create a dedicated, single-purpose AI Gateway key with provider-enforced spending and model limits. Set Actions secret `AI_GATEWAY_API_KEY` and variable `PI_MODEL` to a Pi model identifier. Every eligible update uses the agent; disable the workflow itself to pause updates. The workflow intentionally installs the latest Pi without a version pin, accepting the risk of upstream tool and dependency changes.
 

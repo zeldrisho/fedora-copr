@@ -57,3 +57,29 @@ Run applicable repository tests; package notes list additional checks. The CI wo
 Prefer a `%check` that exercises installed functionality and asserts a result or failure, beyond version or help output. Run upstream suites where practical and document tests skipped due to network, interactive requirements or other constraints.
 
 Request [Packit builds](packit.md) for affected packages where practical, prioritizing the Fedora releases and architectures you use. Inspect RPM contents and test installation when useful; six-target builds and rpmlint are not mandatory for every change. Report tests, targets actually checked and important gaps; an SRPM build alone is not a successful RPM build. Document build blockers and update-specific concerns in the package notes without repeating common operational instructions.
+
+### Post-build review
+
+For a consequential package update, compare the previous and new binary RPMs for the same Fedora release and architecture. Download public build artifacts with `copr-cli download-build <build-id> -r <chroot> --dest <directory> 2>/tmp/copr-download.log`; see [Packit troubleshooting](packit.md) if the download fails. Identify the actual binary RPMs, build IDs, versions and chroot before comparing; do not confuse source or debuginfo RPMs with the installed package. Review each relevant subpackage separately. For example, set `old` and `new` to the corresponding binary RPM paths:
+
+```sh
+tmp=$(mktemp -d)
+for query in --requires --recommends --suggests --provides --list; do
+  echo "### $query"
+  if rpm -qp "$query" "$old" > "$tmp/old" && rpm -qp "$query" "$new" > "$tmp/new"; then
+    LC_ALL=C sort -o "$tmp/old" "$tmp/old"
+    LC_ALL=C sort -o "$tmp/new" "$tmp/new"
+    diff -u "$tmp/old" "$tmp/new" || true
+  else
+    echo "Query failed; comparison incomplete" >&2
+  fi
+done
+rm -rf "$tmp"
+rpm -qlvp "$new" # permissions and file types
+```
+
+A diff is a review lead, not a pass/fail test; check generated dependencies and providers as described above, and distinguish build-ID changes from removed commands, configuration or notices. A query failure can also make a diff misleading; verify both RPM queries succeeded before drawing conclusions. Check target repository ownership for plausible file conflicts, allowing for the package's own previous version and co-owned directories.
+
+Inspect the actual chroot build log for `%check` output and test results, not just build success or the spec. Log names vary: if `build.log.gz` only contains SRPM generation, inspect `builder-live.log.gz` and identify the actual binary build section. Compare build and installed-package logs with a successful baseline when diagnosing regressions. In a suitable disposable target environment, install the new RPM and run a package-specific offline functional smoke test; follow the package notes and do not modify the host just for a review. Record commands or short evidence excerpts, actual target, failures and checks not run. If artifacts or tools are missing, call the review incomplete, not successful.
+
+Pilot: for gomi builds 11321134 and 11324629 on Fedora 44 x86_64, the main binary RPMs are both 1.10.1-1 and their sorted requires, recommends, suggests, provides and file lists match. Build 11324629's `builder-live.log.gz` shows the offline trash smoke test and `go test ./...` passing. This compares two builds of the same version, not an update; installation, target repository provider/conflict checks and a separate post-install smoke test were not performed.
