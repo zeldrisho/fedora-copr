@@ -45,11 +45,8 @@ jobs:
         package: ${{ fromJSON(needs.discover.outputs.packages) }}
         # Re-enable after the corresponding Packit builds are fixed.
         exclude:
-          - package: pi-coding-agent
           - package: vite-plus
           - package: morphe
-          - package: rea
-          - package: kotlin-toolchain
     uses: ./.github/workflows/pi.yml
     with:
       package: ${{ matrix.package }}

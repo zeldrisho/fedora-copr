@@ -1,6 +1,6 @@
 # Package updates
 
-The scheduled or manually dispatched `.github/workflows/livecheck.yml` discovers update support from specs and checksum files and proposes PRs for newer stable versions. Run `python3 .github/scripts/livecheck.py --check <package>` after adding a package or changing its version/source layout. `--discover` lists eligible packages offline and reports why others need manual work. Pi, Vite+, Morphe, Rea and kotlin-toolchain are excluded until their Packit builds are available and validated. Restore or add their Packit jobs in `.packit.yaml` before removing their exclusions from `.github/workflows/livecheck.yml`. See their package notes for blockers and coordinated inputs.
+The scheduled or manually dispatched `.github/workflows/livecheck.yml` discovers update support from specs and checksum files and proposes PRs for newer stable versions. Run `python3 .github/scripts/livecheck.py --check <package>` after adding a package or changing its version/source layout. `--discover` lists eligible packages offline and reports why others need manual work. Vite+ and Morphe are excluded until their Packit builds are validated. Remove their exclusions from `.github/workflows/livecheck.yml` after a successful build. See their package notes for blockers and coordinated inputs.
 
 The [Homebrew livecheck guidance](https://docs.brew.sh/Brew-Livecheck) is a useful reference, not a requirement for this repository.
 
