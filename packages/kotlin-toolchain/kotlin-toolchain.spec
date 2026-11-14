@@ -12,7 +12,8 @@ Source3:        checksums.sha256
 BuildArch:      noarch
 BuildRequires:  coreutils
 Requires:       java-25-openjdk-headless
-Requires:       coreutils curl gzip tar util-linux
+# The upstream wrapper uses sed to read project-local version pins.
+Requires:       coreutils curl gzip sed tar util-linux
 Conflicts:      kotlin
 
 %description

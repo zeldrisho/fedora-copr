@@ -13,7 +13,8 @@
 | --- | --- |
 | Check Packit paths | `python3 .packit/test-paths.py` |
 | Check GitHub workflows | `actionlint` |
-| Test helpers | `(for t in .github/scripts/test-*.py packages/*/test-*.py; do python3 "$t" || exit "$?"; done)` |
+| Test helpers | `(for t in .github/scripts/test-*.py packages/*/test-*.py; do python3 "$t" \|\| exit "$?"; done)` |
+| Test Vite+ source preparation | `bash packages/vite-plus/test-source-preparation.sh` |
 | Check update support | `python3 .github/scripts/livecheck.py --check <package>` |
 | Download COPR build logs | `copr-cli download-build <build-id> --logs --dest <directory> 2>/tmp/copr-download.log` |
 | Request Packit PR builds | Comment `/packit build` on the PR |

@@ -40,6 +40,7 @@ with tempfile.TemporaryDirectory(prefix="kotlin launcher ") as tmp:
         launcher.write_text((package / "kotlin.in").read_text().replace(
             "/usr/libexec/kotlin-toolchain/upstream-wrapper", str(upstream)))
         env = dict(os.environ, KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=str(cache), KOTLIN_CLI_JAVA_HOME="/test/java")
+        env.pop("KOTLIN_CLI_WRAPPER_ALWAYS_USE_INTRINSIC_VERSION", None)
         output = subprocess.check_output(["sh", str(launcher), "two words"], env=env, text=True)
         assert output == "/test/java\ntwo words\n", repr(output)
         print("Released upstream wrapper uses a verified cached distribution: OK")
@@ -71,6 +72,16 @@ with tempfile.TemporaryDirectory(prefix="kotlin launcher ") as tmp:
         assert (root / "fetch.log").read_text() == "fetch\n"
         subprocess.check_output(["sh", str(launcher)], env=env, text=True)
         assert (root / "fetch.log").read_text() == "fetch\n", "cache miss on second launch"
+        # A project-local wrapper selects its version and checksum via sed.
+        project = root / "project"
+        project.mkdir()
+        (project / "project.yaml").write_text("# fixture\n")
+        local_wrapper = project / "kotlin"
+        local_wrapper.write_text(f"kotlin_cli_version=9.9.9\nkotlin_cli_sha256={digest}\n")
+        local_wrapper.chmod(0o755)
+        output = subprocess.check_output(["sh", str(launcher), "local"], env=env, cwd=project, text=True)
+        assert output.endswith("/test/java\nlocal\n"), repr(output)
+        assert (root / "first-cache/kotlin-cli-9.9.9/.flag").read_text().strip() == digest
         test_wrapper.write_text(original.replace(release_digest, "0" * 64))
         env["KOTLIN_CLI_BOOTSTRAP_CACHE_DIR"] = str(root / "bad-cache")
         failed = subprocess.run(["sh", str(launcher)], env=env, capture_output=True, text=True)

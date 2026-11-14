@@ -35,7 +35,7 @@ jobs:
 
   update:
     needs: discover
-    if: needs.discover.outputs.packages != '[]' && vars.PI_UPDATES_ENABLED == 'true'
+    if: needs.discover.outputs.packages != '[]'
     permissions:
       contents: write
       pull-requests: write

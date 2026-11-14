@@ -17,9 +17,10 @@ BuildRequires:  cargo-rpm-macros
 BuildRequires:  gcc
 BuildRequires:  make
 Requires:       file
-Recommends:     ffmpeg
-Recommends:     p7zip
-Recommends:     p7zip-plugins
+# Use command providers: Fedora's ffmpeg-free and 7zip supply these tools.
+Recommends:     /usr/bin/ffmpeg
+Recommends:     /usr/bin/ffprobe
+Recommends:     /usr/bin/7z
 Recommends:     jq
 Recommends:     poppler-utils
 Recommends:     fd-find

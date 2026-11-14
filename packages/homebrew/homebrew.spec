@@ -10,6 +10,8 @@ Source1:        brew
 
 BuildArch:      noarch
 Requires:       bash coreutils curl file git-core gzip procps-ng sudo tar util-linux
+# The first-run launcher resolves the sudo user through the account database.
+Requires:       /usr/bin/getent
 # Homebrew expects a system compiler even when installing bottles.
 Requires:       gcc
 

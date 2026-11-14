@@ -32,7 +32,7 @@ For new packages and updates, review:
 
 ## Testing and validation
 
-Run applicable repository tests; package notes list additional checks. The livecheck workflow runs the Python helper tests separately from RPM builds:
+Run applicable repository tests; package notes list additional checks. The CI workflow checks Packit paths, Python helpers and Vite+ source preparation separately from RPM builds:
 
 ```sh
 (
@@ -40,6 +40,7 @@ Run applicable repository tests; package notes list additional checks. The livec
   for t in .github/scripts/test-*.py packages/*/test-*.py; do
     python3 "$t" || exit "$?"
   done
+  bash packages/vite-plus/test-source-preparation.sh || exit "$?"
 )
 ```
 
