@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+: "${KOTLIN_CLI_JAVA_HOME:=/usr/lib/jvm/java-25-openjdk}"
+export KOTLIN_CLI_JAVA_HOME
+exec /bin/sh "/usr/libexec/kotlin-toolchain/upstream-wrapper" "$@"
