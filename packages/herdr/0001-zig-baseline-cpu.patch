@@ -1,0 +1,10 @@
+--- a/crates/ghostty-vt/build.rs
++++ b/crates/ghostty-vt/build.rs
+@@ -75,6 +75,7 @@ fn main() {
+     let mut command = Command::new(&zig);
+     command
+         .arg("build")
++        .arg("-Dcpu=baseline")
+         .arg("--prefix")
+         .arg(&zig_prefix)
+         .arg("-Demit-lib-vt")
