@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/bin/node-24 /usr/libexec/rea/scripts/rea.mjs "$@"

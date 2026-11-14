@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Morphe Desktop
+Comment=Patch Android applications
+Exec=morphe
+Icon=morphe
+Terminal=false
+Categories=Utility;

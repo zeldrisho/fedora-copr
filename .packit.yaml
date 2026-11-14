@@ -1,0 +1,217 @@
+packages:
+  actionlint:
+    specfile_path: actionlint.spec
+    downstream_package_name: actionlint
+    paths: [packages/actionlint, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, golang, tar, gzip]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh actionlint
+      fix-spec-file: 'true'
+  gomi:
+    specfile_path: gomi.spec
+    downstream_package_name: gomi
+    paths: [packages/gomi, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, golang, tar, gzip]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh gomi
+      fix-spec-file: 'true'
+  herdr:
+    specfile_path: herdr.spec
+    downstream_package_name: herdr
+    paths: [packages/herdr, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, cargo, zig, tar, gzip]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh herdr
+      fix-spec-file: 'true'
+  homebrew:
+    specfile_path: homebrew.spec
+    downstream_package_name: homebrew
+    paths: [packages/homebrew, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh homebrew
+      fix-spec-file: 'true'
+  kotlin-toolchain:
+    specfile_path: kotlin-toolchain.spec
+    downstream_package_name: kotlin-toolchain
+    paths: [packages/kotlin-toolchain, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, coreutils]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh kotlin-toolchain
+      fix-spec-file: 'true'
+  morphe:
+    specfile_path: morphe.spec
+    downstream_package_name: morphe
+    paths: [packages/morphe, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, coreutils]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh morphe
+      fix-spec-file: 'true'
+  pi-coding-agent:
+    specfile_path: pi-coding-agent.spec
+    downstream_package_name: pi-coding-agent
+    paths: [packages/pi-coding-agent, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, coreutils]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh pi-coding-agent
+      fix-spec-file: 'true'
+  rea:
+    specfile_path: rea.spec
+    downstream_package_name: rea
+    paths: [packages/rea, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, coreutils]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh rea
+      fix-spec-file: 'true'
+  smali:
+    specfile_path: smali.spec
+    downstream_package_name: smali
+    paths: [packages/smali, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh smali
+      fix-spec-file: 'true'
+  vite-plus:
+    specfile_path: vite-plus.spec
+    downstream_package_name: vite-plus
+    paths: [packages/vite-plus, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, git-core, python3, tar, gzip]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh vite-plus
+      fix-spec-file: 'true'
+  yazi:
+    specfile_path: yazi.spec
+    downstream_package_name: yazi
+    paths: [packages/yazi, .packit, .packit.yaml]
+    srpm_build_deps: [rpmdevtools, cargo, git, tar, gzip]
+    actions:
+      create-archive: bash ../../.packit/prepare-sources.sh yazi
+      fix-spec-file: 'true'
+
+jobs:
+  - job: copr_build
+    trigger: pull_request
+    identifier: smali
+    packages: [smali]
+    targets:
+      - fedora-44-x86_64
+      - fedora-44-aarch64
+      - fedora-45-x86_64
+      - fedora-45-aarch64
+      - fedora-rawhide-x86_64
+      - fedora-rawhide-aarch64
+    enable_net: false
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: smali
+    packages: [smali]
+    owner: zeldrisho
+    project: packages
+    enable_net: false
+  - job: copr_build
+    trigger: pull_request
+    identifier: actionlint
+    packages: [actionlint]
+    targets: &fedora-targets
+      - fedora-44-x86_64
+      - fedora-44-aarch64
+      - fedora-45-x86_64
+      - fedora-45-aarch64
+      - fedora-rawhide-x86_64
+      - fedora-rawhide-aarch64
+    enable_net: false
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: actionlint
+    packages: [actionlint]
+    owner: zeldrisho
+    project: packages
+    enable_net: false
+  - job: copr_build
+    trigger: pull_request
+    identifier: gomi
+    packages: [gomi]
+    targets: *fedora-targets
+    enable_net: false
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: gomi
+    packages: [gomi]
+    owner: zeldrisho
+    project: packages
+    enable_net: false
+  - job: copr_build
+    trigger: pull_request
+    identifier: herdr
+    packages: [herdr]
+    targets: *fedora-targets
+    enable_net: false
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: herdr
+    packages: [herdr]
+    owner: zeldrisho
+    project: packages
+    enable_net: false
+  - job: copr_build
+    trigger: pull_request
+    identifier: homebrew
+    packages: [homebrew]
+    targets: *fedora-targets
+    enable_net: false
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: homebrew
+    packages: [homebrew]
+    owner: zeldrisho
+    project: packages
+    enable_net: false
+  # Disabled after COPR build 11324034 failed; restore both jobs after fixing it.
+  # - job: copr_build
+  #   trigger: pull_request
+  #   identifier: pi-coding-agent
+  #   packages: [pi-coding-agent]
+  #   targets: *fedora-targets
+  #   enable_net: true
+  # - job: copr_build
+  #   trigger: commit
+  #   branch: main$
+  #   identifier: pi-coding-agent
+  #   packages: [pi-coding-agent]
+  #   owner: zeldrisho
+  #   project: packages
+  #   enable_net: true
+  - job: copr_build
+    trigger: pull_request
+    identifier: yazi
+    packages: [yazi]
+    targets: *fedora-targets
+    enable_net: false
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: yazi
+    packages: [yazi]
+    owner: zeldrisho
+    project: packages
+    enable_net: false
+  # Disabled after COPR build 11324037 failed. Vite+ requires network access.
+  # - job: copr_build
+  #   trigger: pull_request
+  #   identifier: vite-plus
+  #   packages: [vite-plus]
+  #   targets: *fedora-targets
+  #   enable_net: true
+  # - job: copr_build
+  #   trigger: commit
+  #   branch: main$
+  #   identifier: vite-plus
+  #   packages: [vite-plus]
+  #   owner: zeldrisho
+  #   project: packages
+  #   enable_net: true

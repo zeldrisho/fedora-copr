@@ -1,0 +1,57 @@
+name: Livecheck
+
+on:
+  schedule:
+    - cron: '23 6 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: livecheck
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      packages: ${{ steps.packages.outputs.packages }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test helpers
+        run: |
+          for test in .github/scripts/test-*.py packages/*/test-*.py; do
+            echo "== $test"
+            python3 "$test"
+          done
+      - id: packages
+        run: |
+          packages=$(python3 .github/scripts/livecheck.py --discover)
+          printf 'packages=%s\n' "$packages" >> "$GITHUB_OUTPUT"
+
+  update:
+    needs: discover
+    if: needs.discover.outputs.packages != '[]' && vars.PI_UPDATES_ENABLED == 'true'
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.discover.outputs.packages) }}
+        # Re-enable after the corresponding Packit builds are fixed.
+        exclude:
+          - package: pi-coding-agent
+          - package: vite-plus
+          - package: morphe
+          - package: rea
+          - package: kotlin-toolchain
+    uses: ./.github/workflows/pi.yml
+    with:
+      package: ${{ matrix.package }}
+    secrets:
+      AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
