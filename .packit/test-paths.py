@@ -14,17 +14,19 @@ for job in config["jobs"]:
     assert job["job"] == "copr_build"
     assert len(job["packages"]) == 1 and job["packages"][0] in config["packages"]
     assert job["identifier"] == job["packages"][0]
-    # Pi and Vite+ use networked build inputs; Morphe resolves Maven dependencies.
+    # Pi, REA and Vite+ use networked build inputs; Morphe resolves Maven dependencies.
     if job.get("enable_net", False):
-        assert set(job["packages"]) <= {"morphe", "pi-coding-agent", "vite-plus"}
+        assert set(job["packages"]) <= {"morphe", "pi-coding-agent", "rea", "vite-plus"}
     if job["trigger"] == "commit":
         assert job["branch"] == "main$"
         assert job["owner"] == "zeldrisho" and job["project"] == "packages"
 for package in config["packages"]:
     jobs = [job for job in config["jobs"] if job["packages"] == [package]]
-    if jobs:
-        assert len(jobs) == 2 and {job["trigger"] for job in jobs} == {"pull_request", "commit"}, package
-        assert len({job.get("enable_net", False) for job in jobs}) == 1, package
+    assert jobs, f"Package without Packit build jobs: {package}"
+    assert len(jobs) == 2 and {job["trigger"] for job in jobs} == {"pull_request", "commit"}, package
+    assert len({job.get("enable_net", False) for job in jobs}) == 1, package
+package_dirs = {path.name for path in (root / "packages").iterdir() if path.is_dir()}
+assert package_dirs == set(config["packages"]), f"Unconfigured or missing packages: {package_dirs ^ set(config['packages'])}"
 print("Packit jobs are paired and refer to configured packages and documented network exceptions")
 
 with tempfile.TemporaryDirectory() as tmp:
