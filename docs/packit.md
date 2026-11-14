@@ -8,7 +8,7 @@ Install the [Packit GitHub App](https://packit.dev/docs/guide); Packit must also
 
 Packit's [monorepo configuration](https://packit.dev/posts/monorepos) resolves specs and SRPM actions relative to each package directory. Spec paths are filenames; archive actions invoke `../../.packit/prepare-sources.sh`, which returns an archive path relative to that directory. It downloads sources and invokes package-specific preparation scripts when present. Packit installs their tools using `srpm_build_deps`, which lists unversioned package names because COPR splits versioned requirements into separate install arguments. The source builder must therefore provide sufficiently recent tools; spec build requirements remain versioned. Run `python3 .packit/test-paths.py` to check paths without downloading sources; it requires `yq`.
 
-Enabled RPM build jobs have networking disabled. Pi, Vite+, Morphe and REA require networking if enabled because they resolve dependencies or toolchains during RPM builds. SRPM preparation may download sources and dependencies; package scripts verify upstream archives. See package notes for exceptions and unresolved blockers.
+RPM build jobs have networking disabled except for the Vite+ PR build, which downloads dependencies and toolchains. Pi, Morphe and REA also require networking if enabled. SRPM preparation may download sources and dependencies; package scripts verify upstream archives. See package notes for exceptions and unresolved blockers.
 
 ## Pull request builds
 

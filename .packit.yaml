@@ -200,13 +200,13 @@ jobs:
     owner: zeldrisho
     project: packages
     enable_net: false
-  # Disabled after COPR build 11324037 failed. Vite+ requires network access.
-  # - job: copr_build
-  #   trigger: pull_request
-  #   identifier: vite-plus
-  #   packages: [vite-plus]
-  #   targets: *fedora-targets
-  #   enable_net: true
+  # Validate the Yuku extraction fix before restoring publishing.
+  - job: copr_build
+    trigger: pull_request
+    identifier: vite-plus
+    packages: [vite-plus]
+    targets: *fedora-targets
+    enable_net: true
   # - job: copr_build
   #   trigger: commit
   #   branch: main$
