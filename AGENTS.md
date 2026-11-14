@@ -31,6 +31,7 @@
 - Prefer upstream build instructions and existing packaging when useful; document important adaptations. Prebuilt dependencies are acceptable when rebuilding them adds disproportionate effort.
 - Keep package changes focused; check existing issues and pull requests before duplicating work when practical.
 - Recheck livecheck support when adding or changing a package; update detection/tests or document an explicit manual-update reason (see `docs/livecheck.md`).
+- Review binary RPM `Requires` and `Recommends` when changing runtime dependencies; check for redundant or missing providers (see `docs/development.md`).
 - Before concluding a Fedora dependency is unavailable, check alternative package names and providers; document any remaining uncertainty.
 - Prefer offline functional package checks beyond version and help; document exceptions.
 - Link patches to upstream issues or pull requests when available.

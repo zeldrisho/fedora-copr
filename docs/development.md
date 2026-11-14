@@ -30,6 +30,15 @@ For new packages and updates, review:
 - Installed commands, completions, docs, licenses, configuration, ownership and upgrade behavior. Document self-update or bootstrap downloads that bypass RPM management.
 - Downstream patches: explain their purpose, link an upstream issue or PR when available, and revisit them on updates. Do not assume a patch can be dropped without building and testing.
 
+For runtime dependency changes, inspect both spec declarations and generated binary RPM metadata. For example, with the relevant repository enabled:
+
+```sh
+dnf repoquery --available --latest-limit=1 --arch=x86_64,noarch --requires <package>
+dnf repoquery --available --latest-limit=1 --arch=x86_64,noarch --recommends <package>
+```
+
+Select the target architecture and repository being reviewed; use `aarch64,noarch` for aarch64. The architecture filter excludes source RPMs and their build requirements. DNF normally installs available recommendations as well as hard requirements. Check whether providers are already pulled in transitively, and verify installation or feature behavior where practical. A query of an existing published RPM does not validate an unbuilt spec change.
+
 ## Testing and validation
 
 Run applicable repository tests; package notes list additional checks. The CI workflow checks Packit paths, Python helpers and Vite+ source preparation separately from RPM builds:
