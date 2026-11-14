@@ -173,6 +173,20 @@ jobs:
     enable_net: false
   - job: copr_build
     trigger: pull_request
+    identifier: kotlin-toolchain
+    packages: [kotlin-toolchain]
+    targets: *fedora-targets
+    enable_net: false
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: kotlin-toolchain
+    packages: [kotlin-toolchain]
+    owner: zeldrisho
+    project: packages
+    enable_net: false
+  - job: copr_build
+    trigger: pull_request
     identifier: morphe
     packages: [morphe]
     targets: *fedora-targets
