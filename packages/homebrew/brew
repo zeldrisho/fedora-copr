@@ -1,0 +1,68 @@
+#!/usr/bin/bash
+# The RPM owns this launcher; the first user owns the separate Homebrew prefix.
+set -euo pipefail
+home=/home/linuxbrew
+prefix=$home/.linuxbrew
+seed=/usr/share/homebrew/seed.tar.gz
+marker=/var/lib/homebrew/rpm-initialized
+
+if [[ ${1-} == --initialize-rpm-homebrew ]]; then
+    if (( EUID != 0 )) || [[ ! ${SUDO_UID-} =~ ^[0-9]+$ ]] || (( SUDO_UID == 0 )); then
+        echo 'Homebrew initialization must be invoked via sudo by a non-root user.' >&2; exit 1
+    fi
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    account=$(getent passwd "$SUDO_UID") || { echo 'Cannot find the invoking user.' >&2; exit 1; }
+    IFS=: read -r owner _ uid gid _ owner_home _ <<< "$account"
+    [[ $uid == "$SUDO_UID" && -n $owner && $owner_home == /* ]] || { echo 'Invalid invoking user.' >&2; exit 1; }
+    if [[ -e $home || -L $home ]]; then
+        echo '/home/linuxbrew already exists; refusing to modify it.' >&2; exit 1
+    fi
+    version=$(< /usr/share/homebrew/version)
+    [[ -f $seed && $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid Homebrew seed.' >&2; exit 1; }
+    echo "Initializing Homebrew for $owner; this downloads Git metadata from GitHub." >&2
+    install -d -m 0755 -o root -g root "$home"
+    install -d -m 0755 -o "$uid" -g "$gid" "$prefix" "$prefix/bin" "$prefix/Homebrew"
+    runuser -u "$owner" -- tar -xzf "$seed" --strip-components=1 -C "$prefix/Homebrew"
+    # Verify the fetched tag against the checksum-verified seed before use.
+    runuser -u "$owner" -- env HOME="$owner_home" PATH="$PATH" VERSION="$version" PREFIX="$prefix" bash -eu -c '
+        cd "$PREFIX/Homebrew"
+        git init -q -b main
+        git remote add origin https://github.com/Homebrew/brew.git
+        git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+        git fetch --depth=1 origin "+refs/heads/main:refs/remotes/origin/main" "+refs/tags/$VERSION:refs/tags/$VERSION"
+        git reset --mixed "refs/tags/$VERSION"
+        git diff --quiet || { echo "Fetched tag differs from the RPM seed." >&2; exit 1; }
+        git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
+        ln -s ../Homebrew/bin/brew "$PREFIX/bin/brew"
+    '
+    install -d -m 0755 /var/lib/homebrew
+    touch "$marker"
+    echo 'Homebrew initialization complete.' >&2
+    exit 0
+fi
+
+if (( EUID == 0 )); then
+    echo 'Do not run brew as root. Run it as the user who initialized Homebrew.' >&2
+    exit 1
+fi
+if [[ ! -f $marker || ! -x $prefix/bin/brew ]]; then
+    if [[ -e $home || -L $home ]]; then
+        echo 'An existing or incomplete Homebrew installation was found; refusing to modify it. See the COPR Homebrew documentation.' >&2
+        exit 1
+    fi
+    if [[ ! -t 0 ]]; then
+        echo 'Homebrew needs interactive first-run initialization; run brew in a terminal.' >&2
+        exit 1
+    fi
+    printf 'Initialize Homebrew for your user? This requires sudo and network access. [y/N] ' >&2
+    read -r answer
+    if [[ ! $answer =~ ^[Yy]([Ee][Ss])?$ ]]; then
+        echo 'Homebrew initialization cancelled.' >&2; exit 1
+    fi
+    sudo /usr/bin/brew --initialize-rpm-homebrew
+fi
+if [[ $(stat -Lc %u "$prefix/bin/brew") != "$EUID" ]]; then
+    echo 'Homebrew belongs to another user; refusing to run their installation.' >&2
+    exit 1
+fi
+exec "$prefix/bin/brew" "$@"
