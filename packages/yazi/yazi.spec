@@ -1,6 +1,6 @@
 Name:           yazi
 Version:        26.9.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Asynchronous terminal file manager
 
 # Bundled Rust dependencies and Lua have not yet been audited for licensing.
@@ -17,19 +17,19 @@ BuildRequires:  cargo-rpm-macros
 BuildRequires:  gcc
 BuildRequires:  make
 Requires:       file
-# Use command providers: Fedora's ffmpeg-free and 7zip supply these tools.
-Recommends:     /usr/bin/ffmpeg
-Recommends:     /usr/bin/ffprobe
-Recommends:     /usr/bin/7z
-Recommends:     jq
-Recommends:     poppler-utils
-Recommends:     fd-find
-Recommends:     ripgrep
-Recommends:     fzf
-Recommends:     zoxide
-Recommends:     resvg
-Recommends:     ImageMagick
-Recommends:     git
+# Optional integrations are not installed by default.
+Suggests:       /usr/bin/ffmpeg
+Suggests:       /usr/bin/ffprobe
+Suggests:       /usr/bin/7z
+Suggests:       jq
+Suggests:       poppler-utils
+Suggests:       fd-find
+Suggests:       ripgrep
+Suggests:       fzf
+Suggests:       zoxide
+Suggests:       resvg
+Suggests:       ImageMagick
+Suggests:       git
 
 %description
 Yazi is an asynchronous terminal file manager written in Rust.

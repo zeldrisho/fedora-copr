@@ -8,7 +8,7 @@ Packit PR and main publishing jobs are enabled. [PR #1](https://github.com/zeldr
 
 ## Sources and build
 
-`packages/herdr/prepare-sources.sh` runs in COPR's SRPM builder. It verifies the upstream archive, vendors locked Cargo dependencies and prefetches Zig dependencies. The RPM builds in PR #1 compiled offline from the resulting dependency archive.
+`packages/herdr/prepare-sources.sh` runs in COPR's SRPM builder. It verifies the upstream archive, vendors locked Cargo dependencies and prefetches Zig dependencies. The RPM builds in PR #1 compiled offline from the resulting dependency archive. The one-line downstream patch explicitly selects Zig's baseline CPU for the vendored Ghostty library to avoid depending on builder-specific CPU features. Upstream already supplies a target triple; whether that makes the explicit baseline redundant has not been verified with Zig 0.16.0.
 
 ## Updates and limitations
 

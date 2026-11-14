@@ -14,13 +14,18 @@ for job in config["jobs"]:
     assert job["job"] == "copr_build"
     assert len(job["packages"]) == 1 and job["packages"][0] in config["packages"]
     assert job["identifier"] == job["packages"][0]
-    # Pi resolves npm dependencies and Vite+ downloads its toolchain at build time.
+    # Pi and Vite+ use networked build inputs; Morphe resolves Maven dependencies.
     if job.get("enable_net", False):
-        assert set(job["packages"]) <= {"pi-coding-agent", "vite-plus"}
+        assert set(job["packages"]) <= {"morphe", "pi-coding-agent", "vite-plus"}
     if job["trigger"] == "commit":
         assert job["branch"] == "main$"
         assert job["owner"] == "zeldrisho" and job["project"] == "packages"
-print("Packit jobs refer to configured packages and documented network exceptions")
+for package in config["packages"]:
+    jobs = [job for job in config["jobs"] if job["packages"] == [package]]
+    if jobs:
+        assert len(jobs) == 2 and {job["trigger"] for job in jobs} == {"pull_request", "commit"}, package
+        assert len({job.get("enable_net", False) for job in jobs}) == 1, package
+print("Packit jobs are paired and refer to configured packages and documented network exceptions")
 
 with tempfile.TemporaryDirectory() as tmp:
     tmp = Path(tmp)

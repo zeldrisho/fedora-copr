@@ -2,7 +2,7 @@
 
 ## Status
 
-Smali's Packit PR job covers Rawhide, Fedora 45, and Fedora 44 on x86_64 and aarch64, with RPM build networking disabled. Request a build with `/packit build` on the PR. A main-branch job publishes to the personal COPR. The spec requires Java 25 and defaults its launchers to that runtime to match the build. [PR #1](https://github.com/zeldrisho/fedora-copr/pull/1/checks) passed on all six targets; installation still needs testing.
+Smali's Packit PR job covers Rawhide, Fedora 45, and Fedora 44 on x86_64 and aarch64, with RPM build networking disabled. PR builds run automatically. A main-branch job publishes to the personal COPR. The spec requires Java 25 and defaults its launchers to that runtime to match the build. [PR #1](https://github.com/zeldrisho/fedora-copr/pull/1/checks) passed on all six targets; installation still needs testing.
 
 ## Sources and build
 

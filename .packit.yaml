@@ -171,6 +171,20 @@ jobs:
     owner: zeldrisho
     project: packages
     enable_net: false
+  - job: copr_build
+    trigger: pull_request
+    identifier: morphe
+    packages: [morphe]
+    targets: *fedora-targets
+    enable_net: true
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: morphe
+    packages: [morphe]
+    owner: zeldrisho
+    project: packages
+    enable_net: true
   # Disabled after COPR build 11324034 failed; restore both jobs after fixing it.
   # - job: copr_build
   #   trigger: pull_request
@@ -200,18 +214,17 @@ jobs:
     owner: zeldrisho
     project: packages
     enable_net: false
-  # Validate the Yuku extraction fix before restoring publishing.
   - job: copr_build
     trigger: pull_request
     identifier: vite-plus
     packages: [vite-plus]
     targets: *fedora-targets
     enable_net: true
-  # - job: copr_build
-  #   trigger: commit
-  #   branch: main$
-  #   identifier: vite-plus
-  #   packages: [vite-plus]
-  #   owner: zeldrisho
-  #   project: packages
-  #   enable_net: true
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: vite-plus
+    packages: [vite-plus]
+    owner: zeldrisho
+    project: packages
+    enable_net: true
