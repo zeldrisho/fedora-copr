@@ -215,6 +215,26 @@ jobs:
     enable_net: true
   - job: copr_build
     trigger: pull_request
+    identifier: rea
+    packages: [rea]
+    # REA 6.9.0 requires nodejs24 >= 24.22.1; Fedora 44/45 stable ship 24.18.0.
+    # Restrict rea to Rawhide and re-add fedora-44/45 (both arches) to this
+    # and the commit job once the nodejs24 update reaches stable.
+    targets: &rawhide-targets
+      - fedora-rawhide-x86_64
+      - fedora-rawhide-aarch64
+    enable_net: true
+  - job: copr_build
+    trigger: commit
+    branch: main$
+    identifier: rea
+    packages: [rea]
+    owner: zeldrisho
+    project: packages
+    targets: *rawhide-targets
+    enable_net: true
+  - job: copr_build
+    trigger: pull_request
     identifier: yazi
     packages: [yazi]
     targets: *fedora-targets
