@@ -1,0 +1,30 @@
+--- a/packages/tui/native/linux/build.sh
++++ b/packages/tui/native/linux/build.sh
+@@ -31,17 +31,16 @@
+ trap 'rm -rf "$build_dir"' EXIT
+ 
+ common_flags=(
++    ${CFLAGS:-}
++    ${LDFLAGS:-}
+     -std=c11
+     -D_POSIX_C_SOURCE=200809L
+     -Wall
+     -Wextra
+     -Werror
+-    -Os
+-    -flto
+     -fPIC
+     -pthread
+     -fvisibility=hidden
+-    -fno-stack-protector
+     -shared
+     -nostdlib
+     -Wl,--unresolved-symbols=ignore-all
+@@ -50,7 +49,6 @@
+     -Wl,--gc-sections
+     # A timed-out private thread may outlive the Node environment that loaded us.
+     -Wl,-z,nodelete
+-    -Wl,-s
+ )
+ 
+ x11_output="$build_dir/linux-platform-x11.node"
