@@ -13,8 +13,13 @@ import tempfile
 package = Path(__file__).resolve().parent
 with tempfile.TemporaryDirectory(prefix="kotlin launcher ") as tmp:
     root = Path(tmp)
+    # Exercise the actual RPM check fixture after RPM percent escaping.
+    spec = (package / "kotlin-toolchain.spec").read_text()
+    fixture_commands = [line for line in spec.splitlines() if line.endswith(' > fake-wrapper')]
+    assert len(fixture_commands) == 1
+    subprocess.run(["sh", "-c", fixture_commands[0].replace("%%", "%")], cwd=root, check=True)
     wrapper = root / "upstream wrapper"
-    wrapper.write_text('#!/bin/sh\nprintf "%s\\n" "$KOTLIN_CLI_JAVA_HOME" "$@"\n')
+    wrapper.write_text((root / "fake-wrapper").read_text())
     launcher = root / "kotlin"
     launcher.write_text((package / "kotlin.in").read_text().replace(
         "/usr/libexec/kotlin-toolchain/upstream-wrapper", str(wrapper)))

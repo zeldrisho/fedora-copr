@@ -38,7 +38,8 @@ BuildRequires:  nodejs-npm
 BuildRequires:  gcc
 BuildRequires:  libxcb-devel
 Requires:       nodejs >= 22.19
-Requires:       nodejs-npm
+# npm enables the built-in package manager but is not needed to run Pi.
+Recommends:     nodejs-npm
 Recommends:     fd-find
 Recommends:     ripgrep
 Recommends:     git-core
@@ -123,6 +124,10 @@ cli=%{buildroot}%{_bindir}/pi
 "$cli" --version | grep -Fx '%{version}'
 "$cli" --help > /dev/null
 PI_CODING_AGENT_DIR="$HOME/.pi/agent" PI_OFFLINE=1 "$cli" list | grep -F 'No packages installed.'
+# The base CLI must work when the recommended npm executable is absent.
+mkdir -p "$PWD/node-only"
+ln -s "$(command -v node)" "$PWD/node-only/node"
+PATH="$PWD/node-only" PI_CODING_AGENT_DIR="$HOME/.pi/agent" PI_OFFLINE=1 "$cli" list | grep -F 'No packages installed.'
 test ! -e %{buildroot}%{_libexecdir}/%{name}/node_modules/@earendil-works/pi-coding-agent/dist/bundle
 export_vendor=%{buildroot}%{_libexecdir}/%{name}/node_modules/@earendil-works/pi-coding-agent/dist/core/export-html/vendor
 grep -F 'Highlight.js v11.9.0' "$export_vendor/highlight.min.js"

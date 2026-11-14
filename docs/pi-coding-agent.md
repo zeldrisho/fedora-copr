@@ -1,6 +1,6 @@
 # Pi coding agent
 
-`pi-coding-agent` provides the `pi` CLI. Fedora also ships a package with this name; this COPR tracks newer upstream releases. Pi runs commands with the user's permissions and has no built-in permission sandbox. Configure a provider with `/login`; see [upstream documentation](https://github.com/earendil-works/pi/tree/v1.5.2/packages/coding-agent). Use RPM updates rather than `pi update` to maintain the system installation.
+`pi-coding-agent` provides the `pi` CLI. Fedora also ships a package with this name; this COPR tracks newer upstream releases. Pi runs commands with the user's permissions and has no built-in permission sandbox. Configure a provider with `/login`; see [upstream documentation](https://github.com/earendil-works/pi/tree/v1.5.2/packages/coding-agent). Use RPM updates rather than `pi update` to maintain the system installation. npm is recommended for Pi's npm package management, but is not required for the base CLI; installations without weak dependencies need to install it separately for that feature.
 
 ## Sources and build
 
